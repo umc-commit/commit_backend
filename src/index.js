@@ -1,6 +1,7 @@
 import cors from 'cors';
 import dotenv from "dotenv";
 import express from "express";
+import { setupSwagger } from './swagger/index.js';
 
 dotenv.config();
 
@@ -31,6 +32,9 @@ app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Swagger 설정 
+setupSwagger(app);  
+
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
@@ -52,4 +56,5 @@ app.use((err, req, res, next) => {
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
+  console.log(`📚 Swagger UI: http://localhost:${port}/api-docs`)
 })
