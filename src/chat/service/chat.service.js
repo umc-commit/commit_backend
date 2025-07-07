@@ -1,0 +1,47 @@
+import { ChatRepository } from "../repository/chat.repository.js";
+import { UserRepository } from "../../user/repository/user.repository.js";
+import { RequestRepository } from "../../request/repository/request.repository.js";
+import { UserNotFoundError } from "../../common/errors/user.errors.js";
+import { ArtistNotFoundError } from "../../common/errors/user.errors.js";
+import { RequestNotFoundError } from "../../common/errors/request.errors.js";
+
+export const ChatService = {
+  async createChatroom(dto) {
+
+    const user = await UserRepository.findUserById(dto.consumerId);
+    if (!user) {
+      throw new UserNotFoundError({ consumerId: dto.consumerId });
+    }
+
+    const artist = await UserRepository.findArtistById(dto.artistId);
+    if (!artist) {
+      throw new ArtistNotFoundError({ artistId: dto.artistId });
+    }
+
+    const request = await RequestRepository.findRequestById(dto.requestId);
+    if (!request) {
+      throw new RequestNotFoundError({ requestId: dto.requestId });
+    }
+
+    // 채팅방 중복 확인
+    const existing = await ChatRepository.findChatroomByUsersAndCommission(
+      dto.consumerId,
+      dto.artistId,
+      dto.requestId
+    );
+
+    // 기존 채팅방 반환
+    if (existing) {
+      return existing;
+    }
+
+    // 채팅방이 없을 시 생성
+    const chatroom = await ChatRepository.createChatroom({
+      consumerId: dto.consumerId,
+      artistId: dto.artistId,
+      requestId: dto.requestId,
+    });
+
+    return chatroom;
+  },
+};

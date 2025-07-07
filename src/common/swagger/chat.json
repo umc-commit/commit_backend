@@ -1,0 +1,54 @@
+{
+  "paths": {
+    "/api/chat/chatrooms": {
+      "post": {
+        "summary": "채팅방 생성",
+        "description": "consumerId, artistId, requestId로 채팅방을 생성합니다.",
+        "tags": ["Chat"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "consumerId": { "type": "integer", "example": 1 },
+                  "artistId": { "type": "integer", "example": 2 },
+                  "requestId": { "type": "integer", "example": 3 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "생성된 채팅방 정보 반환",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "resultType": { "type": "string", "example": "SUCCESS" },
+                    "error": { "type": "object", "nullable": true },
+                    "success": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer", "example": 10 },
+                        "consumerId": { "type": "integer", "example": 1 },
+                        "artistId": { "type": "integer", "example": 2 },
+                        "requestId": { "type": "integer", "example": 3 }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "사용자, 작가, 요청 중 하나를 찾을 수 없음"
+          }
+        }
+      }
+    }
+  }
+}

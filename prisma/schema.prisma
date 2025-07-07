@@ -47,7 +47,6 @@ model User {
   follows          Follow[]
   notifications    Notification[]
   userAgreements   UserAgreement[]
-  commissions      Commission[]
   userCategories   UserCategory[]
 
   @@map("users")
@@ -65,6 +64,7 @@ model Artist {
   account   Account    @relation(fields: [accountId], references: [id])
   chatrooms Chatroom[] @relation("ArtistChatrooms")
   follows   Follow[]
+  commissions Commission[]
 
   @@map("artists")
 }
@@ -101,7 +101,7 @@ model Commission {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  user            User             @relation(fields: [artistId], references: [id])
+  artist         Artist           @relation(fields: [artistId], references: [id])
   category        Category         @relation(fields: [categoryId], references: [id])
   requests        Request[]
   bookmarks       Bookmark[]
@@ -188,8 +188,8 @@ model Chatroom {
   requestId      BigInt   @map("request_id")
   consumerId     BigInt   @map("consumer_id")
   artistId       BigInt   @map("artist_id")
-  hiddenArtist   Boolean  @map("hidden_artist")
-  hiddenConsumer Boolean  @map("hidden_consumer")
+  hiddenArtist   Boolean  @default(false)@map("hidden_artist")
+  hiddenConsumer Boolean  @default(false)@map("hidden_consumer")
   createdAt      DateTime @default(now()) @map("created_at")
 
   request      Request       @relation(fields: [requestId], references: [id])
