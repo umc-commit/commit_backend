@@ -2,11 +2,17 @@ import cors from 'cors';
 import dotenv from "dotenv";
 import express from "express";
 import { setupSwagger } from './swagger/index.js';
+import http from 'http';
+import setupSocket from "./socket.js";
 
 dotenv.config();
 
 const app = express()
 const port = process.env.PORT || 3000;
+
+// http 서버 생성
+const server = http.createServer(app);
+setupSocket(server);
 
 /**
  * 공통 응답을 사용할 수 있는 헬퍼 함수 등록
@@ -54,7 +60,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
   console.log(`📚 Swagger UI: http://localhost:${port}/api-docs`)
 })
