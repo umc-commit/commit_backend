@@ -11,3 +11,10 @@ export class ShowChatroomDto {
         this.consumerId = consumerId;
     }
 }
+
+export class DeleteChatroomDto {
+    constructor({ chatroomIds, userType }) {
+        this.chatroomIds = chatroomIds.map(id => BigInt(id));
+        this.userType = userType;
+    }
+}

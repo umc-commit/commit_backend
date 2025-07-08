@@ -127,6 +127,49 @@
           }
         }
       }
+    },
+    "/api/chatrooms/delete": {
+      "delete": {
+        "summary": "채팅방 소프트 삭제 (hidden 처리) 및 조건부 하드 삭제",
+        "description": "사용자가 선택한 채팅방들을 hidden 처리 후, hiddenUser와 hiddenArtist가 모두 true인 경우 DB에서 삭제합니다.",
+        "tags": ["Chat"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "chatroomIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "example": 10
+                    }
+                  },
+                  "userType": {
+                    "type": "string",
+                    "enum": ["consumer", "artist"],
+                    "example": "consumer"
+                  }
+                },
+                "required": ["chatroomIds", "userType"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "삭제 처리 완료 (내용 없음)"
+          },
+          "400": {
+            "description": "잘못된 요청 파라미터"
+          },
+          "404": {
+            "description": "채팅방을 찾을 수 없음"
+          }
+        }
+      }
     }
   }
 }
