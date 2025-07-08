@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import { ChatService } from "../service/chat.service.js";
 import { CreateChatroomDto } from "../dto/chatroom.dto.js";
+import { ShowChatroomDto } from "../dto/chatroom.dto.js";
 import { parseWithBigInt, stringifyWithBigInt } from "../../bigintJson.js";
 
 export const createChatroom = async (req, res, next) => {
@@ -18,5 +19,21 @@ export const createChatroom = async (req, res, next) => {
     res.status(StatusCodes.CREATED).success(responseData);
   } catch (err) {
     next(err);
+  }
+};
+
+export const showChatroom = async (req, res, next) => {
+  try {
+    const dto = new ShowChatroomDto({
+      consumerId: BigInt(req.params.consumerId)
+    });
+
+    const chatrooms = await ChatService.getChatroomsByUserId(dto);
+
+    const responseData = parseWithBigInt(stringifyWithBigInt(chatrooms));
+
+    res.status(StatusCodes.OK).success(responseData);
+  } catch (err) {
+    next(err)
   }
 };

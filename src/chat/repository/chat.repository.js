@@ -21,4 +21,12 @@ export const ChatRepository = {
       },
     });
   },
+
+  async findChatroomsByUser(consumerId) {
+    return await prisma.chatroom.findMany({
+        where: {
+            consumerId: consumerId,
+        },
+    });
+  },
 };

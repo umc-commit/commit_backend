@@ -7,7 +7,6 @@ import { RequestNotFoundError } from "../../common/errors/request.errors.js";
 
 export const ChatService = {
   async createChatroom(dto) {
-
     const user = await UserRepository.findUserById(dto.consumerId);
     if (!user) {
       throw new UserNotFoundError({ consumerId: dto.consumerId });
@@ -44,4 +43,15 @@ export const ChatService = {
 
     return chatroom;
   },
+
+  async getChatroomsByUserId(dto) {
+    const user = await UserRepository.findUserById(dto.consumerId);
+    if (!user) {
+      throw new UserNotFoundError({ consumerId: dto.consumerId });
+    }
+
+    const chatrooms = await ChatRepository.findChatroomsByUser(dto.consumerId);
+    
+    return chatrooms;
+  }
 };

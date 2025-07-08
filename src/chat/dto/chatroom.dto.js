@@ -5,3 +5,9 @@ export class CreateChatroomDto {
     this.requestId = requestId;
   }
 }
+
+export class ShowChatroomDto {
+    constructor({ consumerId }) {
+        this.consumerId = consumerId;
+    }
+}
