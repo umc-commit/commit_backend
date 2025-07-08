@@ -5,3 +5,16 @@ export class CreateChatroomDto {
     this.requestId = requestId;
   }
 }
+
+export class ShowChatroomDto {
+    constructor({ consumerId }) {
+        this.consumerId = consumerId;
+    }
+}
+
+export class DeleteChatroomDto {
+    constructor({ chatroomIds, userType }) {
+        this.chatroomIds = chatroomIds.map(id => BigInt(id));
+        this.userType = userType;
+    }
+}

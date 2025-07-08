@@ -21,4 +21,41 @@ export const ChatRepository = {
       },
     });
   },
+
+  async findChatroomsByUser(consumerId) {
+    return await prisma.chatroom.findMany({
+        where: {
+            consumerId: consumerId,
+        },
+    });
+  },
+
+  async softDeleteChatrooms(chatroomIds, userType) {
+    const hiddenField = userType === "consumer" ? "hiddenConsumer" : "hiddenArtist";
+
+    await prisma.chatroom.updateMany({
+      where: {
+        id: { in: chatroomIds }
+      },
+      data: {
+        [hiddenField]: true
+      }
+    });
+  },
+
+  async findChatroomsByIds(chatroomIds) {
+    return await prisma.chatroom.findMany({
+      where: {
+        id: { in: chatroomIds }
+      }
+    });
+  },
+
+  async hardDeleteChatrooms(chatroomIds) {
+    await prisma.chatroom.deleteMany({
+      where: {
+        id: { in: chatroomIds }
+      }
+    });
+  },
 };
