@@ -1,9 +1,11 @@
 import cors from 'cors';
 import dotenv from "dotenv";
 import express from "express";
-import { setupSwagger } from './swagger/index.js';
+import { setupSwagger } from './common/swagger/index.js';
 import http from 'http';
 import setupSocket from "./socket.js";
+import routes from "./routes.js";
+import { stringifyWithBigInt, parseWithBigInt } from './bigintJson.js';
 
 dotenv.config();
 
@@ -19,7 +21,9 @@ setupSocket(server);
  */
 app.use((req, res, next) => {
   res.success = (success) => {
-    return res.json({ resultType: "SUCCESS", error: null, success });
+    const jsonStr = stringifyWithBigInt(success);
+    const jsonObj = JSON.parse(jsonStr);
+    return res.json({ resultType: "SUCCESS", error: null, success: jsonObj });
   };
 
   res.error = ({ errorCode = "unknown", reason = null, data = null }) => {
@@ -38,6 +42,9 @@ app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// 공통 api 라우터
+app.use("/api", routes);
+
 // Swagger 설정 
 setupSwagger(app);  
 
@@ -53,11 +60,16 @@ app.use((err, req, res, next) => {
     return next(err);
   }
 
-  res.status(err.statusCode || 500).error({
+  const errorPayload = {
     errorCode: err.errorCode || "unknown",
     reason: err.reason || err.message || null,
     data: err.data || null,
-  });
+  };
+
+  const jsonStr = stringifyWithBigInt(errorPayload);
+  const jsonObj = JSON.parse(jsonStr);
+
+  res.status(err.statusCode || 500).error(jsonObj);
 });
 
 server.listen(port, () => {
