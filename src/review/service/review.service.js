@@ -6,8 +6,18 @@ import multer from 'multer';
 import {
   UnsupportedImageFormatError,
   FileSizeExceededError,
-  ImageUploadFailedError
+  ImageUploadFailedError,
+  ReviewAlreadyExistsError,
+  ReviewContentTooShortError,
+  ReviewContentTooLongError,
+  RequestNotFoundError,
+  ReviewPermissionDeniedError,
+  RequestNotCompletedError,
+  ReviewRatingInvalidError
 } from '../../common/errors/review.errors.js';
+
+// Repository import
+import reviewRepository from '../repository/review.repository.js';
 
 // TODO: 추후 프로젝트 완성 시 AWS S3 연동으로 변경 예정
 class ReviewService {
@@ -125,6 +135,84 @@ class ReviewService {
     } catch (error) {
       console.error('파일 삭제 실패:', error);
     }
+  }
+  
+
+  /**
+   * 리뷰 작성
+   * 
+   * @param {number} requestId - 커미션 신청 ID
+   * @param {number} userId - 사용자 ID
+   * @param {Object} reviewData - 리뷰 데이터 { rate, content, image_urls }
+   * @returns {Object} 생성된 리뷰 정보
+   */
+  async createReview(requestId, userId, reviewData) {
+    const { rate, content, image_urls = [] } = reviewData;
+
+    // 1. 커미션 신청 존재 여부 및 권한 확인
+    const request = await reviewRepository.findRequestByIdForReview(requestId);
+    if (!request) {
+      throw new RequestNotFoundError(requestId);
+    }
+
+    // 2. 리뷰 작성 권한 확인 (본인이 신청한 커미션인지)
+    if (request.userId !== BigInt(userId)) {
+      throw new ReviewPermissionDeniedError(userId, requestId);
+    }
+
+    // 3. 커미션 완료 상태 확인
+    if (request.status !== 'COMPLETED') {
+      throw new RequestNotCompletedError(requestId, request.status);
+    }
+
+    // 4. 이미 리뷰가 작성되었는지 확인
+    const existingReview = await reviewRepository.findReviewByRequestId(requestId);
+    if (existingReview) {
+      throw new ReviewAlreadyExistsError(requestId);
+    }
+
+    // 5. 리뷰 내용 검증 (10자 이상, 1000자 이하)
+    if (!content || content.trim().length < 10) {
+      throw new ReviewContentTooShortError(content ? content.trim().length : 0);
+    }
+
+    if (content.trim().length > 1000) {
+      throw new ReviewContentTooLongError(content.trim().length);
+    }
+
+    // 6. 별점 검증 (1-5)
+    if (!rate || rate < 1 || rate > 5) {
+      throw new ReviewRatingInvalidError(rate);
+    }
+
+    // 7. 리뷰 생성
+    const review = await reviewRepository.createReview({
+      userId,
+      requestId,
+      rate,
+      content: content.trim()
+    });
+
+    // 8. 이미지 URL들을 DB에 저장 (최대 5개)
+    // TODO: S3 연동 시 URL 검증 로직 필요 (현재는 로컬 URL만 처리)
+    if (image_urls && image_urls.length > 0) {
+      const imagesToSave = image_urls.slice(0, 5);
+      
+      for (const imageUrl of imagesToSave) {
+        await reviewRepository.createImage('review', review.id, imageUrl);
+      }
+    }
+
+    // 9. 응답 데이터 생성
+    return {
+      id: Number(review.id),
+      requestId: Number(review.requestId),
+      user_id: Number(review.userId),
+      rate: review.rate,
+      content: review.content,
+      image_urls: image_urls.slice(0, 5),
+      created_at: review.createdAt.toISOString()
+    };
   }
 }
 
