@@ -33,6 +33,20 @@ export class ReviewContentTooShortError extends BaseError {
   }
 }
 
+export class ReviewContentTooLongError extends BaseError {
+  constructor(contentLength) {
+    super({
+      errorCode: "R011",
+      reason: "리뷰 내용이 1000자를 초과합니다",
+      statusCode: 400, // Bad Request
+      data: { 
+        contentLength,
+        maxLength: 1000
+      }
+    });
+  }
+}
+
 export class RequestNotFoundError extends BaseError {
   constructor(requestId) {
     super({
@@ -100,6 +114,20 @@ export class FileSizeExceededError extends BaseError {
       data: { 
         fileSize,
         maxSize: 5 * 1024 * 1024 // 5MB
+      }
+    });
+  }
+}
+
+export class ReviewRatingInvalidError extends BaseError {
+  constructor(rate) {
+    super({
+      errorCode: "R010",
+      reason: "별점은 1-5 사이의 값이어야 합니다",
+      statusCode: 400, // Bad Request
+      data: { 
+        providedRate: rate,
+        validRange: [1, 2, 3, 4, 5]
       }
     });
   }
