@@ -33,3 +33,14 @@ export class MissingCategoryError extends BaseError {
     });
   }
 }
+
+export class UserNotFoundError extends BaseError {
+  constructor(data=null){
+    super({
+      errorCode:"U004",
+      reason : '사용자를 찾을 수 없습니다.',
+      statusCode: 409,
+      data,
+    })
+  }
+};
