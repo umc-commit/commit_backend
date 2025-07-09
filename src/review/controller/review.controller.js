@@ -1,5 +1,5 @@
-const reviewService = require('../service/review.service');
-const { BaseError } = require('../../common/errors/BaseError');
+import reviewService from '../service/review.service.js';
+import { BaseError } from '../../common/errors/BaseError.js';
 
 class ReviewController {
 
@@ -62,4 +62,4 @@ class ReviewController {
   }
 }
 
-module.exports = new ReviewController();
+export default new ReviewController();

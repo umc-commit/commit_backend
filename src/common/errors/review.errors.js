@@ -1,6 +1,6 @@
-const { BaseError } = require('./BaseError');
+import { BaseError } from './BaseError.js';
 
-class ReviewNotFoundError extends BaseError {
+export class ReviewNotFoundError extends BaseError {
   constructor(reviewId) {
     super({
       errorCode: "R001",
@@ -11,7 +11,7 @@ class ReviewNotFoundError extends BaseError {
   }
 }
 
-class ReviewAlreadyExistsError extends BaseError {
+export class ReviewAlreadyExistsError extends BaseError {
   constructor(requestId) {
     super({
       errorCode: "R002",
@@ -22,7 +22,7 @@ class ReviewAlreadyExistsError extends BaseError {
   }
 }
 
-class ReviewContentTooShortError extends BaseError {
+export class ReviewContentTooShortError extends BaseError {
   constructor(contentLength) {
     super({
       errorCode: "R003",
@@ -33,7 +33,7 @@ class ReviewContentTooShortError extends BaseError {
   }
 }
 
-class RequestNotFoundError extends BaseError {
+export class RequestNotFoundError extends BaseError {
   constructor(requestId) {
     super({
       errorCode: "R004",
@@ -44,7 +44,7 @@ class RequestNotFoundError extends BaseError {
   }
 }
 
-class ReviewPermissionDeniedError extends BaseError {
+export class ReviewPermissionDeniedError extends BaseError {
   constructor(userId, requestId) {
     super({
       errorCode: "R005",
@@ -55,7 +55,7 @@ class ReviewPermissionDeniedError extends BaseError {
   }
 }
 
-class RequestNotCompletedError extends BaseError {
+export class RequestNotCompletedError extends BaseError {
   constructor(requestId, status) {
     super({
       errorCode: "R006",
@@ -66,7 +66,7 @@ class RequestNotCompletedError extends BaseError {
   }
 }
 
-class ImageUploadFailedError extends BaseError {
+export class ImageUploadFailedError extends BaseError {
   constructor(reason) {
     super({
       errorCode: "R007",
@@ -77,7 +77,7 @@ class ImageUploadFailedError extends BaseError {
   }
 }
 
-class UnsupportedImageFormatError extends BaseError {
+export class UnsupportedImageFormatError extends BaseError {
   constructor(fileType) {
     super({
       errorCode: "R008",
@@ -91,7 +91,7 @@ class UnsupportedImageFormatError extends BaseError {
   }
 }
 
-class FileSizeExceededError extends BaseError {
+export class FileSizeExceededError extends BaseError {
   constructor(fileSize) {
     super({
       errorCode: "R009",
@@ -104,15 +104,3 @@ class FileSizeExceededError extends BaseError {
     });
   }
 }
-
-module.exports = {
-  ReviewNotFoundError,
-  ReviewAlreadyExistsError,
-  ReviewContentTooShortError,
-  RequestNotFoundError,
-  ReviewPermissionDeniedError,
-  RequestNotCompletedError,
-  ImageUploadFailedError,
-  UnsupportedImageFormatError,
-  FileSizeExceededError
-};

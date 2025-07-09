@@ -1,14 +1,13 @@
-const path = require('path');
-const fs = require('fs');
-const multer = require('multer');
+import path from 'path';
+import fs from 'fs';
+import multer from 'multer';
 
 // 관련 에러 클래스 import
-const {
+import {
   UnsupportedImageFormatError,
   FileSizeExceededError,
   ImageUploadFailedError
-} = require('../../common/errors/review.errors');
-
+} from '../../common/errors/review.errors.js';
 
 // TODO: 추후 프로젝트 완성 시 AWS S3 연동으로 변경 예정
 class ReviewService {
@@ -129,4 +128,4 @@ class ReviewService {
   }
 }
 
-module.exports = new ReviewService();
+export default new ReviewService();
