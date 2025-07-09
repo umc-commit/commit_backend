@@ -46,11 +46,14 @@
                       "properties": {
                         "message": { "type": "string", "example": "회원가입이 성공적으로 완료되었습니다." },
                         "user":{
-                            "userId": { "type": "integer", "example": 1 },
-                            "nickname": { "type": "string", "example": "코지" },
-                            "provider": { "type": "string", "example": "kakao" },
-                            "oauth_id": { "type": "string", "example": "123456789" },
-                            "created_at": {"type" : "string", "example": "2025-07-02T12:34:56Z"}
+                            "type" : "object",
+                            "properties" : {
+                                "userId": { "type": "integer", "example": 1 },
+                                "nickname": { "type": "string", "example": "코지" },
+                                "provider": { "type": "string", "example": "kakao" },
+                                "oauth_id": { "type": "string", "example": "123456789" },
+                                "created_at": {"type" : "string", "example": "2025-07-02T12:34:56Z"}
+                            }
                         }
                       }
                     }
