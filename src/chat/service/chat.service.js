@@ -4,10 +4,10 @@ import { RequestRepository } from "../../request/repository/request.repository.j
 import { UserNotFoundError } from "../../common/errors/user.errors.js";
 import { ArtistNotFoundError } from "../../common/errors/user.errors.js";
 import { RequestNotFoundError } from "../../common/errors/request.errors.js";
+import { ChatroomNotFoundError } from "../../common/errors/chat.errors.js";
 
 export const ChatService = {
   async createChatroom(dto) {
-
     const user = await UserRepository.findUserById(dto.consumerId);
     if (!user) {
       throw new UserNotFoundError({ consumerId: dto.consumerId });
@@ -43,5 +43,37 @@ export const ChatService = {
     });
 
     return chatroom;
+  },
+
+  async getChatroomsByUserId(dto) {
+    const user = await UserRepository.findUserById(dto.consumerId);
+    if (!user) {
+      throw new UserNotFoundError({ consumerId: dto.consumerId });
+    }
+
+    const chatrooms = await ChatRepository.findChatroomsByUser(dto.consumerId);
+    
+    return chatrooms;
+  },
+
+  async softDeleteChatroomsByUser(dto) {
+    const existingChatrooms = await ChatRepository.findChatroomsByIds(dto.chatroomIds);
+    if (!existingChatrooms || existingChatrooms.length === 0) {
+        throw new ChatroomNotFoundError({ chatroomIds: dto.chatroomIds });
+    }
+
+    await ChatRepository.softDeleteChatrooms(dto.chatroomIds, dto.userType);
+
+    const chatrooms = await ChatRepository.findChatroomsByIds(dto.chatroomIds);
+
+    const chatroomIdsToDelete = chatrooms
+        .filter(cr => cr.hiddenConsumer && cr.hiddenArtist)
+        .map(cr => cr.id);
+
+    if (chatroomIdsToDelete.length > 0) {
+        await ChatRepository.hardDeleteChatrooms(chatroomIdsToDelete);
+    }
+
+    return chatrooms;
   },
 };
