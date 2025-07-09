@@ -21,4 +21,13 @@ router.post('/images/upload',
   reviewController.uploadImage
 );
 
+/**
+ * 리뷰 작성 API
+ * POST /api/requests/:requestId/reviews
+ */
+router.post('/requests/:requestId/reviews',
+  authenticateToken,
+  reviewController.createReview
+);
+
 export default router;
