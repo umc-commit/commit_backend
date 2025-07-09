@@ -8,7 +8,21 @@ export const UserRepository = {
       },
     });
   },
-  
+
+  /**
+   * oauth_id로 계정 존재 여부 확인 
+   */
+  async findAccountByOauthId(provider, oauth_id) {
+    return await prisma.account.findUnique({
+      where : {
+        provider_oauthId : {
+          provider, 
+          oauthId:oauth_id,
+        }
+      }
+    })
+  },
+
   /**
    * 계정 생성 
    */

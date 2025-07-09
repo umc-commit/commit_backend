@@ -12,13 +12,13 @@ export class UserNotFoundError extends BaseError {
   }
 }
 
-export class ArtistNotFoundError extends BaseError {
-  constructor(data = null) {
+export class OauthIdAlreadyExistError extends BaseError {
+  constructor(data=null){
     super({
-      errorCode: "U002",
-      reason: "artist id를 찾을 수 없습니다.",
+      errorCode:"U002",
+      reason : '이미 소셜로그인 계정이 존재합니다.',
       statusCode: 404,
       data,
-    });
+    })
   }
 }
