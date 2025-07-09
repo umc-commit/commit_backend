@@ -24,8 +24,12 @@ router.post('/images/upload',
 /**
  * 리뷰 작성 API
  * POST /api/requests/:requestId/reviews
+ * 
+ * TODO: request 작업 완료되면 request.routes.js로 이동 예정
+ * 현재는 임시로 reviewRouter에서 처리
+ * 
  */
-router.post('/requests/:requestId/reviews',
+router.post('/:requestId/reviews',
   authenticateToken,
   reviewController.createReview
 );
