@@ -39,6 +39,56 @@ class ReviewRepository {
       }
     });
   }
+
+
+  // TODO: 추후 RequestRepository와 통합 필요
+  // 현재는 리뷰 작성 API 개발을 위한 임시 구현
+  async findRequestByIdForReview(requestId) {
+    return await prisma.request.findUnique({
+      where: { id: BigInt(requestId) },
+      include: {
+        user: {
+          select: {
+            id: true,
+            nickname: true,
+            profileImage: true
+          }
+        },
+        commission: {
+          include: {
+            artist: {
+              select: {
+                id: true,
+                nickname: true,
+                profileImage: true
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // TODO: 추후 RequestRepository와 통합 필요
+  // 현재는 리뷰 작성 API 개발을 위한 임시 구현
+  async findReviewByRequestId(requestId) {
+    return await prisma.review.findFirst({
+      where: { requestId: BigInt(requestId) }
+    });
+  }
+
+  // TODO: 추후 RequestRepository와 통합 필요
+  // 현재는 리뷰 작성 API 개발을 위한 임시 구현
+  async createReview(reviewData) {
+    return await prisma.review.create({
+      data: {
+        userId: BigInt(reviewData.userId),
+        requestId: BigInt(reviewData.requestId),
+        rate: reviewData.rate,
+        content: reviewData.content
+      }
+    });
+  }
 }
 
 export default new ReviewRepository();
