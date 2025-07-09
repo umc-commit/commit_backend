@@ -8,12 +8,55 @@ export const UserRepository = {
       },
     });
   },
-
-  async findArtistById(artistId) {
-    return await prisma.artist.findUnique({
-      where: {
-        id: artistId,
+  
+  /**
+   * 계정 생성 
+   */
+  async createAccount(provider, oauth_id) {
+    return await prisma.account.create({
+      data:{
+        provider, 
+        oauthId : oauth_id,
       },
     });
   },
-}
+
+  /**
+   * 사용자 프로필 생성
+   */
+  async createUserProfile (accountId, nickname, description){
+    return await prisma.user.create({
+      data: {
+        accountId,
+        nickname,
+        description,
+      }
+    })
+  },
+
+  /**
+   * 사용자 카테고리 연결 생성 
+   */
+  async createUserCategories (userId, categoryIds) {
+    const data = categoryIds.map(categoryId => ({
+      userId, 
+      categoryId,
+    }));
+    return await prisma.userCategory.createMany({
+      data,
+    })
+  },
+  /**
+   * 사용자 약관 동의 생성 
+   */
+  async createUserAgreements (userId, agreementIds) {
+    const data = agreementIds.map(agreementId => ({
+      userId,
+      agreementId,
+      agreed:true, // 기본 동의 true
+    }));
+    return await prisma.userAgreement.createMany({
+      data,
+    })
+  },
+};
