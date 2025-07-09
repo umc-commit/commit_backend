@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `artists` ADD COLUMN `slot` INTEGER NOT NULL DEFAULT 3;
