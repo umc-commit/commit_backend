@@ -325,12 +325,17 @@ model Badge {
   @@map("badges")
 }
 
+
+/**
+* 커미션 신청 상태 정의
+* 플로우: 신청 > 수락 > 작업 > 작업물 전달 > 결제 > 완료
+*/
 enum RequestStatus {
-  PENDING
-  CANCELED
-  APPROVED
-  REJECTED
-  IN_PROGRESS
-  SUBMITTED
-  COMPLETED
+  PENDING         // 신청 후 작가 수락 대기 중
+  CANCELED        // 사용자가 직접 취소
+  APPROVED        // 작가가 수락함
+  REJECTED        // 작가가 거절함
+  IN_PROGRESS     // 작가가 작업 진행 중
+  SUBMITTED       // 작가가 결과물 전달함
+  COMPLETED       // 결제 완료 + 거래 완료 버튼 처리 -> 리뷰 작성 가능
 }
