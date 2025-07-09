@@ -58,6 +58,7 @@ model Artist {
   nickname     String   @db.VarChar(50)
   profileImage String?  @map("profile_image") @db.VarChar(255)
   description  String?  @db.VarChar(1000)
+  slot         Int      @default(3)
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
