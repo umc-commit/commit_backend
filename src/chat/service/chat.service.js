@@ -2,7 +2,7 @@ import { ChatRepository } from "../repository/chat.repository.js";
 import { UserRepository } from "../../user/repository/user.repository.js";
 import { RequestRepository } from "../../request/repository/request.repository.js";
 import { UserNotFoundError } from "../../common/errors/user.errors.js";
-import { ArtistNotFoundError } from "../../common/errors/user.errors.js";
+import { ArtistNotFoundError } from "../../common/errors/artist.errors.js";
 import { RequestNotFoundError } from "../../common/errors/request.errors.js";
 import { ChatroomNotFoundError } from "../../common/errors/chat.errors.js";
 
