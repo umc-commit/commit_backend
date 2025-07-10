@@ -309,7 +309,6 @@ model UserAgreement {
   id          BigInt  @id @default(autoincrement())
   userId      BigInt  @map("user_id")
   agreementId BigInt  @map("agreement_id")
-  agreed      Boolean
 
   user      User      @relation(fields: [userId], references: [id])
   agreement Agreement @relation(fields: [agreementId], references: [id])

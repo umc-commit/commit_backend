@@ -67,7 +67,6 @@ export const UserRepository = {
     const data = agreementIds.map(agreementId => ({
       userId,
       agreementId,
-      agreed:true, // 기본 동의 true
     }));
     return await prisma.userAgreement.createMany({
       data,
