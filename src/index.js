@@ -76,6 +76,7 @@ app.use(express.urlencoded({ extended: false }));
 // 공통 api 라우터
 app.use("/api", routes);
 
+// 프론트랑 연동하면 삭제될 부분 
 app.get("/signup", (req, res) => {
   res.send("Signup Page");
 });
