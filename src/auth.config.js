@@ -25,8 +25,8 @@ const googleVerify = async (profile) => {
     throw new Error(`profile.email was not found: ${profile}`);
   }
 
-  const user = await prisma.users.findFirst({ 
-    where: {oauth_id : profile.id, provider:'google'},
+  const user = await prisma.account.findFirst({ 
+    where: {oauthId : profile.id, provider:'google'},
   });
 
   if (user !== null) {

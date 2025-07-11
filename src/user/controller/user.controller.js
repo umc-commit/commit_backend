@@ -2,10 +2,20 @@ import { StatusCodes } from "http-status-codes";
 import { UserService } from "../service/user.service.js";
 import { UserSignupRequestDto } from "../dto/user.dto.js";
 import { UserLoginRequestDto } from "../dto/user.dto.js";
+import { verifyJwt } from "../../jwt.config.js";
 
 // 사용자(계정) 추가 
 export const addUser = async(req, res, next) => {
     try{
+        const {token} = req.body;
+        let decoded;
+        decoded = verifyJwt(token);
+
+        const {provider, oauth_id} = decoded;
+
+        req.body.provider = provider;
+        req.body.oauth_id = oauth_id;
+        
         // 1. Request body를 dto로 변환
         const dto = new UserSignupRequestDto(req.body);
 
