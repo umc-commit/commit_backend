@@ -6,6 +6,8 @@ import http from 'http';
 import setupSocket from "./socket.js";
 import routes from "./routes.js";
 import { stringifyWithBigInt, parseWithBigInt } from './bigintJson.js';
+import passport from "passport";
+import session from "express-session";
 
 dotenv.config();
 
