@@ -90,6 +90,80 @@
           
         }
       }
+    },
+    "/api/users/login" : {
+      "post" :{
+        "tags" :["User"],
+        "summary" : "로그인",
+        "description" : "소셜 로그인으로 사용자 인증 후 DB에 등록된 사용자인지 확인하고, access token을 발급하는 기능입니다.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema":{
+                "type" : "object",
+                "properties":{
+                  "provider" : {"type" : "string", "example": "kakao"},
+                  "oauth_id" : {"type" : "string", "example" : "123456789"}
+                },
+                "required":["provider", "oauth_id"]
+              }
+            }
+          }
+        },
+        "responses":{
+          "201" : {
+            "description": "로그인 성공",
+            "content" : {
+              "application/json":{
+                "schema": {
+                  "type" : "object", 
+                  "properties" : {
+                    "resultType" : {"type" : "string", "example":"SUCCESS"},
+                    "error" : {"type" : "null", "example": null},
+                    "success" : {
+                      "type" : "object", 
+                      "properties":{
+                        "message": {"type" : "string", "example": "로그인이 성공적으로 완료되었습니다."},
+                        "user" :{
+                          "type":"object",
+                          "properties":{
+                            "provider" : {"type" : "string", "example": "kakao"},
+                            "oauth_id" : {"type" : "string", "example" : "123456789"}
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "회원가입이 필요한 소셜로그인 계정입니다.",
+            "content" : {
+              "application/json" : {
+                "schema":{
+                  "type" : "object",
+                  "properties" : {
+                    "resultType":{"type" : "string", "example":"FAIL"},
+                    "error":{
+                      "type":"object",
+                      "properties":{
+                        "errorCode":{"type":"string", "example" : "U005"},
+                        "reason":{"type" :"string", "example":"회원가입이 필요합니다."},
+                        "data":{"type":"object", "example":null}
+                      }
+                    },
+                    "success":{"type" :"null", "example":null}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
+    
   }
 }
