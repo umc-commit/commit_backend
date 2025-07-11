@@ -45,5 +45,9 @@ export const UserService = {
                 createdAt : account.createdAt
             }
         };
-    } 
+    },
+    
+    async userLogin(dto) {
+        
+    }
 }
