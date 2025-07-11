@@ -9,10 +9,9 @@ export class UserSignupRequestDto {
     }
 }
 
-// 로그인 요청 
-export class UserLoginRequestDto{
-    constructor({provider, oauth_id}) {
-        this.provider = provider;
-        this.oauth_id = oauth_id;
-    }
+export class UserLoginRequestDto {
+  constructor({provider, accessToken}) {
+    this.provider = provider;
+    this.accessToken = accessToken;
+  }
 }
