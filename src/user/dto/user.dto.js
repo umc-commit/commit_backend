@@ -1,4 +1,3 @@
-
 // 회원가입 요청
 export class UserSignupRequestDto {
     constructor({nickname,provider, oauth_id, categories, agreements}) {

@@ -8,14 +8,13 @@ import { verifyJwt } from "../../jwt.config.js";
 export const addUser = async(req, res, next) => {
     try{
         const {token} = req.body;
-        let decoded;
-        decoded = verifyJwt(token);
+        let decoded = verifyJwt(token);
 
         const {provider, oauth_id} = decoded;
 
         req.body.provider = provider;
         req.body.oauth_id = oauth_id;
-        
+
         // 1. Request body를 dto로 변환
         const dto = new UserSignupRequestDto(req.body);
 
