@@ -61,10 +61,13 @@ export const UserService = {
         }
 
         return {
-            userId: existingAccount.users.id,
-            nickname : existingAccount.users.nickname,
-            provider: existingAccount.provider,
-            oauth_id : existingAccount.oauthId,
+            message: "로그인에 성공하였습니다.",
+            user : {
+                userId: existingAccount.users.id,
+                nickname : existingAccount.users.nickname,
+                provider: existingAccount.provider,
+                oauth_id : existingAccount.oauthId,
+            }
         };
     }
 }
