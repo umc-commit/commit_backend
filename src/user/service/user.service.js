@@ -1,5 +1,6 @@
 import { UserRepository } from "../repository/user.repository.js";
-import { OauthIdAlreadyExistError, MissingCategoryError, MissingRequiredAgreementError } from "../../common/errors/user.errors.js";
+import { OauthIdAlreadyExistError, MissingCategoryError, MissingRequiredAgreementError, UserNotSignupedError } from "../../common/errors/user.errors.js";
+
 
 export const UserService = {
     
@@ -48,6 +49,22 @@ export const UserService = {
     },
     
     async userLogin(dto) {
+        const {provider, oauth_id} = dto;
         
+        const existingAccount = await UserRepository.findAccountByOauthId(provider, oauth_id);
+
+        if(!existingAccount) {
+            throw new UserNotSignupedError({provider,oauth_id});
+        }
+        if(!existingAccount.users) {
+            throw new UserNotSignupedError({provider,oauth_id});
+        }
+
+        return {
+            userId: existingAccount.users.id,
+            nickname : existingAccount.users.nickname,
+            provider: existingAccount.provider,
+            oauth_id : existingAccount.oauthId,
+        };
     }
 }
