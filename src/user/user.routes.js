@@ -29,7 +29,7 @@ router.get(
     failureMessage: true,
   }),
   (req, res) => {
-    console.log("🔥 req.user", req.user); // BigInt 의심 필드 확인
+    console.log("req.user", req.user); // BigInt 의심 필드 확인
 
     if(req.user.signupRequired){
       const token = signJwt({
