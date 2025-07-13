@@ -17,7 +17,15 @@ import { signJwt } from './jwt.config.js';
 dotenv.config();
 
 passport.use(googleStrategy);
-passport.serializeUser((user, done) => done(null, user));
+passport.serializeUser((user, done) => {
+  const safeUser = {
+    ...user,
+    id: typeof user.id === "bigint" ? user.id.toString() : user.id,
+    oauth_id: typeof user.oauth_id === "bigint" ? user.oauth_id.toString() : user.oauth_id,
+  };
+  done(null, safeUser);
+});
+
 passport.deserializeUser((user, done) => done(null, user));
 
 const app = express();
@@ -80,29 +88,6 @@ app.use("/api", routes);
 app.get("/signup", (req, res) => {
   res.send("Signup Page");
 });
-
-
-// 구글 로그인 시작
-app.get("/oauth2/login/google", passport.authenticate("google"));
-
-// 구글 로그인 콜백 처리 
-app.get(
-  "/oauth2/callback/google",
-  passport.authenticate("google", {
-    failureRedirect: "/oauth2/login/google",
-    failureMessage: true,
-  }),
-  (req, res) => {
-    if(req.user.signupRequired){
-      const token = signJwt({
-        provider: req.user.provider,
-        oauth_id : req.user.oauth_id,
-      });
-      return res.redirect(`/signup?token=${token}`);
-    }
-    res.redirect("/")
-  }
-);
 
 
 // Swagger 설정 
