@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { prisma } from "./db.config.js";
-import { Strategy as kakaoStrategy } from "passport-kakao";
+import { Strategy as KakaoStrategy } from "passport-kakao";
 dotenv.config();
 
 export const googleStrategy = new GoogleStrategy(
@@ -20,7 +20,7 @@ export const googleStrategy = new GoogleStrategy(
 );
 
 const googleVerify = async (profile) => {
-  
+
   const user = await prisma.account.findFirst({ 
     where: {oauthId : profile.id, provider:'google'},
   });
@@ -43,7 +43,7 @@ export const kakaoStrategy = new KakaoStrategy(
     clientID: process.env.PASSPORT_KAKAO_CLIENT_ID,
     clientSecret: process.env.PASSPORT_KAKAO_CLIENT_SECRET,
     callbackURL: "http://localhost:3000/api/users/oauth2/callback/kakao",
-    scope: ["email", "profile"],
+    scope: undefined,
     state: true,
   },
   (accessToken, refreshToken, profile, cb) => {
@@ -56,7 +56,7 @@ export const kakaoStrategy = new KakaoStrategy(
 const kakaoVerify = async (profile) => {
 
   const user = await prisma.account.findFirst({ 
-    where: {oauthId : profile.id, provider:'kakao'},
+    where: {oauthId : profile.id.toString(), provider:'kakao'},
   });
 
   if (user !== null) {
