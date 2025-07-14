@@ -11,7 +11,6 @@ import session from "express-session";
 import passport from "passport";
 import { googleStrategy } from "./auth.config.js";
 import { prisma } from "./db.config.js";
-import { signJwt } from './jwt.config.js';
 
 
 dotenv.config();
