@@ -104,6 +104,21 @@
           }
         }
       }
+    },
+    "/api/users/oauth2/login/kakao" : {
+      "get" : {
+        "tags":["User"],
+        "summary" : "카카오 소셜 로그인",
+        "description" :"카카오로 시작하기 버튼을 클릭하면, 이 API를 호출하여 카카오 로그인 인증 url로 redirect됩니다.",
+        "responses": {
+          "302": {
+            "description" : "카카오 로그인 인증 페이지로 redirect 성공"
+          },
+          "500":{
+            "description":"서버 내부 오류 발생"
+          }
+        }
+      }
     }
     
   }

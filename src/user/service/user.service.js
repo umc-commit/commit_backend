@@ -52,7 +52,7 @@ export const UserService = {
     async userLogin(dto) {
         let oauth_id;
 
-        console.log("👉 Google access token:", dto.accessToken); // 🔴 token 확인
+        console.log("👉 Google access token:", dto.accessToken); //token 확인
 
         if(dto.provider === "google") {
             const response = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo",{

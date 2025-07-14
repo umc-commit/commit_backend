@@ -33,7 +33,7 @@ export const UserRepository = {
     return await prisma.account.create({
       data:{
         provider, 
-        oauthId : oauth_id,
+        oauthId : oauth_id.toString(),
       },
     });
   },

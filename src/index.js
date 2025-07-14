@@ -10,13 +10,14 @@ import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import session from "express-session";
 import passport from "passport";
 import { googleStrategy } from "./auth.config.js";
+import { kakaoStrategy } from './auth.config.js';
 import { prisma } from "./db.config.js";
-import { signJwt } from './jwt.config.js';
 
 
 dotenv.config();
 
-passport.use(googleStrategy);
+passport.use("google", googleStrategy);
+passport.use("kakao", kakaoStrategy);
 passport.serializeUser((user, done) => {
   const safeUser = {
     ...user,
