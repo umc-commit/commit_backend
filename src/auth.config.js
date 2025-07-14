@@ -22,7 +22,7 @@ export const googleStrategy = new GoogleStrategy(
 const googleVerify = async (profile) => {
 
   const user = await prisma.account.findFirst({ 
-    where: {oauthId : profile.id, provider:'google'},
+    where: {oauthId : profile.id, provider:profile.provider},
   });
 
   if (user !== null) {
@@ -33,7 +33,7 @@ const googleVerify = async (profile) => {
   // ex. 프론트에서 signupRequired : true를 응답받으면 회원가입 페이지로 이동 
   return {
     signupRequired : true, 
-    provider : 'google', 
+    provider : profile.provider, 
     oauth_id : profile.id,
   };
 };
@@ -56,7 +56,7 @@ export const kakaoStrategy = new KakaoStrategy(
 const kakaoVerify = async (profile) => {
 
   const user = await prisma.account.findFirst({ 
-    where: {oauthId : profile.id.toString(), provider:'kakao'},
+    where: {oauthId : profile.id.toString(), provider:profile.provider},
   });
 
   if (user !== null) {
@@ -67,7 +67,7 @@ const kakaoVerify = async (profile) => {
   // ex. 프론트에서 signupRequired : true를 응답받으면 회원가입 페이지로 이동 
   return {
     signupRequired : true, 
-    provider : 'kakao', 
+    provider : profile.provider, 
     oauth_id : profile.id,
   };
 };
