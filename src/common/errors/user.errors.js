@@ -44,3 +44,14 @@ export class UserNotFoundError extends BaseError {
     })
   }
 };
+
+export class UserNotSignupedError extends BaseError {
+  constructor(data=null){
+    super({
+      errorCode:"U005",
+      reason : '회원가입이 필요합니다.',
+      statusCode: 404,
+      data,
+    })
+  }
+};

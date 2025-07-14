@@ -1,5 +1,7 @@
 import { UserRepository } from "../repository/user.repository.js";
-import { OauthIdAlreadyExistError, MissingCategoryError, MissingRequiredAgreementError } from "../../common/errors/user.errors.js";
+import { OauthIdAlreadyExistError, MissingCategoryError, MissingRequiredAgreementError, UserNotSignupedError } from "../../common/errors/user.errors.js";
+import axios from "axios";
+import { signJwt } from "../../jwt.config.js";
 
 export const UserService = {
     
@@ -45,5 +47,33 @@ export const UserService = {
                 createdAt : account.createdAt
             }
         };
-    } 
+    },
+    
+    async userLogin(dto) {
+        let oauth_id;
+
+        console.log("👉 Google access token:", dto.accessToken); // 🔴 token 확인
+
+        if(dto.provider === "google") {
+            const response = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo",{
+                headers:{
+                    Authorization : `Bearer ${dto.accessToken}`
+                }
+            });
+
+            oauth_id = response.data.sub;
+        }
+
+        const account = await UserRepository.findAccountByOauthId(dto.provider, oauth_id);
+
+        if(account) {
+            // JWT 발급
+            const token = signJwt({userId : account.users[0].id.toString()});
+            return {token, nickname: account.users[0].nickname};
+        } else{
+            const signupToken = signJwt({provider : dto.provider, oauth_id});
+            return {signupRequired : true, token : signupToken};
+        }
+        
+    }
 }

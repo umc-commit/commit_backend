@@ -4,7 +4,7 @@
       "post": {
         "tags": ["User"],
         "summary": "회원가입",
-        "description": "닉네임 입력까지 마친 후 호출 ",
+        "description": "소셜 로그인 후 가입되지 않은 사용자일 경우, 전달받은 JWT 토큰을 포함하여 사용자가 입력한 정보들을 DB에 등록합니다. (닉네임까지 입력 마친 후 호출)",
         "requestBody": {
             "required" : true,
             "content" : {
@@ -12,9 +12,8 @@
                     "schema" : {
                         "type" : "object",
                         "properties" : {
+                            "token": {"type": "string", "example" : "eyJhbGciOiJIUzI1NiIs..."},
                             "nickname": { "type": "string", "example": "코지" },
-                            "provider": { "type": "string", "example": "kakao" },
-                            "oauth_id": { "type": "string", "example": "123456789" },
                             "categories": {
                                 "type": "array",
                                 "items": { "type": "integer" },
@@ -26,7 +25,7 @@
                                 "example": [1, 2, 3]
                             }
                         }, 
-                        "required": ["nickname", "provider", "oauth_id", "categories", "agreements"]
+                        "required": ["nickname", "token", "categories", "agreements"]
                     }
                 }
             }
@@ -63,7 +62,7 @@
             }
           },
           "409": {
-            "description": "이미 등록된 소셜 로그인 계정",
+            "description": "만료 또는 유효하지 않은 토큰입니다.",
             "content": {
               "application/json": {
                 "schema": {
@@ -74,7 +73,7 @@
                       "type": "object",
                       "properties": {
                         "errorCode": { "type": "string", "example": "U001" },
-                        "reason": { "type": "string", "example": "이미 등록된 소셜 로그인 계정입니다." },
+                        "reason": { "type": "string", "example": "만료 또는 유효하지 않은 토큰입니다." },
                         "data": {
                           "type": "object",
                           "example": null
@@ -90,6 +89,22 @@
           
         }
       }
+    },
+    "/api/users/oauth2/login/google" : {
+      "get" :{
+        "tags" :["User"],
+        "summary" : "구글 소셜 로그인",
+        "description" :"구글로 시작하기 버튼을 클릭하면, 이 API를 호출하여 구글 로그인 인증 url로 redirect됩니다.",
+        "responses":{
+          "302" : {
+            "description": "구글 로그인 인증 페이지로 redirect 성공"
+          },
+          "500": {
+            "description": "서버 내부 오류 발생"
+          }
+        }
+      }
     }
+    
   }
 }

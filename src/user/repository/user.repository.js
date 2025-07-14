@@ -19,8 +19,11 @@ export const UserRepository = {
           provider, 
           oauthId:oauth_id,
         }
-      }
-    })
+      },
+      include : {
+        users:true,
+      },
+    });
   },
 
   /**

@@ -6,15 +6,54 @@ import http from 'http';
 import setupSocket from "./socket.js";
 import routes from "./routes.js";
 import { stringifyWithBigInt, parseWithBigInt } from './bigintJson.js';
+import { PrismaSessionStore } from "@quixo3/prisma-session-store";
+import session from "express-session";
+import passport from "passport";
+import { googleStrategy } from "./auth.config.js";
+import { prisma } from "./db.config.js";
+import { signJwt } from './jwt.config.js';
+
 
 dotenv.config();
 
-const app = express()
+passport.use(googleStrategy);
+passport.serializeUser((user, done) => {
+  const safeUser = {
+    ...user,
+    id: typeof user.id === "bigint" ? user.id.toString() : user.id,
+    oauth_id: typeof user.oauth_id === "bigint" ? user.oauth_id.toString() : user.oauth_id,
+  };
+  done(null, safeUser);
+});
+
+passport.deserializeUser((user, done) => done(null, user));
+
+const app = express();
 const port = process.env.PORT || 3000;
+
 
 // http 서버 생성
 const server = http.createServer(app);
 setupSocket(server);
+
+app.use(
+  session({
+    cookie: {
+      maxAge: 7 * 24 * 60 * 60 * 1000, // ms
+    },
+    resave: false,
+    saveUninitialized: false,
+    secret: process.env.EXPRESS_SESSION_SECRET,
+    store: new PrismaSessionStore(prisma, {
+      checkPeriod: 2 * 60 * 1000, // ms
+      dbRecordIdIsSessionId: true,
+      dbRecordIdFunction: undefined,
+    }),
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 /**
  * 공통 응답을 사용할 수 있는 헬퍼 함수 등록
@@ -45,6 +84,12 @@ app.use(express.urlencoded({ extended: false }));
 // 공통 api 라우터
 app.use("/api", routes);
 
+// 프론트랑 연동하면 삭제될 부분 
+app.get("/signup", (req, res) => {
+  res.send("Signup Page");
+});
+
+
 // Swagger 설정 
 setupSwagger(app);  
 
@@ -69,7 +114,16 @@ app.use((err, req, res, next) => {
   const jsonStr = stringifyWithBigInt(errorPayload);
   const jsonObj = JSON.parse(jsonStr);
 
-  res.status(err.statusCode || 500).error(jsonObj);
+  if (typeof res.error === "function") {
+    res.status(err.statusCode || 500).error(jsonObj);
+  } else {
+    res.status(err.statusCode || 500).json({
+      resultType: "FAIL",
+      error: jsonObj,
+      success: null,
+    });
+  }
+
 });
 
 server.listen(port, () => {

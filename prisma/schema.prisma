@@ -324,6 +324,14 @@ model Badge {
   @@map("badges")
 }
 
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String   @db.VarChar(512)
+  expiresAt DateTime @map("expires_at")
+
+  @@map("session")
+}
 
 /**
 * 커미션 신청 상태 정의
