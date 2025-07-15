@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import { setupSwagger } from './common/swagger/index.js';
 import http from 'http';
-import setupSocket from "./socket.js";
+import setupSocket from "./chat/socket/socket.js";
 import routes from "./routes.js";
 import { stringifyWithBigInt, parseWithBigInt } from './bigintJson.js';
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
