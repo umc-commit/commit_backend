@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { prisma } from "./db.config.js";
 import { Strategy as KakaoStrategy } from "passport-kakao";
+import { Strategy as NaverStrategy } from "passport-naver";
 dotenv.config();
 
 export const googleStrategy = new GoogleStrategy(
@@ -73,16 +74,16 @@ const kakaoVerify = async (profile) => {
 };
 
 
-export const naverStrategy = new KakaoStrategy(
+export const naverStrategy = new NakaoStrategy(
   {
-    clientID: process.env.PASSPORT_KAKAO_CLIENT_ID,
-    clientSecret: process.env.PASSPORT_KAKAO_CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/api/users/oauth2/callback/kakao",
+    clientID: process.env.PASSPORT_NAVER_CLIENT_ID,
+    clientSecret: process.env.PASSPORT_NAVER_CLIENT_SECRET,
+    callbackURL: "http://localhost:3000/api/users/oauth2/callback/naver",
     scope: undefined,
     state: true,
   },
   (accessToken, refreshToken, profile, cb) => {
-    return kakaoVerify(profile)
+    return naverVerify(profile)
       .then((user) => cb(null, user))
       .catch((err) => cb(err));
   }
