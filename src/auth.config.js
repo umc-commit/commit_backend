@@ -74,7 +74,7 @@ const kakaoVerify = async (profile) => {
 };
 
 
-export const naverStrategy = new NakaoStrategy(
+export const naverStrategy = new NaverStrategy(
   {
     clientID: process.env.PASSPORT_NAVER_CLIENT_ID,
     clientSecret: process.env.PASSPORT_NAVER_CLIENT_SECRET,
