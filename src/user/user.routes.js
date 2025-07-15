@@ -66,4 +66,28 @@ router.get(
   }
 );
 
+// 네이버 로그인 페이지로 이동
+router.get("/oauth2/login/naver", passport.authenticate("naver"));
+
+// 네이버 로그인 성공 시 구글이 /oauth2/callback/naver로 인증 정보를 넘김  
+router.get(
+  "/oauth2/callback/naver",
+  passport.authenticate("naver", {
+    failureRedirect: "/oauth2/login/naver",
+    failureMessage: true,
+  }),
+  (req, res) => {
+    console.log("req.user", req.user); // BigInt 의심 필드 확인
+
+    if(req.user.signupRequired){
+      const token = signJwt({
+        provider: req.user.provider.toString(),
+        oauth_id : req.user.oauth_id.toString(),
+      });
+      return res.redirect(`/signup?token=${token}`);
+    }
+    res.redirect("/")
+  }
+);
+
 export default router;
