@@ -1,6 +1,6 @@
 import { prisma } from "../../db.config.js"
 
-export const ChatRepository = {
+export const ChatroomRepository = {
   async createChatroom(data) {
     console.log(data)
     return await prisma.chatroom.create({
@@ -56,6 +56,14 @@ export const ChatRepository = {
       where: {
         id: { in: chatroomIds }
       }
+    });
+  },
+
+  async findChatroomById(chatroomId) {
+    return await prisma.chatroom.findUnique({
+      where: {
+        id: chatroomId,
+      },
     });
   },
 };
