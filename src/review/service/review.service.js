@@ -4,6 +4,7 @@ import multer from 'multer';
 
 // 관련 에러 클래스 import
 import {
+    ReviewNotFoundError,
     UnsupportedImageFormatError,
     FileSizeExceededError,
     ImageUploadFailedError,
@@ -214,6 +215,109 @@ class ReviewService {
             image_urls: image_urls.slice(0, 5),
             createdAt: review.createdAt,
             updatedAt: review.updatedAt
+        };
+    }
+
+    /**
+     * 리뷰 수정
+     * @param {BigInt} reviewId - 리뷰 ID
+     * @param {BigInt} userId - 사용자 ID (권한 확인용)
+     * @param {ReviewUpdateDto} reviewDto - 검증된 DTO 객체
+     * @returns {Object} 수정된 리뷰 정보 (DTO에서 처리할 원본 데이터)
+     */
+    async updateReview(reviewId, userId, reviewDto) {
+        // DTO에서 검증된 데이터 추출
+        const { rate, content, image_urls = [] } = reviewDto;
+
+        // 1. 리뷰 존재 여부 확인
+        const review = await reviewRepository.findReviewById(reviewId);
+        if (!review) {
+            throw new ReviewNotFoundError(reviewId);
+        }
+
+        // 2. 권한 확인 (작성자 본인만 수정 가능)
+        if (review.userId !== userId) {
+            throw new ReviewPermissionDeniedError(userId, reviewId);
+        }
+
+        // 3. 세부 입력값 검증
+        // 3-1. 별점 검증 (1-5점 사이)
+        if (!rate || rate < 1 || rate > 5) {
+            throw new ReviewRatingInvalidError(rate);
+        }
+        // 3-2. 내용 최소 길이 검증 (10자 이상)
+        if (!content || content.trim().length < 10) {
+            throw new ReviewContentTooShortError(content ? content.trim().length : 0);
+        }
+        // 3-3. 내용 최대 길이 검증 (1000자 이하)
+        if (content.trim().length > 1000) {
+            throw new ReviewContentTooLongError(content.trim().length);
+        }
+
+        // 4. 리뷰 업데이트
+        const updatedReview = await reviewRepository.updateReview(reviewId, {
+            rate,
+            content: content.trim()
+        });
+
+        // 5. 이미지 업데이트 (프론트에서 보낸 최종 이미지 목록으로 교체)
+        // 프론트 로직: 기존 이미지 로드 > 사용자가 추가/삭제 > 최종 결과만 백으로 전송
+        // 백엔드 로직: 기존 이미지 목록 전체 삭제 > 새로 받은 이미지들로 교체
+        if (image_urls && image_urls.length > 0) {
+            // 기존 이미지들 전체 삭제
+            await reviewRepository.deleteAllReviewImages(reviewId);
+
+            // 새로운 이미지들 추가 (최대 5개)
+            const imagesToSave = image_urls.slice(0, 5);
+            for (const imageUrl of imagesToSave) {
+                await reviewRepository.createImage('review', reviewId, imageUrl);
+            }
+        } else {
+            // 이미지 배열이 비어있으면 모든 이미지 삭제 (사용자가 모든 이미지 제거)
+            await reviewRepository.deleteAllReviewImages(reviewId);
+        }
+
+        // 6. Controller로 반환할 데이터 구성
+        return {
+            id: updatedReview.id,
+            requestId: updatedReview.requestId,
+            userId: updatedReview.userId,
+            rate: updatedReview.rate,
+            content: updatedReview.content,
+            image_urls: image_urls.slice(0, 5),
+            createdAt: updatedReview.createdAt,
+            updatedAt: updatedReview.updatedAt
+        };
+    }
+
+    /**
+     * 리뷰 삭제
+     * 
+     * @param {BigInt} reviewId - 리뷰 ID
+     * @param {BigInt} userId - 사용자 ID (권한 확인용)
+     * @returns {Object} 삭제 결과 메시지
+     */
+    async deleteReview(reviewId, userId) {
+        // 1. 리뷰 존재 여부 확인
+        const review = await reviewRepository.findReviewById(reviewId);
+        if (!review) {
+            throw new ReviewNotFoundError(reviewId);
+        }
+
+        // 2. 권한 확인 (작성자 본인만 삭제 가능)
+        if (review.userId !== userId) {
+            throw new ReviewPermissionDeniedError(userId, reviewId);
+        }
+
+        // 3. 관련 이미지들 먼저 삭제
+        await reviewRepository.deleteAllReviewImages(reviewId);
+
+        // 4. 리뷰 삭제
+        await reviewRepository.deleteReview(reviewId);
+
+        // 5. 성공 메시지 반환
+        return {
+            message: "리뷰가 성공적으로 삭제되었습니다."
         };
     }
 }
