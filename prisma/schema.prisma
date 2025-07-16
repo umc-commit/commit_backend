@@ -288,6 +288,7 @@ model Review {
   rate      Int
   content   String   @db.VarChar(1000)
   createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   user    User    @relation(fields: [userId], references: [id])
   request Request @relation(fields: [requestId], references: [id])
