@@ -89,6 +89,124 @@ class ReviewRepository {
             }
         });
     }
+
+    /**
+     * 리뷰 ID로 리뷰 조회 (권한 확인 및 수정/삭제용)
+     * @param {BigInt} reviewId - 리뷰 ID
+     * @returns {Object|null} 리뷰 정보 또는 null
+     */
+    async findReviewById(reviewId) {
+        return await prisma.review.findUnique({
+            where: { id: reviewId },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        nickname: true,
+                        profileImage: true
+                    }
+                },
+                request: {
+                    select: {
+                        id: true,
+                        userId: true,
+                        status: true,
+                        commission: {
+                            select: {
+                                title: true,
+                                artist: {
+                                    select: {
+                                        id: true,
+                                        nickname: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * 리뷰 수정
+     * @param {BigInt} reviewId - 리뷰 ID
+     * @param {Object} updateData - 수정할 데이터 { rate, content }
+     * @returns {Object} 수정된 리뷰 정보
+     */
+    async updateReview(reviewId, updateData) {
+        return await prisma.review.update({
+            where: { id: reviewId },
+            data: {
+                rate: updateData.rate,
+                content: updateData.content
+            }
+        });
+    }
+
+    /**
+     * 리뷰 삭제
+     * @param {BigInt} reviewId - 리뷰 ID
+     * @returns {Object} 삭제된 리뷰 정보
+     */
+    async deleteReview(reviewId) {
+        return await prisma.review.delete({
+            where: { id: reviewId }
+        });
+    }
+
+    /**
+     * 리뷰의 모든 이미지 삭제 (리뷰 삭제 시 사용)
+     * @param {BigInt} reviewId - 리뷰 ID
+     * @returns {Object} 삭제된 이미지 개수 정보
+     */
+    async deleteAllReviewImages(reviewId) {
+        return await prisma.image.deleteMany({
+            where: {
+                target: 'review',
+                targetId: reviewId
+            }
+        });
+    }
+
+    /**
+     * 특정 이미지 삭제 (이미지 일부 삭제 시 사용)
+     * @param {string} imageUrl - 삭제할 이미지 URL
+     * @param {BigInt} reviewId - 리뷰 ID (권한 확인용)
+     * @returns {Object} 삭제 결과
+     */
+    async deleteReviewImage(imageUrl, reviewId) {
+        return await prisma.image.deleteMany({
+            where: {
+                target: 'review',
+                targetId: reviewId,
+                imageUrl: imageUrl
+            }
+        });
+    }
+
+    /**
+     * 리뷰의 기존 이미지 목록 조회 (수정 시 비교용)
+     * @param {BigInt} reviewId - 리뷰 ID
+     * @returns {Array} 현재 리뷰의 이미지 URL 목록
+     */
+    async getReviewImages(reviewId) {
+        const images = await prisma.image.findMany({
+            where: {
+                target: 'review',
+                targetId: reviewId
+            },
+            select: {
+                imageUrl: true
+            },
+            orderBy: {
+                id: 'asc'
+            }
+        });
+
+        return images.map(img => img.imageUrl);
+    }
+
 }
 
 export default new ReviewRepository();
