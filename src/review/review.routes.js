@@ -34,4 +34,22 @@ router.post('/:requestId/reviews',
     reviewController.createReview
 );
 
+/**
+ * 리뷰 수정 API
+ * PATCH /api/reviews/:reviewId
+ */
+router.patch('/:reviewId',
+    authenticateToken,
+    reviewController.updateReview
+);
+
+/**
+ * 리뷰 삭제 API
+ * DELETE /api/reviews/:reviewId
+ */
+router.delete('/:reviewId',
+    authenticateToken,
+    reviewController.deleteReview
+);
+
 export default router;
