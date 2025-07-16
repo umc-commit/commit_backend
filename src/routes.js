@@ -3,11 +3,13 @@ import chatRouter from "./chat/chat.routes.js";
 import reviewRouter from "./review/review.routes.js";
 import bookmarkRouter from './bookmark/bookmark.route.js';
 import userRouter from "./user/user.routes.js"
+import searchRouter from "./search/search.routes.js"
 
 const router = express.Router();
 
 router.use("/chatrooms", chatRouter);
 router.use("/", bookmarkRouter);
+router.use("/search", searchRouter)
 
 router.use("/users", userRouter);
 router.use("/reviews", reviewRouter);  // 리뷰 관련 API들
