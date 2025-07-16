@@ -1,22 +1,23 @@
 import express from 'express';
 import reviewController from './controller/review.controller.js';
 import reviewService from './service/review.service.js';
+import { authenticate } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
-// TODO: 실제 JWT 인증 미들웨어로 교체 필요
-const authenticateToken = (req, res, next) => {
-    // 테스트용 하드코딩
-    req.user = { id: 999, nickname: 'testuser999' };
-    next();
-};
+// // TODO: 실제 JWT 인증 미들웨어로 교체 필요
+// const authenticateToken = (req, res, next) => {
+//     // 테스트용 하드코딩
+//     req.user = { id: 999, nickname: 'testuser999' };
+//     next();
+// };
 
 /**
  * 리뷰 이미지 업로드 API
  * POST /api/reviews/images/upload
  */
 router.post('/images/upload',
-    authenticateToken,
+    authenticate,
     reviewService.upload.single('image'),
     reviewController.uploadImage
 );
@@ -30,7 +31,7 @@ router.post('/images/upload',
  * 
  */
 router.post('/:requestId/reviews',
-    authenticateToken,
+    authenticate,
     reviewController.createReview
 );
 
@@ -39,7 +40,7 @@ router.post('/:requestId/reviews',
  * PATCH /api/reviews/:reviewId
  */
 router.patch('/:reviewId',
-    authenticateToken,
+    authenticate,
     reviewController.updateReview
 );
 
@@ -48,7 +49,7 @@ router.patch('/:reviewId',
  * DELETE /api/reviews/:reviewId
  */
 router.delete('/:reviewId',
-    authenticateToken,
+    authenticate,
     reviewController.deleteReview
 );
 
