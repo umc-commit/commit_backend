@@ -1,4 +1,4 @@
-import { ChatRepository } from "../repository/chatroom.repository.js";
+import { ChatroomRepository } from "../repository/chatroom.repository.js";
 import { UserRepository } from "../../user/repository/user.repository.js";
 import { RequestRepository } from "../../request/repository/request.repository.js";
 import { UserNotFoundError } from "../../common/errors/user.errors.js";
@@ -24,7 +24,7 @@ export const ChatroomService = {
     }
 
     // 채팅방 중복 확인
-    const existing = await ChatRepository.findChatroomByUsersAndCommission(
+    const existing = await ChatroomRepository.findChatroomByUsersAndCommission(
       dto.consumerId,
       dto.artistId,
       dto.requestId
@@ -36,7 +36,7 @@ export const ChatroomService = {
     }
 
     // 채팅방이 없을 시 생성
-    const chatroom = await ChatRepository.createChatroom({
+    const chatroom = await ChatroomRepository.createChatroom({
       consumerId: dto.consumerId,
       artistId: dto.artistId,
       requestId: dto.requestId,
@@ -51,27 +51,27 @@ export const ChatroomService = {
       throw new UserNotFoundError({ consumerId: dto.consumerId });
     }
 
-    const chatrooms = await ChatRepository.findChatroomsByUser(dto.consumerId);
+    const chatrooms = await ChatroomRepository.findChatroomsByUser(dto.consumerId);
     
     return chatrooms;
   },
 
   async softDeleteChatroomsByUser(dto) {
-    const existingChatrooms = await ChatRepository.findChatroomsByIds(dto.chatroomIds);
+    const existingChatrooms = await ChatroomRepository.findChatroomsByIds(dto.chatroomIds);
     if (!existingChatrooms || existingChatrooms.length === 0) {
         throw new ChatroomNotFoundError({ chatroomIds: dto.chatroomIds });
     }
 
-    await ChatRepository.softDeleteChatrooms(dto.chatroomIds, dto.userType);
+    await ChatroomRepository.softDeleteChatrooms(dto.chatroomIds, dto.userType);
 
-    const chatrooms = await ChatRepository.findChatroomsByIds(dto.chatroomIds);
+    const chatrooms = await ChatroomRepository.findChatroomsByIds(dto.chatroomIds);
 
     const chatroomIdsToDelete = chatrooms
         .filter(cr => cr.hiddenConsumer && cr.hiddenArtist)
         .map(cr => cr.id);
 
     if (chatroomIdsToDelete.length > 0) {
-        await ChatRepository.hardDeleteChatrooms(chatroomIdsToDelete);
+        await ChatroomRepository.hardDeleteChatrooms(chatroomIdsToDelete);
     }
 
     return chatrooms;
