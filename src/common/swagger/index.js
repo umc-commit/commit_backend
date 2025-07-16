@@ -38,18 +38,28 @@ const swaggerDefinition = {
       description: 'Development server',
     },
   ],
+   components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+    },
+  },
 };
 
 // 모든 JSON 파일들을 합치는 함수
 function combineSwaggerSchemas() {
   const schemas = loadSwaggerFiles();
-  const combinedSpec = {
-    ...swaggerDefinition,
-    paths: {},
-    components: {
-      schemas: {},
-    },
-  };
+const combinedSpec = {
+  ...swaggerDefinition,
+  paths: {},
+  components: {
+    ...swaggerDefinition.components,
+    schemas: {},
+  },
+};
 
   // 각 스키마 파일의 내용을 병합
   Object.keys(schemas).forEach(moduleName => {
