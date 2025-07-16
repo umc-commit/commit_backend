@@ -5,16 +5,15 @@
         "tags": ["Bookmark"],
         "summary": "북마크 추가",
         "description": "메인, 검색, 상세에서 북마크 아이콘 클릭 시 호출",
+        "security": [
+          {
+          "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "commissionId",
             "in": "path",
-            "required": true,
-            "schema": { "type": "integer", "format": "int64" }
-          },
-          {
-            "name": "userId",
-            "in": "header",
             "required": true,
             "schema": { "type": "integer", "format": "int64" }
           }
@@ -106,6 +105,11 @@
         "tags": ["Bookmark"],
         "summary": "북마크 삭제",
         "description": "메인, 검색, 상세에서 북마크 아이콘 클릭 시 호출",
+        "security": [
+          {
+          "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "commissionId",
@@ -116,12 +120,6 @@
           {
             "name": "bookmarkId",
             "in": "path",
-            "required": true,
-            "schema": { "type": "integer" }
-          },
-          {
-            "name": "userId",
-            "in": "header",
             "required": true,
             "schema": { "type": "integer" }
           }
@@ -157,12 +155,9 @@
         "tags": ["Bookmark"],
         "summary": "북마크 선택 삭제",
         "description": "마이페이지에서 북마크를 선택 삭제",
-        "parameters": [
+        "security": [
           {
-            "name": "userId",
-            "in": "header",
-            "required": true,
-            "schema": { "type": "integer" }
+          "bearerAuth": []
           }
         ],
         "requestBody": {
