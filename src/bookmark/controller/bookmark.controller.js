@@ -11,7 +11,7 @@ import { parseWithBigInt, stringifyWithBigInt } from "../../bigintJson.js";
 // 북마크 추가
 export const addBookmark = async (req, res, next) => {
  try {
-   const userId = BigInt(req.headers['userid']);
+   const userId = BigInt(req.user.userId);
    const dto = new CreateBookmarkDto({
      commissionId: BigInt(req.params.commissionId)
    });
@@ -32,7 +32,7 @@ export const addBookmark = async (req, res, next) => {
 // 북마크 삭제
 export async function deleteBookmark(req, res, next) {
   try {
-    const userId = BigInt(req.headers["userid"]);
+    const userId = BigInt(req.user.userId);
     const dto = new DeleteBookmarkDto({
       commissionId: BigInt(req.params.commissionId),
       bookmarkId: BigInt(req.params.bookmarkId),
@@ -53,7 +53,7 @@ export async function deleteBookmark(req, res, next) {
 // 북마크 선택 삭제
 export async function deleteSelectedBookmarks(req, res, next) {
   try {
-    const userId = BigInt(req.headers["userid"]);
+    const userId = BigInt(req.user.userId);
     const dto = new DeleteSelectedBookmarksDto({
       bookmarkIds: req.body.bookmarkIds.map(id => BigInt(id)),
     });
