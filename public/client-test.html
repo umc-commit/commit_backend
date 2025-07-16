@@ -1,41 +1,124 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Socket.io Client Test</title>
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <title>Socket.IO 채팅</title>
+  <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 </head>
 <body>
-  <h1>Socket.io 클라이언트 테스트</h1>
+  <h2>실시간 채팅</h2>
 
+  <div>
+    <label for="senderIdInput">사용자 ID 입력:</label>
+    <input type="text" id="senderIdInput" placeholder="사용자 ID를 입력하세요" />
+    <button id="joinBtn">채팅방 입장</button>
+  </div>
+  
+  <div id="chatroom" style="display:none;">
+    <div id="messages" style="border:1px solid #ccc; height:300px; overflow-y:scroll; margin-bottom:10px; padding:5px;"></div>
+
+    <input type="text" id="messageInput" placeholder="메시지 입력 (최대 255자)" maxlength="255" style="width:60%;" />
+    <input type="file" id="imageInput" accept="image/*" />
+    <button id="sendBtn">전송</button>
+  </div>
+  
   <script>
-    const socket = io("http://localhost:3000");
+    // 서버 소켓 연결 (URL 바꾸기)
+    const socket = io('http://localhost:3000');
+    const chatroomId = '6'; // 실제 채팅방 아이디 동적으로 받아야 함
 
-    socket.on("connect", () => {
-      console.log("연결 성공:", socket.id);
+    let senderId = null;
+
+    const joinBtn = document.getElementById('joinBtn');
+    const senderIdInput = document.getElementById('senderIdInput');
+    const chatroomDiv = document.getElementById('chatroom');
+
+    const messagesDiv = document.getElementById('messages');
+    const messageInput = document.getElementById('messageInput');
+    const imageInput = document.getElementById('imageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    joinBtn.addEventListener('click', () => {
+      const inputVal = senderIdInput.value.trim();
+      if (!inputVal) {
+        alert('사용자 ID를 입력해주세요.');
+        return;
+      }
+      senderId = inputVal;
+
+      // 채팅방 입장
+      socket.emit('join', chatroomId);
+
+      // UI 변경
+      senderIdInput.disabled = true;
+      joinBtn.disabled = true;
+      chatroomDiv.style.display = 'block';
     });
 
-    socket.on("disconnect", () => {
-      console.log("연결 해제");
+    // 메시지 받기
+    socket.on('chat message', (msg) => {
+      const div = document.createElement('div');
+      div.style.borderBottom = '1px solid #eee';
+      div.style.padding = '5px';
+
+      let content = `<b>사용자 ${msg.senderId}:</b> ${msg.content || ''}`;
+      if (msg.imageUrl) {
+        content += `<br><img src="${msg.imageUrl}" alt="이미지" style="max-width:200px; max-height:200px;" />`;
+      }
+      div.innerHTML = content;
+
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
+
+    // 에러 받기
+    socket.on('error', (err) => {
+      alert('에러: ' + err.message);
+    });
+
+    // 전송 버튼 클릭
+    sendBtn.addEventListener('click', () => {
+      if (!senderId) {
+        alert('먼저 사용자 ID를 입력하고 채팅방에 입장하세요.');
+        return;
+      }
+
+      const content = messageInput.value.trim();
+      if (!content && !imageInput.files.length) {
+        alert('메시지나 이미지를 입력해주세요.');
+        return;
+      }
+
+      if (content.length > 255) {
+        alert('메시지 길이는 255자를 초과할 수 없습니다.');
+        return;
+      }
+
+      if (imageInput.files.length > 0) {
+        const file = imageInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const base64Image = event.target.result.split(',')[1]; // base64 데이터만 추출
+
+          socket.emit('chat message', {
+            chatroomId,
+            senderId,
+            content,
+            imageBase64: base64Image,
+          });
+        };
+        reader.readAsDataURL(file);
+      } else {
+        socket.emit('chat message', {
+          chatroomId,
+          senderId,
+          content,
+        });
+      }
+
+      messageInput.value = '';
+      imageInput.value = '';
     });
   </script>
-
-  <input id="msgInput" placeholder="메시지를 입력하세요" />
-<button id="sendBtn">보내기</button>
-
-<script>
-  const input = document.getElementById('msgInput');
-  const btn = document.getElementById('sendBtn');
-
-  btn.addEventListener('click', () => {
-    const msg = input.value;
-    socket.emit('chat message', msg);
-    input.value = '';
-  });
-
-  socket.on('chat message', (msg) => {
-    console.log("받은 메시지:", msg);
-  });
-</script>
 </body>
 </html>

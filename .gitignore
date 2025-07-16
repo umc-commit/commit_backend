@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 # 로컬 개발용 업로드 디렉토리
 uploads/
+
+# macOS 시스템 파일 무시
+.DS_Store
