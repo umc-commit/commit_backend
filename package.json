@@ -14,6 +14,7 @@
   "dependencies": {
     "@prisma/client": "^6.11.1",
     "@quixo3/prisma-session-store": "^3.1.13",
+    "axios": "^1.10.0",
     "body-parser": "^2.2.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -26,9 +27,10 @@
     "multer": "^2.0.1",
     "oauth20": "^3.0.0",
     "passport": "^0.7.0",
-    "passport-google": "^0.3.0",
+    "passport-google": "^0.1.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-kakao": "^1.0.1",
+    "passport-naver": "^1.0.6",
     "prisma": "^6.10.1",
     "pug": "^3.0.3",
     "socket.io": "^4.8.1",
@@ -40,5 +42,8 @@
   },
   "prisma": {
     "seed": "node prisma/seed.js"
+  },
+    "overrides": {
+    "axios": "^1.10.0"
   }
 }

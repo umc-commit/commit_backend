@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import { ChatService } from "../service/chat.service.js";
+import { ChatroomService } from "../service/chatroom.service.js";
 import { CreateChatroomDto } from "../dto/chatroom.dto.js";
 import { ShowChatroomDto } from "../dto/chatroom.dto.js";
 import { DeleteChatroomDto } from "../dto/chatroom.dto.js";
@@ -13,7 +13,7 @@ export const createChatroom = async (req, res, next) => {
       requestId: BigInt(req.body.requestId),
     });
 
-    const chatroom = await ChatService.createChatroom(dto);
+    const chatroom = await ChatroomService.createChatroom(dto);
     const responseData = parseWithBigInt(stringifyWithBigInt(chatroom));
 
     res.status(StatusCodes.CREATED).success(responseData);
@@ -28,7 +28,7 @@ export const showChatroom = async (req, res, next) => {
       consumerId: BigInt(req.params.consumerId)
     });
 
-    const chatrooms = await ChatService.getChatroomsByUserId(dto);
+    const chatrooms = await ChatroomService.getChatroomsByUserId(dto);
     const responseData = parseWithBigInt(stringifyWithBigInt(chatrooms));
 
     res.status(StatusCodes.OK).success(responseData);
@@ -44,7 +44,7 @@ export const deleteChatrooms = async (req, res, next) => {
       userType: req.body.userType,
     });
 
-    const chatrooms = await ChatService.softDeleteChatroomsByUser(dto);
+    const chatrooms = await ChatroomService.softDeleteChatroomsByUser(dto);
     const responseData = parseWithBigInt(stringifyWithBigInt(chatrooms));
 
     res.status(StatusCodes.NO_CONTENT).success(responseData);

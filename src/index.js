@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import { setupSwagger } from './common/swagger/index.js';
 import http from 'http';
-import setupSocket from "./socket.js";
+import setupSocket from "./chat/socket/socket.js";
 import routes from "./routes.js";
 import { stringifyWithBigInt, parseWithBigInt } from './bigintJson.js';
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
@@ -11,6 +11,7 @@ import session from "express-session";
 import passport from "passport";
 import { googleStrategy } from "./auth.config.js";
 import { kakaoStrategy } from './auth.config.js';
+import { naverStrategy } from './auth.config.js';
 import { prisma } from "./db.config.js";
 
 
@@ -18,6 +19,7 @@ dotenv.config();
 
 passport.use("google", googleStrategy);
 passport.use("kakao", kakaoStrategy);
+passport.use("naver", naverStrategy);
 passport.serializeUser((user, done) => {
   const safeUser = {
     ...user,
