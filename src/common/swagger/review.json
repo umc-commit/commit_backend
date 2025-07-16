@@ -1,0 +1,526 @@
+{
+    "paths": {
+        "/api/reviews/images/upload": {
+            "post": {
+                "tags": [
+                    "Review"
+                ],
+                "summary": "리뷰 이미지 업로드",
+                "description": "리뷰 작성 시 첨부될 이미지를 업로드합니다.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "image": {
+                                        "type": "string",
+                                        "format": "binary",
+                                        "description": "업로드할 이미지 파일 (JPG, PNG 최대 5MB)"
+                                    }
+                                },
+                                "required": [
+                                    "image"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "이미지 업로드 성공",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ImageUploadResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 (파일 형식 오류, 크기 초과 등)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "서버 오류",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/requests/{requestId}/reviews": {
+            "post": {
+                "tags": [
+                    "Review"
+                ],
+                "summary": "리뷰 작성",
+                "description": "거래 완료된 커미션(request)에 대한 리뷰를 작성합니다.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "requestId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "커미션 ID"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReviewCreateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "리뷰 작성 성공",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ReviewResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 (유효성 검증 실패)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "권한 없음",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "커미션 신청을 찾을 수 없음",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "이미 리뷰를 작성함",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/reviews/{reviewId}": {
+            "patch": {
+                "tags": [
+                    "Review"
+                ],
+                "summary": "리뷰 수정",
+                "description": "작성한 리뷰를 수정합니다.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "reviewId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "리뷰 ID"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReviewUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "리뷰 수정 성공",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ReviewResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청 (유효성 검증 실패)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "권한 없음 (작성자만 수정 가능)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "리뷰를 찾을 수 없음",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Review"
+                ],
+                "summary": "리뷰 삭제",
+                "description": "작성한 리뷰를 삭제합니다.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "reviewId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "리뷰 ID"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "리뷰 삭제 성공",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ReviewDeleteResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "권한 없음 (작성자만 삭제 가능)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "리뷰를 찾을 수 없음",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ReviewCreateRequest": {
+                "type": "object",
+                "required": [
+                    "rate",
+                    "content"
+                ],
+                "properties": {
+                    "rate": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 5,
+                        "description": "평점 (1-5)"
+                    },
+                    "content": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 1000,
+                        "description": "리뷰 내용 (10자 이상 1000자 이하)"
+                    },
+                    "image_urls": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "url"
+                        },
+                        "maxItems": 5,
+                        "description": "리뷰 이미지 URL 배열 (최대 5개)"
+                    }
+                }
+            },
+            "ReviewUpdateRequest": {
+                "type": "object",
+                "required": [
+                    "rate",
+                    "content"
+                ],
+                "properties": {
+                    "rate": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 5,
+                        "description": "평점 (1-5)"
+                    },
+                    "content": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 1000,
+                        "description": "리뷰 내용 (10자 이상 1000자 이하)"
+                    },
+                    "image_urls": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "url"
+                        },
+                        "maxItems": 5,
+                        "description": "리뷰 이미지 URL 배열 (최대 5개)"
+                    }
+                }
+            },
+            "ReviewResponse": {
+                "type": "object",
+                "properties": {
+                    "resultType": {
+                        "type": "string",
+                        "example": "SUCCESS"
+                    },
+                    "error": {
+                        "type": "null"
+                    },
+                    "success": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "리뷰 ID"
+                            },
+                            "requestId": {
+                                "type": "string",
+                                "description": "커미션 신청 ID"
+                            },
+                            "user_id": {
+                                "type": "string",
+                                "description": "사용자 ID"
+                            },
+                            "rate": {
+                                "type": "integer",
+                                "description": "평점"
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "리뷰 내용"
+                            },
+                            "image_urls": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "이미지 URL 배열"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "format": "date-time",
+                                "description": "생성일시"
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "format": "date-time",
+                                "description": "수정일시"
+                            }
+                        }
+                    }
+                }
+            },
+            "ReviewDeleteResponse": {
+                "type": "object",
+                "properties": {
+                    "resultType": {
+                        "type": "string",
+                        "example": "SUCCESS"
+                    },
+                    "error": {
+                        "type": "null"
+                    },
+                    "success": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "example": "리뷰가 성공적으로 삭제되었습니다."
+                            }
+                        }
+                    }
+                }
+            },
+            "ImageUploadResponse": {
+                "type": "object",
+                "properties": {
+                    "resultType": {
+                        "type": "string",
+                        "example": "SUCCESS"
+                    },
+                    "error": {
+                        "type": "null"
+                    },
+                    "success": {
+                        "type": "object",
+                        "properties": {
+                            "image_url": {
+                                "type": "string",
+                                "format": "url",
+                                "description": "업로드된 이미지 URL"
+                            },
+                            "file_size": {
+                                "type": "integer",
+                                "description": "파일 크기 (바이트)"
+                            },
+                            "file_type": {
+                                "type": "string",
+                                "description": "파일 타입"
+                            }
+                        }
+                    }
+                }
+            },
+            "ErrorResponse": {
+                "type": "object",
+                "properties": {
+                    "resultType": {
+                        "type": "string",
+                        "example": "FAIL"
+                    },
+                    "error": {
+                        "type": "object",
+                        "properties": {
+                            "errorCode": {
+                                "type": "string",
+                                "description": "에러 코드"
+                            },
+                            "reason": {
+                                "type": "string",
+                                "description": "에러 메시지"
+                            },
+                            "data": {
+                                "type": "object",
+                                "description": "에러 관련 추가 데이터"
+                            }
+                        }
+                    },
+                    "success": {
+                        "type": "null"
+                    }
+                }
+            }
+        }
+    }
+}
