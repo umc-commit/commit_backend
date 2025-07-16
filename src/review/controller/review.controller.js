@@ -3,6 +3,7 @@ import reviewService from '../service/review.service.js';
 import { stringifyWithBigInt } from "../../bigintJson.js";
 import {
     ReviewCreateDto,
+    ReviewUpdateDto,
     ReviewResponseDto,
     ImageUploadResponseDto
 } from '../dto/review.dto.js'; // DTO 클래스 import
@@ -61,6 +62,68 @@ class ReviewController {
                 resultType: "SUCCESS",
                 error: null,
                 success: finalData
+            });
+
+        } catch (error) {
+            // 에러 발생 시 에러 처리 미들웨어로 넘김
+            next(error);
+        }
+    }
+
+    /**
+     * 리뷰 수정 API
+     */
+    async updateReview(req, res, next) {
+        try {
+            // URL 파라미터에서 리뷰 ID를 추출하고 BigInt로 변환
+            const reviewId = BigInt(req.params.reviewId);
+
+            // 현재 로그인한 사용자 ID (BigInt 변환)
+            const userId = BigInt(req.user.id); // TODO: 실제 JWT 인증 미들웨어로 교체 필요
+
+            // 요청 본문 데이터를 DTO 클래스로 구조화
+            const reviewDto = new ReviewUpdateDto(req.body);
+
+            // 리뷰 수정 서비스 호출
+            const result = await reviewService.updateReview(reviewId, userId, reviewDto);
+
+            // 수정된 리뷰를 응답용 DTO로 가공
+            const responseData = new ReviewResponseDto(result);
+            // BigInt를 JSON 문자열로 변환 후 다시 파싱하여 일반 객체로 변환
+            const finalData = JSON.parse(stringifyWithBigInt(responseData));
+
+            // 클라이언트에 응답 전송 (200 OK)
+            res.status(StatusCodes.OK).json({
+                resultType: "SUCCESS",
+                error: null,
+                success: finalData
+            });
+
+        } catch (error) {
+            // 에러 발생 시 에러 처리 미들웨어로 넘김
+            next(error);
+        }
+    }
+
+    /**
+     * 리뷰 삭제 API
+     */
+    async deleteReview(req, res, next) {
+        try {
+            // URL 파라미터에서 리뷰 ID를 추출하고 BigInt로 변환
+            const reviewId = BigInt(req.params.reviewId);
+
+            // 현재 로그인한 사용자 ID (BigInt 변환)
+            const userId = BigInt(req.user.id); // TODO: 실제 JWT 인증 미들웨어로 교체 필요
+
+            // 리뷰 삭제 서비스 호출
+            const result = await reviewService.deleteReview(reviewId, userId);
+
+            // 클라이언트에 응답 전송 (200 OK)
+            res.status(StatusCodes.OK).json({
+                resultType: "SUCCESS",
+                error: null,
+                success: result
             });
 
         } catch (error) {
