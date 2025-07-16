@@ -8,7 +8,7 @@ export const authenticate = (req, res, next) => {
       return res.status(401).json({
         resultType: "FAIL",
         error: {
-          errorCode: "C001",
+          errorCode: "AUTH001",
           reason: "인증 정보가 없습니다.",
           data: null
         },
@@ -25,7 +25,7 @@ export const authenticate = (req, res, next) => {
     return res.status(401).json({
       resultType: "FAIL",
       error: {
-        errorCode: "C002",
+        errorCode: "AUTH002",
         reason: "유효하지 않은 토큰입니다.",
         data: null
       },
