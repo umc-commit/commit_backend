@@ -7,7 +7,7 @@ const router = express.Router();
 // TODO: 실제 JWT 인증 미들웨어로 교체 필요
 const authenticateToken = (req, res, next) => {
     // 테스트용 하드코딩
-    req.user = { id: 1, nickname: 'testuser' };
+    req.user = { id: 999, nickname: 'testuser999' };
     next();
 };
 

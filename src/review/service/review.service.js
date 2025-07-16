@@ -141,13 +141,14 @@ class ReviewService {
     /**
      * 리뷰 작성
      * 
-     * @param {number} requestId - 커미션 신청 ID
-     * @param {number} userId - 사용자 ID
-     * @param {Object} reviewData - 리뷰 데이터 { rate, content, image_urls }
-     * @returns {Object} 생성된 리뷰 정보
+     * @param {BigInt} requestId - 커미션 신청 ID
+     * @param {BigInt} userId - 사용자 ID
+     * @param {ReviewCreateDto} reviewDto - 검증된 DTO 객체
+     * @returns {Object} 생성된 리뷰 정보 (DTO에서 처리할 원본 데이터)
      */
-    async createReview(requestId, userId, reviewData) {
-        const { rate, content, image_urls = [] } = reviewData;
+    async createReview(requestId, userId, reviewDto) {
+        // DTO에서 검증된 데이터 추출
+        const { rate, content, image_urls = [] } = reviewDto;
 
         // 1. 커미션 신청 존재 여부 및 권한 확인
         const request = await reviewRepository.findRequestByIdForReview(requestId);
@@ -156,36 +157,36 @@ class ReviewService {
         }
 
         // 2. 리뷰 작성 권한 확인 (본인이 신청한 커미션인지)
-        if (request.userId !== BigInt(userId)) {
+        if (request.userId !== userId) {
             throw new ReviewPermissionDeniedError(userId, requestId);
         }
 
-        // 3. 커미션 완료 상태 확인
+        // 3. 커미션 완료 상태 확인 (완료된 커미션만 리뷰 작성 가능)
         if (request.status !== 'COMPLETED') {
             throw new RequestNotCompletedError(requestId, request.status);
         }
 
-        // 4. 이미 리뷰가 작성되었는지 확인
+        // 4. 이미 리뷰가 작성되었는지 확인 (중복 리뷰 방지)
         const existingReview = await reviewRepository.findReviewByRequestId(requestId);
         if (existingReview) {
             throw new ReviewAlreadyExistsError(requestId);
         }
 
-        // 5. 리뷰 내용 검증 (10자 이상, 1000자 이하)
+        // 5. 세부 입력값 검증
+        // 5-1. 별점 검증 (1-5점 사이)
+        if (!rate || rate < 1 || rate > 5) {
+            throw new ReviewRatingInvalidError(rate);
+        }
+        // 5-2. 내용 최소 길이 검증 (10자 이상)
         if (!content || content.trim().length < 10) {
             throw new ReviewContentTooShortError(content ? content.trim().length : 0);
         }
-
+        // 5-3. 내용 최대 길이 검증 (1000자 이하)
         if (content.trim().length > 1000) {
             throw new ReviewContentTooLongError(content.trim().length);
         }
 
-        // 6. 별점 검증 (1-5)
-        if (!rate || rate < 1 || rate > 5) {
-            throw new ReviewRatingInvalidError(rate);
-        }
-
-        // 7. 리뷰 생성
+        // 6. 리뷰 데이터 DB 저장
         const review = await reviewRepository.createReview({
             userId,
             requestId,
@@ -193,7 +194,7 @@ class ReviewService {
             content: content.trim()
         });
 
-        // 8. 이미지 URL들을 DB에 저장 (최대 5개)
+        // 7. 리뷰 이미지 저장 (최대 5개)
         // TODO: S3 연동 시 URL 검증 로직 필요 (현재는 로컬 URL만 처리)
         if (image_urls && image_urls.length > 0) {
             const imagesToSave = image_urls.slice(0, 5);
@@ -203,15 +204,16 @@ class ReviewService {
             }
         }
 
-        // 9. 응답 데이터 생성
+        // 8. Controller로 반환할 데이터 구성 (DTO에서 BigInt 처리)
         return {
-            id: Number(review.id),
-            requestId: Number(review.requestId),
-            user_id: Number(review.userId),
+            id: review.id,
+            requestId: review.requestId,
+            userId: review.userId,
             rate: review.rate,
             content: review.content,
             image_urls: image_urls.slice(0, 5),
-            created_at: review.createdAt.toISOString()
+            createdAt: review.createdAt,
+            updatedAt: review.updatedAt
         };
     }
 }

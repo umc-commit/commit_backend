@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import reviewService from '../service/review.service.js';
-import { parseWithBigInt, stringifyWithBigInt } from "../../bigintJson.js";
+import { stringifyWithBigInt } from "../../bigintJson.js";
 import {
     ReviewCreateDto,
     ReviewResponseDto,
@@ -18,8 +18,8 @@ class ReviewController {
 
             // 응답 데이터를 DTO로 구조화
             const responseData = new ImageUploadResponseDto(result);
-            // BigInt를 JSON 문자열로 변환
-            const finalData = parseWithBigInt(stringifyWithBigInt(responseData));
+            // BigInt를 JSON 문자열로 변환 후 다시 파싱하여 일반 객체로 변환
+            const finalData = JSON.parse(stringifyWithBigInt(responseData));
 
             // 클라이언트에 응답 전송 (200 OK)
             res.status(StatusCodes.OK).json({
@@ -53,8 +53,8 @@ class ReviewController {
 
             // 생성된 리뷰를 응답용 DTO로 가공
             const responseData = new ReviewResponseDto(result);
-            // BigInt를 JSON 문자열로 변환
-            const finalData = parseWithBigInt(stringifyWithBigInt(responseData));
+            // BigInt를 JSON 문자열로 변환 후 다시 파싱하여 일반 객체로 변환
+            const finalData = JSON.parse(stringifyWithBigInt(responseData));
 
             // 클라이언트에 응답 전송 (201 Created)
             res.status(StatusCodes.CREATED).json({
