@@ -63,13 +63,14 @@ async function main() {
 
   // Commission 생성 (Artist가 작성)
   const commission = await prisma.commission.create({
-    data: {
-      artistId: artist.id,
-      categoryId: category.id,
-      title: "테스트 커미션 글",
-      summary: "이것은 테스트용 커미션 글입니다.",
-      price: 50000,
-      formSchema: {},
+  data: {
+    artistId: artist.id,
+    categoryId: category.id,
+    title: "테스트 커미션 글",
+    summary: "이것은 테스트용 커미션 글입니다.",
+    content: "테스트 커미션의 상세 설명입니다. 이 부분에는 커미션의 자세한 내용이 들어갑니다.",
+    minPrice: 50000, 
+    formSchema: {},
     },
   });
 

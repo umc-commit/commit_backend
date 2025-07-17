@@ -4,13 +4,14 @@ import reviewRouter from "./review/review.routes.js";
 import bookmarkRouter from './bookmark/bookmark.route.js';
 import userRouter from "./user/user.routes.js"
 import searchRouter from "./search/search.routes.js"
+import commissionRouter from "./commission/commission.routes.js"
 
 const router = express.Router();
 
 router.use("/chatrooms", chatRouter);
 router.use("/", bookmarkRouter);
 router.use("/search", searchRouter)
-
+router.use("/commissions", commissionRouter);
 router.use("/users", userRouter);
 router.use("/reviews", reviewRouter);  // 리뷰 관련 API들
 router.use("/requests", reviewRouter); // 임시 리뷰 작성 API
