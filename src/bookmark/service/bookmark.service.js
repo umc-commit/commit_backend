@@ -1,5 +1,5 @@
 import { BookmarkRepository } from "../repository/bookmark.repository.js";
-import * as CommissionRepository from "../../commission/repository/commission.repository.js";
+import { CommissionRepository } from "../../commission/repository/commission.repository.js";
 import {
   CommissionNotFoundError,
   AlreadyBookmarkedError,

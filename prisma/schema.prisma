@@ -97,7 +97,8 @@ model Commission {
   categoryId BigInt   @map("category_id")
   title      String   @db.VarChar(200)
   summary    String   @db.VarChar(1000)
-  price      Int
+  content    String   @db.Text
+  minPrice   Int      @map("min_price")
   formSchema Json?    @map("form_schema")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
@@ -265,6 +266,7 @@ model Image {
   target   String @db.VarChar(50)
   targetId BigInt @map("target_id")
   imageUrl String @map("image_url") @db.VarChar(500)
+  orderIndex Int?      @map("order_index")
 
   @@map("images")
 }
