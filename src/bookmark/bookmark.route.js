@@ -3,6 +3,7 @@ import {
   addBookmark,
   deleteBookmark,
   deleteSelectedBookmarks,
+  getBookmarks
 } from "./controller/bookmark.controller.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
 
@@ -10,6 +11,9 @@ const router = Router();
 
 // 북마크 추가 API
 router.post('/commissions/:commissionId/bookmarks', authenticate, addBookmark);
+
+// 북마크 목록 조회 API
+router.get('/bookmarks', authenticate, getBookmarks);
 
 // 북마크 삭제 API
 router.delete("/commissions/:commissionId/bookmarks/:bookmarkId", authenticate, deleteBookmark);

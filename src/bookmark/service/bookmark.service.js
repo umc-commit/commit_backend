@@ -93,4 +93,74 @@ export const BookmarkService = {
       bookmarkIds: validIds,
     };
   },
+
+    // 북마크 목록 조회
+  async getBookmarks(userId, dto) {
+    const { sort, limit, cursor, excludeFullSlots = false } = dto;
+
+    const bookmarks = await BookmarkRepository.findBookmarksByUserId(userId, dto);
+    
+    const totalCount = excludeFullSlots 
+    ? await BookmarkRepository.countAvailableBookmarksByUserId(userId)
+    : await BookmarkRepository.countBookmarksByUserId(userId);
+
+    // 응답 데이터 가공 (모든 데이터 포맷팅)
+    const formattedItems = await Promise.all(
+      bookmarks.map(async (bookmark) => {
+      // 썸네일 이미지 조회
+      const thumbnailImage = await BookmarkRepository.findThumbnailImageByCommissionId(bookmark.commission.id);
+      
+      // 남은 슬롯수 계산
+      const remainingSlots = bookmark.commission.artist.slot - bookmark.commission.requests.length;
+
+      return {
+        id: Number(bookmark.commission.id),
+        title: bookmark.commission.title,
+        minPrice: bookmark.commission.minPrice,
+        category: bookmark.commission.category,
+        tags: bookmark.commission.commissionTags.map(ct => ct.tag),
+        thumbnailImageUrl: thumbnailImage?.imageUrl || null,
+        remainingSlots,
+        artist: {
+          id: Number(bookmark.commission.artist.id),
+          nickname: bookmark.commission.artist.nickname,
+          profileImageUrl: bookmark.commission.artist.profileImage
+        }
+      };
+    })
+  );
+
+    const filteredItems = excludeFullSlots 
+    ? formattedItems.filter(item => item.remainingSlots > 0)
+    : formattedItems;
+
+    const hasNext = filteredItems.length > limit;
+    const finalItems = hasNext ? filteredItems.slice(0, -1) : filteredItems;
+
+  // nextCursor 생성
+  let nextCursor = null;
+  if (hasNext && finalItems.length > 0) {
+    const lastFormattedItem = finalItems[finalItems.length - 1];
+    const originalBookmark = bookmarks.find(b => Number(b.commission.id) === lastFormattedItem.id);
+    
+    const cursorData = {
+     id: lastFormattedItem.id,
+     created_at: originalBookmark.createdAt.toISOString()
+    };
+  
+    if (sort === 'price_low' || sort === 'price_high') {
+      cursorData.min_price = lastFormattedItem.minPrice;
+    }
+  
+    nextCursor = Buffer.from(JSON.stringify(cursorData)).toString('base64');
+  }
+
+
+    return {
+      totalCount,
+      hasNext,
+      nextCursor,
+      items: finalItems
+    };
+  },
 };
