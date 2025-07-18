@@ -134,6 +134,21 @@
           }
         }
       }
+    },
+    "/api/users/oauth2/login/twitter" : {
+      "get" : {
+        "tags":["User"],
+        "summary" : "트위터 소셜 로그인",
+        "description" :"트위터로 시작하기 버튼을 클릭하면, 이 API를 호출하여 트위터 로그인 인증 url로 redirect됩니다.",
+        "responses": {
+          "302": {
+            "description" : "트위터 로그인 인증 페이지로 redirect 성공"
+          },
+          "500":{
+            "description":"서버 내부 오류 발생"
+          }
+        }
+      }
     }
     
   }
