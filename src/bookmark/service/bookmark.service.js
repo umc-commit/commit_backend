@@ -93,4 +93,70 @@ export const BookmarkService = {
       bookmarkIds: validIds,
     };
   },
+
+    // 북마크 목록 조회
+  async getBookmarks(userId, dto) {
+    const { sort, limit, cursor, excludeFullSlots = false } = dto;
+
+    const bookmarks = await BookmarkRepository.findBookmarksByUserId(userId, dto);
+    
+    const hasNext = bookmarks.length > limit;
+    const items = hasNext ? bookmarks.slice(0, -1) : bookmarks;
+
+    const totalCount = await BookmarkRepository.countBookmarksByUserId(userId);
+
+    // nextCursor 생성
+    let nextCursor = null;
+    if (hasNext && items.length > 0) {
+      const lastItem = items[items.length - 1];
+      const cursorData = {
+        id: Number(lastItem.id),
+        created_at: lastItem.createdAt.toISOString()
+      };
+      
+      if (sort === 'price_low' || sort === 'price_high') {
+        cursorData.min_price = lastItem.commission.minPrice;
+      }
+      
+      nextCursor = Buffer.from(JSON.stringify(cursorData)).toString('base64');
+    }
+
+    // 응답 데이터 가공
+    const formattedItems = await Promise.all(
+      items.map(async (bookmark) => {
+        // 썸네일 이미지 조회
+        const thumbnailImage = await BookmarkRepository.findThumbnailImageByCommissionId(bookmark.commission.id);
+        
+        // 남은 슬롯수 계산
+        const remainingSlots = bookmark.commission.artist.slot - bookmark.commission.requests.length;
+
+        return {
+          id: Number(bookmark.commission.id),
+          title: bookmark.commission.title,
+          minPrice: bookmark.commission.minPrice,
+          category: bookmark.commission.category,
+          tags: bookmark.commission.commissionTags.map(ct => ct.tag),
+          thumbnailImageUrl: thumbnailImage?.imageUrl || null,
+          remainingSlots,
+          artist: {
+            id: Number(bookmark.commission.artist.id),
+            nickname: bookmark.commission.artist.nickname,
+            profileImageUrl: bookmark.commission.artist.profileImage
+          }
+        };
+      })
+    );
+
+    // 마감 커미션 제외 토글 상태에 따라 필터링
+    const filteredItems = excludeFullSlots 
+    ? formattedItems.filter(item => item.remainingSlots > 0)
+    : formattedItems;
+
+    return {
+      totalCount: filteredItems.length,
+      hasNext,
+      nextCursor,
+      items: filteredItems
+    };
+  },
 };

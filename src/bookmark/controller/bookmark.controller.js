@@ -1,10 +1,10 @@
-// controllers/bookmarkController.js
 import { StatusCodes } from "http-status-codes";
 import { BookmarkService } from '../service/bookmark.service.js';
 import {
   CreateBookmarkDto,
   DeleteBookmarkDto,
-  DeleteSelectedBookmarksDto
+  DeleteSelectedBookmarksDto,
+  GetBookmarksDto
 } from "../dto/bookmark.dto.js";
 import { parseWithBigInt, stringifyWithBigInt } from "../../bigintJson.js";
 
@@ -69,3 +69,28 @@ export async function deleteSelectedBookmarks(req, res, next) {
     next(err);
   }
 }
+
+// 북마크 목록 조회
+export const getBookmarks = async (req, res, next) => {
+  try {
+    const userId = BigInt(req.user.userId);
+    const dto = new GetBookmarksDto({
+      sort: req.query.sort,
+      limit: req.query.limit ? parseInt(req.query.limit) : undefined,
+      cursor: req.query.cursor,
+      excludeFullSlots: req.query.excludeFullSlots === 'true'
+    });
+
+    const bookmarks = await BookmarkService.getBookmarks(userId, dto);
+    const json = stringifyWithBigInt({
+      resultType: "SUCCESS",
+      error: null,
+      success: bookmarks
+    });
+
+    res.setHeader("Content-Type", "application/json");
+    res.status(StatusCodes.OK).send(json);
+  } catch (err) {
+    next(err);
+  }
+};

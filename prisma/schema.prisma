@@ -235,7 +235,7 @@ model Bookmark {
   createdAt    DateTime @default(now()) @map("created_at")
 
   user       User       @relation(fields: [userId], references: [id])
-  commission Commission @relation(fields: [commissionId], references: [id])
+  commission Commission @relation(fields: [commissionId], references: [id], onDelete: Cascade)
 
   @@unique([userId, commissionId])
   @@map("bookmarks")
@@ -255,7 +255,7 @@ model CommissionTag {
   tagId        BigInt @map("tag_id")
 
   commission Commission @relation(fields: [commissionId], references: [id])
-  tag        Tag        @relation(fields: [tagId], references: [id])
+  tag        Tag        @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([commissionId, tagId])
   @@map("commission_tags")
