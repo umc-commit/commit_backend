@@ -73,7 +73,7 @@ export const BookmarkRepository = {
    * 사용자의 북마크 목록 조회 (커서 기반 페이징)
    */
   async findBookmarksByUserId(userId, dto) {
-    const { sort, limit, cursor } = dto;
+    const { sort, limit, cursor, excludeFullSlots = false } = dto;
 
     const baseCondition = {
     userId: BigInt(userId)
@@ -165,7 +165,7 @@ export const BookmarkRepository = {
         }
       },
       orderBy,
-      take: limit + 1, // hasNext 확인용
+      take: excludeFullSlots ? 100 : limit + 1, // hasNext 확인용
     });
   },
 

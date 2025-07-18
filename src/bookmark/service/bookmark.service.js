@@ -100,65 +100,67 @@ export const BookmarkService = {
 
     const bookmarks = await BookmarkRepository.findBookmarksByUserId(userId, dto);
     
-    const hasNext = bookmarks.length > limit;
-    const items = hasNext ? bookmarks.slice(0, -1) : bookmarks;
-
     const totalCount = excludeFullSlots 
     ? await BookmarkRepository.countAvailableBookmarksByUserId(userId)
     : await BookmarkRepository.countBookmarksByUserId(userId);
 
-    // nextCursor 생성
-    let nextCursor = null;
-    if (hasNext && items.length > 0) {
-      const lastItem = items[items.length - 1];
-      const cursorData = {
-        id: Number(lastItem.id),
-        created_at: lastItem.createdAt.toISOString()
-      };
-      
-      if (sort === 'price_low' || sort === 'price_high') {
-        cursorData.min_price = lastItem.commission.minPrice;
-      }
-      
-      nextCursor = Buffer.from(JSON.stringify(cursorData)).toString('base64');
-    }
-
-    // 응답 데이터 가공
+    // 응답 데이터 가공 (모든 데이터 포맷팅)
     const formattedItems = await Promise.all(
-      items.map(async (bookmark) => {
-        // 썸네일 이미지 조회
-        const thumbnailImage = await BookmarkRepository.findThumbnailImageByCommissionId(bookmark.commission.id);
-        
-        // 남은 슬롯수 계산
-        const remainingSlots = bookmark.commission.artist.slot - bookmark.commission.requests.length;
+      bookmarks.map(async (bookmark) => {
+      // 썸네일 이미지 조회
+      const thumbnailImage = await BookmarkRepository.findThumbnailImageByCommissionId(bookmark.commission.id);
+      
+      // 남은 슬롯수 계산
+      const remainingSlots = bookmark.commission.artist.slot - bookmark.commission.requests.length;
 
-        return {
-          id: Number(bookmark.commission.id),
-          title: bookmark.commission.title,
-          minPrice: bookmark.commission.minPrice,
-          category: bookmark.commission.category,
-          tags: bookmark.commission.commissionTags.map(ct => ct.tag),
-          thumbnailImageUrl: thumbnailImage?.imageUrl || null,
-          remainingSlots,
-          artist: {
-            id: Number(bookmark.commission.artist.id),
-            nickname: bookmark.commission.artist.nickname,
-            profileImageUrl: bookmark.commission.artist.profileImage
-          }
-        };
-      })
-    );
+      return {
+        id: Number(bookmark.commission.id),
+        title: bookmark.commission.title,
+        minPrice: bookmark.commission.minPrice,
+        category: bookmark.commission.category,
+        tags: bookmark.commission.commissionTags.map(ct => ct.tag),
+        thumbnailImageUrl: thumbnailImage?.imageUrl || null,
+        remainingSlots,
+        artist: {
+          id: Number(bookmark.commission.artist.id),
+          nickname: bookmark.commission.artist.nickname,
+          profileImageUrl: bookmark.commission.artist.profileImage
+        }
+      };
+    })
+  );
 
-    // 마감 커미션 제외 토글 상태에 따라 필터링
     const filteredItems = excludeFullSlots 
     ? formattedItems.filter(item => item.remainingSlots > 0)
     : formattedItems;
+
+    const hasNext = filteredItems.length > limit;
+    const finalItems = hasNext ? filteredItems.slice(0, -1) : filteredItems;
+
+  // nextCursor 생성
+  let nextCursor = null;
+  if (hasNext && finalItems.length > 0) {
+    const lastFormattedItem = finalItems[finalItems.length - 1];
+    const originalBookmark = bookmarks.find(b => Number(b.commission.id) === lastFormattedItem.id);
+    
+    const cursorData = {
+     id: lastFormattedItem.id,
+     created_at: originalBookmark.createdAt.toISOString()
+    };
+  
+    if (sort === 'price_low' || sort === 'price_high') {
+      cursorData.min_price = lastFormattedItem.minPrice;
+    }
+  
+    nextCursor = Buffer.from(JSON.stringify(cursorData)).toString('base64');
+  }
+
 
     return {
       totalCount,
       hasNext,
       nextCursor,
-      items: filteredItems
+      items: finalItems
     };
   },
 };
