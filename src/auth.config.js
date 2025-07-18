@@ -111,10 +111,10 @@ const naverVerify = async (profile) => {
 };
 
 
-export const twittertrategy = new TwitterStrategy(
+export const twitterStrategy = new TwitterStrategy(
   {
-    clientID: process.env.PASSPORT_TWITTER_CLIENT_ID,
-    clientSecret: process.env.PASSPORT_TWITTER_CLIENT_SECRET,
+    consumerKey: process.env.PASSPORT_TWITTER_CLIENT_ID,
+    consumerSecret: process.env.PASSPORT_TWITTER_CLIENT_SECRET,
     callbackURL: "http://localhost:3000/api/users/oauth2/callback/twitter",
     scope: undefined,
     state: true,

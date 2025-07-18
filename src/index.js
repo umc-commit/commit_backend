@@ -12,6 +12,7 @@ import passport from "passport";
 import { googleStrategy } from "./auth.config.js";
 import { kakaoStrategy } from './auth.config.js';
 import { naverStrategy } from './auth.config.js';
+import { twitterStrategy } from './auth.config.js';
 import { prisma } from "./db.config.js";
 
 
@@ -20,6 +21,8 @@ dotenv.config();
 passport.use("google", googleStrategy);
 passport.use("kakao", kakaoStrategy);
 passport.use("naver", naverStrategy);
+passport.use("twitter", twitterStrategy);
+
 passport.serializeUser((user, done) => {
   const safeUser = {
     ...user,
