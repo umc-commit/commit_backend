@@ -103,7 +103,9 @@ export const BookmarkService = {
     const hasNext = bookmarks.length > limit;
     const items = hasNext ? bookmarks.slice(0, -1) : bookmarks;
 
-    const totalCount = await BookmarkRepository.countBookmarksByUserId(userId);
+    const totalCount = excludeFullSlots 
+    ? await BookmarkRepository.countAvailableBookmarksByUserId(userId)
+    : await BookmarkRepository.countBookmarksByUserId(userId);
 
     // nextCursor 생성
     let nextCursor = null;
@@ -153,7 +155,7 @@ export const BookmarkService = {
     : formattedItems;
 
     return {
-      totalCount: filteredItems.length,
+      totalCount,
       hasNext,
       nextCursor,
       items: filteredItems

@@ -181,6 +181,33 @@ export const BookmarkRepository = {
   },
 
   /**
+   * 사용자의 슬롯이 남은 북마크 수 조회 (excludeFullSlots=true용)
+  */
+  async countAvailableBookmarksByUserId(userId) {
+    // 모든 북마크를 가져와서 슬롯 계산 후 필터링
+    const bookmarks = await prisma.bookmark.findMany({
+      where: { userId: BigInt(userId) },
+     include: {
+        commission: {
+          include: {
+            artist: { select: { slot: true } },
+            requests: {
+              where: { status: { in: ['APPROVED', 'IN_PROGRESS', 'SUBMITTED'] } },
+            select: { id: true }
+            }
+          }
+        }
+     }
+    });
+
+    // remainingSlots > 0인 것만 카운트
+    return bookmarks.filter(bookmark => {
+      const remainingSlots = bookmark.commission.artist.slot - bookmark.commission.requests.length;
+      return remainingSlots > 0;
+    }).length;
+  },  
+
+  /**
    * 커미션 게시글의 썸네일 조회
    */
   async findThumbnailImageByCommissionId(commissionId) {
