@@ -25,9 +25,17 @@ export class ReviewResponseDto {
         this.rate = reviewData.rate;
         this.content = reviewData.content;
         this.image_urls = reviewData.image_urls || [];
-        // UTC 시간 (타임존 이슈 생길 경우 현지 시간으로 변환 필요)
-        this.created_at = reviewData.createdAt?.toISOString();
-        this.updated_at = reviewData.updatedAt?.toISOString();
+        // KST 시간으로 변환하여 응답
+        this.created_at = this._toKST(reviewData.createdAt);
+        this.updated_at = this._toKST(reviewData.updatedAt);
+    }
+
+    // UTC를 KST로 변환하는 헬퍼 메서드
+    _toKST(utcDate) {
+        if (!utcDate) return null;
+
+        const kstDate = new Date(utcDate.getTime() + (9 * 60 * 60 * 1000)); // UTC + 9시간
+        return kstDate.toISOString().replace('Z', '+09:00'); // Z(UTC) -> +09:00(KST)
     }
 }
 
