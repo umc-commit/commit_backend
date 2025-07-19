@@ -207,6 +207,65 @@ class ReviewRepository {
         return images.map(img => img.imageUrl);
     }
 
+    /**
+     * 특정 사용자가 작성한 리뷰 목록 조회 (페이지네이션)
+     * @param {BigInt} userId - 사용자 ID
+     * @param {number} page - 페이지 번호 (1부터 시작)
+     * @param {number} limit - 페이지당 항목 수 (기본값: 10개)
+     * @returns {Object} { items: 리뷰 목록, total: 전체 개수 }
+     */
+    async findReviewsByUserId(userId, page = 1, limit = 10) {
+        const offset = (page - 1) * limit;
+
+        // 리뷰 목록 조회 (관련 데이터 포함)
+        const reviews = await prisma.review.findMany({
+            where: { userId: BigInt(userId) },
+            include: {
+                request: {
+                    include: {
+                        commission: {
+                            include: {
+                                artist: {
+                                    select: {
+                                        id: true,
+                                        nickname: true,
+                                        profileImage: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' },  // 최신순 정렬
+            skip: offset,
+            take: limit
+        });
+
+        // 전체 개수 조회
+        const total = await prisma.review.count({
+            where: { userId: BigInt(userId) }
+        });
+
+        return { items: reviews, total };
+    }
+
+    /**
+     * 사용자 존재 여부 확인 (권한 검증용)
+     * @param {BigInt} userId - 사용자 ID
+     * @returns {Object|null} 사용자 정보 또는 null
+     */
+    async findUserById(userId) {
+        return await prisma.user.findUnique({
+            where: { id: BigInt(userId) },
+            select: {
+                id: true,
+                nickname: true,
+                profileImage: true
+            }
+        });
+    }
+
 }
 
 export default new ReviewRepository();

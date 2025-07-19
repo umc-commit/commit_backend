@@ -25,9 +25,17 @@ export class ReviewResponseDto {
         this.rate = reviewData.rate;
         this.content = reviewData.content;
         this.image_urls = reviewData.image_urls || [];
-        // UTC 시간 (타임존 이슈 생길 경우 현지 시간으로 변환 필요)
-        this.created_at = reviewData.createdAt?.toISOString();
-        this.updated_at = reviewData.updatedAt?.toISOString();
+        // KST 시간으로 변환하여 응답
+        this.created_at = this._toKST(reviewData.createdAt);
+        this.updated_at = this._toKST(reviewData.updatedAt);
+    }
+
+    // UTC를 KST로 변환하는 헬퍼 메서드
+    _toKST(utcDate) {
+        if (!utcDate) return null;
+
+        const kstDate = new Date(utcDate.getTime() + (9 * 60 * 60 * 1000)); // UTC + 9시간
+        return kstDate.toISOString().replace('Z', '+09:00'); // Z(UTC) -> +09:00(KST)
     }
 }
 
@@ -37,5 +45,54 @@ export class ImageUploadResponseDto {
         this.image_url = data.image_url;  // 업로드된 이미지 URL
         this.file_size = data.file_size;  // 파일 크기
         this.file_type = data.file_type;  // 파일 타입
+    }
+}
+
+// 리뷰 목록 조회용 - 개별 리뷰 아이템 DTO
+export class ReviewListItemDto {
+    constructor(reviewData) {
+        this.id = reviewData.id;
+        this.requestId = reviewData.requestId;
+        this.rate = reviewData.rate;
+        this.content = reviewData.content;
+        this.image_urls = reviewData.image_urls || [];
+        this.created_at = this._toKST(reviewData.createdAt);
+
+        // 커미션 정보 (어떤 작업에 대한 리뷰인지)
+        this.request = {
+            id: reviewData.request?.id,
+            title: reviewData.request?.commission?.title,
+            thumbnail: reviewData.request?.commission?.thumbnail,
+            creator: {
+                id: reviewData.request?.commission?.artist?.id,
+                nickname: reviewData.request?.commission?.artist?.nickname
+            }
+        };
+    }
+
+    // UTC를 KST로 변환하는 헬퍼 메서드
+    _toKST(utcDate) {
+        if (!utcDate) return null;
+
+        const kstDate = new Date(utcDate.getTime() + (9 * 60 * 60 * 1000)); // UTC + 9시간
+        return kstDate.toISOString().replace('Z', '+09:00'); // Z(UTC) -> +09:00(KST)
+    }
+}
+
+// 페이지네이션 정보 DTO
+export class PaginationDto {
+    constructor(page, limit, total) {
+        this.page = parseInt(page);
+        this.limit = parseInt(limit);
+        this.total = parseInt(total);
+        this.totalPages = Math.ceil(total / limit);
+    }
+}
+
+// 리뷰 목록 조회 응답 DTO
+export class ReviewListResponseDto {
+    constructor(items, pagination) {
+        this.items = items.map(item => new ReviewListItemDto(item));
+        this.pagination = pagination;
     }
 }
