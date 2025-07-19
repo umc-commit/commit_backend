@@ -2,6 +2,9 @@ import express from "express";
 import { addUser, userLogin } from "./controller/user.controller.js";
 import { signJwt } from "../jwt.config.js";
 import passport from "passport";
+// 리뷰 관련 import 추가
+import reviewController from '../review/controller/review.controller.js';
+import { authenticate } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
@@ -112,6 +115,15 @@ router.get(
     }
     res.redirect("/")
   }
+);
+
+/**
+ * 사용자별 리뷰 목록 조회 API
+ * GET /api/users/:userId/reviews
+ */
+router.get('/:userId/reviews',
+    authenticate,
+    reviewController.getReviewsByUserId
 );
 
 export default router;

@@ -5,7 +5,8 @@ import {
     ReviewCreateDto,
     ReviewUpdateDto,
     ReviewResponseDto,
-    ImageUploadResponseDto
+    ImageUploadResponseDto,
+    ReviewListResponseDto
 } from '../dto/review.dto.js'; // DTO 클래스 import
 
 class ReviewController {
@@ -124,6 +125,39 @@ class ReviewController {
                 resultType: "SUCCESS",
                 error: null,
                 success: result
+            });
+
+        } catch (error) {
+            // 에러 발생 시 에러 처리 미들웨어로 넘김
+            next(error);
+        }
+    }
+
+    /**
+     * 사용자별 리뷰 목록 조회 API
+     */
+    async getReviewsByUserId(req, res, next) {
+        try {
+            // URL 파라미터에서 사용자 ID 추출
+            const userId = BigInt(req.params.userId);
+
+            // 쿼리 파라미터에서 페이지네이션 정보 추출
+            const page = req.query.page || 1;
+            const limit = req.query.limit || 10;
+
+            // 리뷰 목록 조회 서비스 호출
+            const result = await reviewService.getReviewsByUserId(userId, page, limit);
+
+            // 응답 데이터를 DTO로 구조화
+            const responseData = new ReviewListResponseDto(result.items, result.pagination);
+            // BigInt를 JSON 문자열로 변환 후 다시 파싱하여 일반 객체로 변환
+            const finalData = JSON.parse(stringifyWithBigInt(responseData));
+
+            // 클라이언트에 응답 전송 (200 OK)
+            res.status(StatusCodes.OK).json({
+                resultType: "SUCCESS",
+                error: null,
+                success: finalData
             });
 
         } catch (error) {
