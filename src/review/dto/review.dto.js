@@ -48,19 +48,6 @@ export class ImageUploadResponseDto {
     }
 }
 
-// 리뷰 목록 조회용 - 커미션 정보 DTO
-export class ReviewCommissionDto {
-    constructor(commissionData) {
-        this.id = commissionData.id;
-        this.title = commissionData.title;
-        this.creator = {
-            id: commissionData.artist?.id,
-            nickname: commissionData.artist?.nickname,
-            profile_image: commissionData.artist?.profileImage
-        };
-    }
-}
-
 // 리뷰 목록 조회용 - 개별 리뷰 아이템 DTO
 export class ReviewListItemDto {
     constructor(reviewData) {
