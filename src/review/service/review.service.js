@@ -17,6 +17,8 @@ import {
     ReviewRatingInvalidError
 } from '../../common/errors/review.errors.js';
 
+import { UserNotFoundError } from '../../common/errors/user.errors.js';
+
 // Repository import
 import reviewRepository from '../repository/review.repository.js';
 
@@ -320,6 +322,65 @@ class ReviewService {
             message: "리뷰가 성공적으로 삭제되었습니다."
         };
     }
+
+    /**
+     * 사용자별 리뷰 목록 조회
+     * 
+     * @param {BigInt} userId - 조회할 사용자 ID
+     * @param {number} page - 페이지 번호 (기본값: 1)
+     * @param {number} limit - 페이지당 항목 수 (기본값: 10)
+     * @returns {Object} { items: 리뷰 목록, pagination: 페이지네이션 정보 }
+     */
+    async getReviewsByUserId(userId, page = 1, limit = 10) {
+        // 1. 사용자 존재 여부 확인
+        const user = await reviewRepository.findUserById(userId);
+        if (!user) {
+            throw new UserNotFoundError(userId);
+        }
+
+        // 2. 입력값 검증 및 보정
+        const validatedPage = Math.max(1, parseInt(page) || 1); // 음수나 0이면 1로 보정
+        const validatedLimit = Math.min(50, Math.max(1, parseInt(limit) || 10)); // 최대 50개로 제한 (무한스크롤 성능 고려)
+
+        // 3. 해당 사용자가 작성한 리뷰 목록 조회
+        const { items: reviews, total } = await reviewRepository.findReviewsByUserId(
+            userId,
+            validatedPage,
+            validatedLimit
+        );
+
+        // 4. 각 리뷰에 대해 화면에 표시할 이미지 정보 추가
+        for (let review of reviews) {
+            // 4-1. 커미션 썸네일 조회 (첫 번째 이미지 가져오기)
+            const commissionImages = await reviewRepository.getImagesByTarget(
+                'commission',
+                review.request.commission.id
+            );
+            review.request.commission.thumbnail = commissionImages[0]?.imageUrl || null;
+
+            // 4-2. 리뷰 이미지 목록 조회 (사용자가 리뷰 작성 시 첨부한 이미지)
+            const reviewImages = await reviewRepository.getImagesByTarget(
+                'review',
+                review.id
+            );
+            review.image_urls = reviewImages.map(img => img.imageUrl);
+        }
+
+        // 5. 무한 스크롤을 위한 페이지네이션 정보 생성
+        const pagination = {
+            page: validatedPage,
+            limit: validatedLimit,
+            total: total,
+            totalPages: Math.ceil(total / validatedLimit)
+        };
+
+        // 6. Controller로 원본 데이터 반환
+        return {
+            items: reviews,
+            pagination: pagination
+        };
+    }
+
 }
 
 export default new ReviewService();
