@@ -1,6 +1,7 @@
 import {
     NotificationNotFoundError,
     NotificationPermissionDeniedError,
+    NoNotificationsSelectedError,
     NoNotificationsToDeleteError,
     AlreadyReadNotificationError,
     NoUnreadNotificationsError
@@ -131,7 +132,7 @@ class NotificationService {
 
         // 2. 삭제할 알림 ID 배열 검증
         if (!notificationIds || notificationIds.length === 0) {
-            throw new NoNotificationsToDeleteError();
+            throw new NoNotificationsSelectedError();
         }
 
         // 3. BigInt 변환 처리
