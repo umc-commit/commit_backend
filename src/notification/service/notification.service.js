@@ -235,7 +235,7 @@ class NotificationService {
             case 'commission_approved':
                 return {
                     title: '커미션 신청이 수락됐어요',
-                    content: `${creatorName}님이 커미션 신청서를 수락했어요.`
+                    content: `${creatorName}님이 ${commissionTitle || '커미션'} 신청서를 수락했어요.`
                 };
             case 'commission_rejected':
                 return {
