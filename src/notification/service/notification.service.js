@@ -185,18 +185,16 @@ class NotificationService {
      * 
      * @param {Object} notificationData - 알림 데이터
      * @param {BigInt} notificationData.userId - 대상 사용자 ID
-     * @param {string} notificationData.title - 알림 제목
-     * @param {string} notificationData.content - 알림 내용
      * @param {string} notificationData.type - 알림 타입
      * @param {Object} notificationData.relatedData - 관련 데이터 (선택)
      * @returns {Object} 생성된 알림 정보
      */
     async createNotification(notificationData) {
         // 1. 필수 필드 검증
-        const { userId, title, content, type } = notificationData;
+        const { userId, type } = notificationData;
 
-        if (!userId || !title || !content || !type) {
-            throw new Error('필수 필드가 누락되었습니다. (userId, title, content, type)');
+        if (!userId || !type) {
+            throw new Error('필수 필드가 누락되었습니다. (userId, type)');
         }
 
         // 2. 사용자 존재 여부 확인
@@ -205,17 +203,66 @@ class NotificationService {
             throw new UserNotFoundError(userId);
         }
 
-        // 3. 알림 생성
+        // 3. 알림 타입에 따른 title과 content 생성
+        const { title, content } = this.generateNotificationText(type, notificationData.relatedData || {});
+
+        // 4. 알림 생성
         const notification = await notificationRepository.createNotification({
             userId: BigInt(userId),
-            title: title.trim(),
-            content: content.trim(),
+            title: title,
+            content: content,
             type: type,
             relatedData: notificationData.relatedData || {}
         });
 
-        // 4. 생성 결과 반환
+        // 5. 생성 결과 반환
         return notification;
+    }
+
+    /**
+     * 알림 타입에 따라 title과 content를 생성하는 임시 템플릿 함수
+     * TODO: 답변 확인 후 정확한 문구로 교체할 예정
+     */
+    generateNotificationText(type, relatedData) {
+        const { creatorName, amount, commissionTitle } = relatedData;
+
+        switch (type) {
+            case 'commission_submitted':
+                return {
+                    title: '커미션 신청 완료!',
+                    content: `${creatorName}님의 ${commissionTitle || '커미션'}이 정상적으로 접수되었어요. 작가님의 수락을 기다리는 중이에요`
+                };
+            case 'commission_approved':
+                return {
+                    title: '커미션 신청을 수락했어요',
+                    content: `${creatorName}님이 ${commissionTitle || '커미션'} 신청서를 수락했어요.`
+                };
+            case 'commission_rejected':
+                return {
+                    title: '커미션 신청을 거절했어요',
+                    content: `${creatorName}님이 ${commissionTitle || '커미션'} 신청서를 거절했어요.`
+                };
+            case 'payment_request':
+                return {
+                    title: '결제 요청이 도착했어요',
+                    content: `${creatorName}님이 ${amount} 포인트 결제 요청을 보냈어요.`
+                };
+            case 'work_started':
+                return {
+                    title: '작업이 시작되었어요',
+                    content: `${creatorName}님이 작업을 시작했어요.`
+                };
+            case 'work_completed':
+                return {
+                    title: '작업이 완료되었어요',
+                    content: `${creatorName}님이 작업을 완료했어요.`
+                };
+            default:
+                return {
+                    title: '새 알림',
+                    content: '새로운 알림이 도착했어요.'
+                };
+        }
     }
 
 }
