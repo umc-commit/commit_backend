@@ -220,8 +220,7 @@ class NotificationService {
     }
 
     /**
-     * 알림 타입에 따라 title과 content를 생성하는 임시 템플릿 함수
-     * TODO: 답변 확인 후 정확한 문구로 교체할 예정
+     * 알림 타입에 따라 title과 content를 생성하는 템플릿 함수
      */
     generateNotificationText(type, relatedData) {
         const { creatorName, amount, commissionTitle } = relatedData;
@@ -230,16 +229,16 @@ class NotificationService {
             case 'commission_submitted':
                 return {
                     title: '커미션 신청 완료!',
-                    content: `${creatorName}님의 ${commissionTitle || '커미션'}이 정상적으로 접수되었어요. 작가님의 수락을 기다리는 중이에요`
+                    content: `${creatorName}님의 ${commissionTitle || '커미션'} 신청서가 접수됐어요. 작가님의 수락을 기다리는 중이에요.`
                 };
             case 'commission_approved':
                 return {
-                    title: '커미션 신청을 수락했어요',
-                    content: `${creatorName}님이 ${commissionTitle || '커미션'} 신청서를 수락했어요.`
+                    title: '커미션 신청이 수락됐어요',
+                    content: `${creatorName}님이 커미션 신청서를 수락했어요.`
                 };
             case 'commission_rejected':
                 return {
-                    title: '커미션 신청을 거절했어요',
+                    title: '커미션 신청이 거절됐어요',
                     content: `${creatorName}님이 ${commissionTitle || '커미션'} 신청서를 거절했어요.`
                 };
             case 'payment_request':
@@ -249,13 +248,13 @@ class NotificationService {
                 };
             case 'work_started':
                 return {
-                    title: '작업이 시작되었어요',
-                    content: `${creatorName}님이 작업을 시작했어요.`
+                    title: '작업이 시작됐어요',
+                    content: `${creatorName}님이 ${commissionTitle || '커미션'} 작업을 시작했어요.`
                 };
             case 'work_completed':
                 return {
-                    title: '작업이 완료되었어요',
-                    content: `${creatorName}님이 작업을 완료했어요.`
+                    title: '커미션 작업 완료!',
+                    content: `${creatorName}님의 ${commissionTitle || '커미션'} 작업이 완료됐어요. 결과물을 확인해보세요!`
                 };
             default:
                 return {
