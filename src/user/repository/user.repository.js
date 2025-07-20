@@ -95,5 +95,15 @@ export const UserRepository = {
         profileImage: true,
       }
     })
+  },
+
+  /**
+   * 나의 프로필 수정
+   */
+  async updateMyprofile(userId, updates) {
+    return await prisma.user.update({
+      where:{id: userId},
+      data:updates,
+    })
   }
 };

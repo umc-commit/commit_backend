@@ -1,5 +1,5 @@
 import express from "express";
-import { addUser, userLogin, getUserProfile } from "./controller/user.controller.js";
+import { addUser, userLogin, getUserProfile, UpdateMyprofile } from "./controller/user.controller.js";
 import { signJwt } from "../jwt.config.js";
 import passport from "passport";
 import { authenticate } from "../middlewares/auth.middleware.js";
@@ -74,7 +74,7 @@ router.get(
       return res.redirect(`/signup?token=${token}`);
     }
     token = signJwt({
-      userId: req.user.userId?.toString(),
+      userId: req.user.id?.toString(),
     });
 
     res.redirect(`/?token=${token}`)
@@ -105,7 +105,7 @@ router.get(
     }
 
     token = signJwt({
-      userId: req.user.userId?.toString(),
+      userId: req.user.id?.toString(),
     });
 
     res.redirect(`/?token=${token}`)
@@ -136,7 +136,7 @@ router.get(
     }
 
     token = signJwt({
-      userId: req.user.userId?.toString(),
+      userId: req.user.id?.toString(),
     });
 
 
@@ -155,5 +155,8 @@ router.get('/:userId/reviews',
     authenticate,
     reviewController.getReviewsByUserId
 );
+
+// 사용자 프로필 수정
+router.patch("/me", authenticate, UpdateMyprofile);
 
 export default router;
