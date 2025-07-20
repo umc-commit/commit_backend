@@ -4,7 +4,8 @@ import { stringifyWithBigInt } from "../../bigintJson.js";
 import {
     NotificationListResponseDto,
     NotificationReadResponseDto,
-    NotificationDeleteResponseDto
+    NotificationDeleteResponseDto,
+    NotificationListItemDto
 } from '../dto/notification.dto.js';
 
 class NotificationController {
@@ -154,6 +155,41 @@ class NotificationController {
             next(error);
         }
     }
+
+    /**
+     * 알림 생성 API (개발 테스트용)
+     * 로컬 테스트 환경에서는 주석 처리 해제 후 사용
+     * 
+     * TODO: 테스트 후에는 반드시 주석 처리
+     *       추후 불필요해지면 삭제 예정
+     */
+    // async createNotification(req, res, next) {
+    //     try {
+    //         // 요청 본문에서 알림 데이터 추출
+    //         const { userId, type, relatedData } = req.body;
+
+    //         // 알림 생성 서비스 호출
+    //         const result = await notificationService.createNotification({
+    //             userId: BigInt(userId),
+    //             type,
+    //             relatedData
+    //         });
+
+    //         // 생성된 알림을 응답용 DTO로 가공
+    //         const responseData = new NotificationListItemDto(result);
+    //         const finalData = JSON.parse(stringifyWithBigInt(responseData));
+
+    //         // 클라이언트에 응답 전송 (201 Created)
+    //         res.status(StatusCodes.CREATED).json({
+    //             resultType: "SUCCESS",
+    //             error: null,
+    //             success: finalData
+    //         });
+
+    //     } catch (error) {
+    //         next(error);
+    //     }
+    // }
 
 }
 
