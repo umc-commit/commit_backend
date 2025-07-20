@@ -89,10 +89,13 @@ export const UserService = {
         const user = await UserRepository.findUserById(userId);
         if(!user) return null;
         return {
-            userId: user.id.toString(),
-            nickname: user.nickname,
-            profileImage:user.profileImage,
-            description: user.description
+            message:"나의 프로필 조회에 성공하였습니다.",
+            user:{
+                userId: user.id.toString(),
+                nickname: user.nickname,
+                profileImage:user.profileImage,
+                description: user.description
+            }
         }
     },
     // 나의 프로필 수정 
@@ -108,20 +111,26 @@ export const UserService = {
         // 아무것도 수정할 게 없으면? 
         if(Object.keys(updates).length ===0){
             return{
-                userId: user.id.toString(),
-                nickname: user.nickname,
-                profileImage: user.profileImage,
-                description: user.description,
+                message:"수정할 항목이 없습니다.",
+                user:{
+                    userId: user.id.toString(),
+                    nickname: user.nickname,
+                    profileImage: user.profileImage,
+                    description: user.description,
+                }
             };
         }
 
         const updatedUser = await UserRepository.updateMyprofile(userId, updates);
 
         return {
-            userId: updatedUser.id.toString(),
-            nickname: updatedUser.nickname,
-            profileImage: updatedUser.profileImage,
-            description: updatedUser.description,
+            message:"프로필 수정이 완료되었습니다.",
+            user:{
+                userId: updatedUser.id.toString(),
+                nickname: updatedUser.nickname,
+                profileImage: updatedUser.profileImage,
+                description: updatedUser.description,
+            }
         };
     }
 }
