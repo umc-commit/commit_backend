@@ -26,10 +26,11 @@ const googleVerify = async (profile) => {
 
   const user = await prisma.account.findFirst({ 
     where: {oauthId : profile.id, provider:profile.provider},
+    include:{users:true},
   });
 
   if (user !== null) {
-    return { id: user.id, nickname: user.nickname, account_id : user.account_id };
+    return { id: user.users[0].id, nickname: user.users[0].nickname, account_id : user.id.toString() };
   }
 
   // 사용자가 없으면 회원가입 페이지로 이동하도록 응답
@@ -60,10 +61,11 @@ const kakaoVerify = async (profile) => {
 
   const user = await prisma.account.findFirst({ 
     where: {oauthId : profile.id.toString(), provider:profile.provider},
+    include:{users:true},
   });
 
   if (user !== null) {
-    return { id: user.id, nickname: user.nickname, account_id : user.account_id };
+    return { id: user.users[0].id, nickname: user.users[0].nickname, account_id : user.id.toString() };
   }
 
   // 사용자가 없으면 회원가입 페이지로 이동하도록 응답
@@ -95,10 +97,11 @@ const naverVerify = async (profile) => {
 
   const user = await prisma.account.findFirst({ 
     where: {oauthId : profile.id.toString(), provider:profile.provider},
+    include:{users:true},
   });
 
   if (user !== null) {
-    return { id: user.id, nickname: user.nickname, account_id : user.account_id };
+    return { id: user.users[0].id, nickname: user.users[0].nickname, account_id : user.id.toString() };
   }
 
   // 사용자가 없으면 회원가입 페이지로 이동하도록 응답
@@ -130,10 +133,11 @@ const twitterVerify = async (profile) => {
 
   const user = await prisma.account.findFirst({ 
     where: {oauthId : profile.id.toString(), provider:profile.provider},
+    include:{users:true},
   });
 
   if (user !== null) {
-    return { id: user.id, nickname: user.nickname, account_id : user.account_id };
+    return { id: user.users[0].id, nickname: user.users[0].nickname, account_id : user.id.toString() };
   }
 
   // 사용자가 없으면 회원가입 페이지로 이동하도록 응답

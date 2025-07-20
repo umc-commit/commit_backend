@@ -37,8 +37,14 @@ export const UserService = {
         // 5. 사용자가 선한 카테고리 처리 (categories -> 사용자가 선택한 category id 배열 )
         const userCategory = await UserRepository.createUserCategories(userProfile.id, categories);
 
+        // 6. 회원가입 완료 -> 정식 로그인 토큰 발급 
+        const loginToken = signJwt({
+            userId: userProfile.id.toString(),
+        })
+
         return {
             message : "회원가입이 성공적으로 완료되었습니다.",
+            token:loginToken,
             user: {
                 userId : userProfile.id,
                 nickname : userProfile.nickname,
@@ -65,6 +71,9 @@ export const UserService = {
         }
 
         const account = await UserRepository.findAccountByOauthId(dto.provider, oauth_id);
+        console.log("✅ account:", account);
+        console.log("✅ account.users:", account.users);
+        console.log("✅ account.users[0]:", account.users?.[0]);
 
         if(account) {
             // JWT 발급
@@ -73,7 +82,17 @@ export const UserService = {
         } else{
             const signupToken = signJwt({provider : dto.provider, oauth_id});
             return {signupRequired : true, token : signupToken};
+        }   
+    },
+    // 사용자 프로필 조회 
+    async getUserProfile(userId) {
+        const user = await UserRepository.findUserById(userId);
+        if(!user) return null;
+        return {
+            userId: user.id.toString(),
+            nickname: user.nickname,
+            profileImage:user.profileImage,
+            description: user.description
         }
-        
     }
 }

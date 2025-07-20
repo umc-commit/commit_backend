@@ -39,3 +39,19 @@ export const addUser = async(req, res, next) => {
         next(err);
     }
 }
+
+// 사용자 프로필 조회 
+export const getUserProfile = async(req, res, next) => {
+    try{
+        console.log("Decoded JWT from req.user:", req.user);
+
+        const userId = req.user.userId.toString();
+        console.log(userId);
+
+        const result = await UserService.getUserProfile(userId);
+
+        res.status(StatusCodes.OK).success(result);
+    } catch(err){
+        next(err);
+    }
+}
