@@ -208,8 +208,82 @@
             }
           }
         }
+      },
+      "patch":{
+        "tags":["User"],
+        "summary": "나의 프로필 수정하기",
+        "description": "마이페이지에서 프로필 수정 버튼 클릭 시 호출하는 API입니다. 수정하고자 하는 내용만 request body로 넘겨주면 됩니다.",
+        "security" : [
+          {
+            "bearerAuth":[]
+          }
+        ],
+        "requestBody": {
+            "required" : true,
+            "content" : {
+                "application/json" : {
+                    "schema" : {
+                        "type" : "object",
+                        "properties" : {
+                            "nickname":{"type":"string", "example":"탱"},
+                            "profileImage":{"type": "string", "nullable":true, "example":null},
+                            "description":{"type":"string", "example":"."}
+                        }
+                    }
+                }
+            }
+        },
+        "responses":{
+          "200":{
+            "description":"프로필 수정 성공",
+            "content":{
+              "application/json": {
+                "schema":{
+                  "type":"object",
+                  "properties":{
+                    "resultType":{"type":"object", "example":"SUCCESS"},
+                    "error":{"type":null, "example":null},
+                    "success":{
+                      "type":"object",
+                      "properties":{
+                        "userId":{"type":"string", "example":"7"},
+                        "nickname":{"type":"string", "example":"탱"},
+                        "profileImage":{"type": "string", "nullable":true, "example":null},
+                        "description":{"type":"string", "example":"."}
+                      }
+                    }
+                  }
+
+                }
+              }
+            }
+          },
+          "401":{
+            "description": "인증 실패 - 토큰 누락 또는 만료",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "resultType": { "type": "string", "example": "FAIL" },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "errorCode": { "type": "string", "example": "AUTH001" },
+                        "reason": { "type": "string", "example": "인증 정보가 없습니다." },
+                        "data": { "type": ["object", "null"], "example": null }
+                      }
+                    },
+                    "success": { "type": "null", "example": null }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
+    
     
   }
 }
