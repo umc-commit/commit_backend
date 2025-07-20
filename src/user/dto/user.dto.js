@@ -16,3 +16,12 @@ export class UserSignupRequestDto {
         this.agreements = agreements; // 배열
     }
 }
+
+// 나의 프로필 수정 요청 
+export class UpdateMyprofileDto{
+    constructor({nickname, description, profileImage}) {
+        this.nickname = nickname;
+        this.description= description;
+        this.profileImage = profileImage;
+    }
+}

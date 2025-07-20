@@ -94,5 +94,34 @@ export const UserService = {
             profileImage:user.profileImage,
             description: user.description
         }
+    },
+    // 나의 프로필 수정 
+    async updateMyprofile(userId, dto) {
+        const user = await UserRepository.findUserById(userId);
+        if(!user) return null;
+
+        const updates = {};
+        if(dto.nickname !== undefined) updates.nickname = dto.nickname;
+        if(dto.description !=undefined) updates.description = dto.description;
+        if(dto.profileImage != undefined) updates.profileImage = dto.profileImage;
+
+        // 아무것도 수정할 게 없으면? 
+        if(Object.keys(updates).length ===0){
+            return{
+                userId: user.id.toString(),
+                nickname: user.nickname,
+                profileImage: user.profileImage,
+                description: user.description,
+            };
+        }
+
+        const updatedUser = await UserRepository.updateMyprofile(userId, updates);
+
+        return {
+            userId: updatedUser.id.toString(),
+            nickname: updatedUser.nickname,
+            profileImage: updatedUser.profileImage,
+            description: updatedUser.description,
+        };
     }
 }
