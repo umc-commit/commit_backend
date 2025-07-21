@@ -30,7 +30,7 @@ class NotificationService {
 
         // 2. 입력값 검증 및 보정
         const validatedPage = Math.max(1, parseInt(page) || 1); // 음수나 0이면 1로 보정
-        const validatedLimit = Math.min(50, Math.max(1, parseInt(limit) || 20)); // 최대 50개로 제한 (무한스크롤 성능 고려)
+        const validatedLimit = Math.min(100, Math.max(1, parseInt(limit) || 20)); // 최대 100개로 제한 (무한스크롤 성능 고려)
 
         // 3. 해당 사용자의 알림 목록 조회
         const { items: notifications, total } = await notificationRepository.findNotificationsByUserId(
