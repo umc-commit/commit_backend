@@ -275,15 +275,19 @@ model Image {
 }
 
 model Notification {
-  id        BigInt   @id @default(autoincrement())
-  userId    BigInt   @map("user_id")
-  title     String   @db.VarChar(200)
-  content   String   @db.VarChar(1000)
-  createdAt DateTime @default(now()) @map("created_at")
+  id          BigInt    @id @default(autoincrement())
+  userId      BigInt    @map("user_id")
+  title       String    @db.VarChar(200)
+  content     String    @db.VarChar(1000)
+  isRead      Boolean   @default(false) @map("is_read")
+  readAt      DateTime? @map("read_at")
+  type        String    @db.VarChar(50)
+  relatedData Json?     @map("related_data")
+  createdAt   DateTime  @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id])
 
-  @@map("notification")
+  @@map("notifications")
 }
 
 model Review {
