@@ -4,6 +4,5 @@ export class CreatePaymentDto {
     this.merchantUid = merchantUid;
     this.productId = productId;
     this.userId = userId;
-    this.requestId = requestId;
   }
 }

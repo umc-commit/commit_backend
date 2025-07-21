@@ -2,6 +2,7 @@ import axios from "axios";
 import { PaymentRepository } from "../repository/payment.repository.js";
 import { PointRepository } from "../../point/repository/point.repository.js";
 import { ProductNotFoundError } from "../../common/errors/payment.errors.js";
+import { PaymentAmountMismatchError } from "../../common/errors/payment.errors.js";
 
 export const PaymentService = {
   async createPayment(dto) {
@@ -26,7 +27,7 @@ export const PaymentService = {
 
     // 결제 금액 검증
     if (paymentData.amount !== product.price) {
-      throw new PaymentAmountMismatchError({ price: dto.price });
+      throw new PaymentAmountMismatchError({ price: product.price });
     }
 
     // DB 저장

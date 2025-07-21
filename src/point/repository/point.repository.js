@@ -25,7 +25,8 @@ export const PointRepository = {
     return await prisma.pointTransaction.create({
       data: {
         userId: BigInt(data.userId),
-        paymentId: BigInt(data.paymentId),
+        paymentId: data.paymentId ? BigInt(data.paymentId) : null,
+        requestId: data.requestId ? BigInt(data.requestId) : null,
         status: data.status,
         amount: data.amount,
         balance: data.balance,

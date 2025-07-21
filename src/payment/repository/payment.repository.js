@@ -10,7 +10,6 @@ export const PaymentRepository = {
   async createPayment(data) {
     return await prisma.payment.create({
       data: {
-        requestId: BigInt(data.requestId),
         userId: BigInt(data.userId),
         productId: BigInt(data.productId),
         price: data.price,

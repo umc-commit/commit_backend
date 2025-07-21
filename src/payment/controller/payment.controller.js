@@ -10,7 +10,6 @@ export const paymentConfirm = async (req, res, next) => {
         merchantUid: req.body.merchantUid,
         productId: req.body.productId,
         userId: req.body.userId,
-        requestId: req.body.requestId,
       });
 
       const payment = await PaymentService.createPayment(dto);
