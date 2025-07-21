@@ -87,6 +87,41 @@ async function main() {
     },
   });
 
+  const product1 = await prisma.product.create({
+    data: {
+      point: 1000,
+      price: 1200,
+    },
+  });
+
+  const product2 = await prisma.product.create({
+    data: {
+      point: 3000,
+      price: 3100,
+    },
+  });
+
+  const product3 = await prisma.product.create({
+    data: {
+      point: 5000,
+      price: 5000,
+    },
+  });
+
+  const product4 = await prisma.product.create({
+    data: {
+      point: 10000,
+      price: 9900,
+    },
+  });
+
+  const product5 = await prisma.product.create({
+    data: {
+      point: 50000,
+      price: 49000,
+    },
+  });
+
   console.log("✅ Seed completed successfully.");
 }
 

@@ -62,9 +62,9 @@ model Artist {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  account   Account    @relation(fields: [accountId], references: [id])
-  chatrooms Chatroom[] @relation("ArtistChatrooms")
-  follows   Follow[]
+  account     Account      @relation(fields: [accountId], references: [id])
+  chatrooms   Chatroom[]   @relation("ArtistChatrooms")
+  follows     Follow[]
   commissions Commission[]
 
   @@map("artists")
@@ -103,11 +103,11 @@ model Commission {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  artist         Artist           @relation(fields: [artistId], references: [id])
-  category        Category         @relation(fields: [categoryId], references: [id])
-  requests        Request[]
-  bookmarks       Bookmark[]
-  commissionTags  CommissionTag[]
+  artist         Artist          @relation(fields: [artistId], references: [id])
+  category       Category        @relation(fields: [categoryId], references: [id])
+  requests       Request[]
+  bookmarks      Bookmark[]
+  commissionTags CommissionTag[]
 
   @@map("commissions")
 }
@@ -122,26 +122,26 @@ model Request {
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
 
-  user       User       @relation(fields: [userId], references: [id])
-  commission Commission @relation(fields: [commissionId], references: [id])
-  payments   Payment[]
-  chatrooms  Chatroom[]
-  reviews    Review[]
+  user             User               @relation(fields: [userId], references: [id])
+  commission       Commission         @relation(fields: [commissionId], references: [id])
+  chatrooms        Chatroom[]
+  reviews          Review[]
+  PointTransaction PointTransaction[]
 
   @@map("requests")
 }
 
 model Payment {
-  id            BigInt   @id @default(autoincrement())
-  requestId     BigInt   @map("request_id")
-  userId        BigInt   @map("user_id")
-  productId     BigInt   @map("product_id")
-  price         Int
-  status        String   @db.VarChar(20)
-  transactionId String   @map("transaction_id") @db.VarChar(100)
-  createdAt     DateTime @default(now()) @map("created_at")
+  id          BigInt   @id @default(autoincrement())
+  userId      BigInt   @map("user_id")
+  productId   BigInt   @map("product_id")
+  pgProvider  String   @map("pg_provider") @db.VarChar(100)
+  price       Int
+  status      String   @db.VarChar(20)
+  impUid      String   @map("imp_uid") @db.VarChar(100)
+  merchantUid String   @map("merchant_uid") @db.VarChar(100)
+  createdAt   DateTime @default(now()) @map("created_at")
 
-  request           Request            @relation(fields: [requestId], references: [id])
   user              User               @relation(fields: [userId], references: [id])
   product           Product            @relation(fields: [productId], references: [id])
   pointTransactions PointTransaction[]
@@ -161,7 +161,7 @@ model Product {
 
 model Point {
   id        BigInt   @id @default(autoincrement())
-  userId    BigInt   @map("user_id")
+  userId    BigInt   @unique @map("user_id")
   amount    Int
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -174,13 +174,16 @@ model Point {
 model PointTransaction {
   id        BigInt   @id @default(autoincrement())
   userId    BigInt   @map("user_id")
-  paymentId BigInt   @map("payment_id")
+  paymentId BigInt?  @map("payment_id")
+  requestId BigInt?  @map("request_id")
   status    String   @db.VarChar(20)
+  amount    Int
   balance   Int
   createdAt DateTime @default(now()) @map("created_at")
 
-  user    User    @relation(fields: [userId], references: [id])
-  payment Payment @relation(fields: [paymentId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  payment Payment? @relation(fields: [paymentId], references: [id])
+  request Request? @relation(fields: [requestId], references: [id])
 
   @@map("point_transactions")
 }
@@ -190,8 +193,8 @@ model Chatroom {
   requestId      BigInt   @map("request_id")
   consumerId     BigInt   @map("consumer_id")
   artistId       BigInt   @map("artist_id")
-  hiddenArtist   Boolean  @default(false)@map("hidden_artist")
-  hiddenConsumer Boolean  @default(false)@map("hidden_consumer")
+  hiddenArtist   Boolean  @default(false) @map("hidden_artist")
+  hiddenConsumer Boolean  @default(false) @map("hidden_consumer")
   createdAt      DateTime @default(now()) @map("created_at")
 
   request      Request       @relation(fields: [requestId], references: [id])
@@ -262,11 +265,11 @@ model CommissionTag {
 }
 
 model Image {
-  id       BigInt @id @default(autoincrement())
-  target   String @db.VarChar(50)
-  targetId BigInt @map("target_id")
-  imageUrl String @map("image_url") @db.VarChar(500)
-  orderIndex Int?      @map("order_index")
+  id         BigInt @id @default(autoincrement())
+  target     String @db.VarChar(50)
+  targetId   BigInt @map("target_id")
+  imageUrl   String @map("image_url") @db.VarChar(500)
+  orderIndex Int?   @map("order_index")
 
   @@map("images")
 }
@@ -313,9 +316,9 @@ model Agreement {
 }
 
 model UserAgreement {
-  id          BigInt  @id @default(autoincrement())
-  userId      BigInt  @map("user_id")
-  agreementId BigInt  @map("agreement_id")
+  id          BigInt @id @default(autoincrement())
+  userId      BigInt @map("user_id")
+  agreementId BigInt @map("agreement_id")
 
   user      User      @relation(fields: [userId], references: [id])
   agreement Agreement @relation(fields: [agreementId], references: [id])
@@ -341,15 +344,15 @@ model Session {
 }
 
 /**
-* 커미션 신청 상태 정의
-* 플로우: 신청 > 수락 > 작업 > 작업물 전달 > 결제 > 완료
-*/
+ * 커미션 신청 상태 정의
+ * 플로우: 신청 > 수락 > 작업 > 작업물 전달 > 결제 > 완료
+ */
 enum RequestStatus {
-  PENDING         // 신청 후 작가 수락 대기 중
-  CANCELED        // 사용자가 직접 취소
-  APPROVED        // 작가가 수락함
-  REJECTED        // 작가가 거절함
-  IN_PROGRESS     // 작가가 작업 진행 중
-  SUBMITTED       // 작가가 결과물 전달함
-  COMPLETED       // 결제 완료 + 거래 완료 버튼 처리 -> 리뷰 작성 가능
+  PENDING // 신청 후 작가 수락 대기 중
+  CANCELED // 사용자가 직접 취소
+  APPROVED // 작가가 수락함
+  REJECTED // 작가가 거절함
+  IN_PROGRESS // 작가가 작업 진행 중
+  SUBMITTED // 작가가 결과물 전달함
+  COMPLETED // 결제 완료 + 거래 완료 버튼 처리 -> 리뷰 작성 가능
 }

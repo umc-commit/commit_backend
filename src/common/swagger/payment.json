@@ -1,0 +1,163 @@
+{
+  "paths": {
+    "/api/payments/complete": {
+      "post": {
+        "summary": "결제 완료 처리",
+        "description": "아임포트 imp_uid로 결제 검증 후 DB에 결제 내역, 포인트 거래 내역, 최종 포인트를 저장합니다.",
+        "tags": ["Payment"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentCompleteRequest"
+              },
+              "example": {
+                "requestId": 1,
+                "userId": 1,
+                "productId": 1,
+                "impUid": "imp_1234567890"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "결제 완료 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentCompleteResponse"
+                },
+                "example": {
+                  "resultType": "SUCCESS",
+                  "success": {
+                    "paymentId": 1,
+                    "userId": 1,
+                    "productId": 1,
+                    "price": 1200,
+                    "status": "paid",
+                    "pgProvider": "kakaopay",
+                    "impUid": "imp_1234567890",
+                    "merchantUid": "order_no_1753062110278",
+                    "pointTransactionId": 10,
+                    "pointBalance": 1000
+                  },
+                  "error": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류 (상품 없음, 금액 불일치 등)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "resultType": "FAIL",
+                  "error": {
+                    "errorCode": "ProductNotFoundError",
+                    "reason": "상품을 찾을 수 없습니다.",
+                    "data": null
+                  },
+                  "success": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "resultType": "FAIL",
+                  "error": {
+                    "errorCode": "unknown",
+                    "reason": "Internal Server Error",
+                    "data": null
+                  },
+                  "success": null
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PaymentCompleteRequest": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "integer",
+            "description": "Request 테이블 ID"
+          },
+          "userId": {
+            "type": "integer",
+            "description": "User ID"
+          },
+          "productId": {
+            "type": "integer",
+            "description": "Product ID"
+          },
+          "impUid": {
+            "type": "string",
+            "description": "아임포트 imp_uid"
+          }
+        },
+        "required": ["requestId", "userId", "productId", "impUid"]
+      },
+      "PaymentCompleteResponse": {
+        "type": "object",
+        "properties": {
+          "resultType": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "success": {
+            "type": "object",
+            "properties": {
+              "paymentId": { "type": "integer" },
+              "userId": { "type": "integer" },
+              "productId": { "type": "integer" },
+              "price": { "type": "integer" },
+              "status": { "type": "string" },
+              "pgProvider": { "type": "string" },
+              "impUid": { "type": "string" },
+              "merchantUid": { "type": "string" },
+              "pointTransactionId": { "type": "integer" },
+              "pointBalance": { "type": "integer" }
+            }
+          },
+          "error": {
+            "type": ["object", "null"]
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "resultType": { "type": "string", "example": "FAIL" },
+          "error": {
+            "type": "object",
+            "properties": {
+              "errorCode": { "type": "string" },
+              "reason": { "type": "string" },
+              "data": { "type": ["object", "null"] }
+            }
+          },
+          "success": {
+            "type": ["object", "null"]
+          }
+        }
+      }
+    }
+  }
+}

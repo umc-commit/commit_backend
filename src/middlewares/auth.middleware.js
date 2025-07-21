@@ -18,6 +18,7 @@ export const authenticate = (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
     const decoded = verifyJwt(token);
+    console.log("🔍 Decoded JWT in middleware:", decoded);
 
     req.user = decoded;
     next();

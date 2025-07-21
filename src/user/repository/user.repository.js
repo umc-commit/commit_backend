@@ -1,11 +1,17 @@
 import { prisma } from "../../db.config.js"
 
+/**
+ * 사용자 ID로 사용자 조회 
+ */ 
 export const UserRepository = {
   async findUserById(userId) {
     return await prisma.user.findUnique({
       where: {
         id: userId,
       },
+      include : {
+        account:true,
+      }
     });
   },
 
@@ -75,4 +81,29 @@ export const UserRepository = {
       data,
     })
   },
+  /**
+   * 나의 프로필 조회 
+   */
+  async getMyProfile(userId) {
+    return await prisma.user.findUnique({
+      where:{
+        id:userId
+      },
+      select:{
+        nickname:true,
+        description:true,
+        profileImage: true,
+      }
+    })
+  },
+
+  /**
+   * 나의 프로필 수정
+   */
+  async updateMyprofile(userId, updates) {
+    return await prisma.user.update({
+      where:{id: userId},
+      data:updates,
+    })
+  }
 };

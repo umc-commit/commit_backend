@@ -2,6 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import { UserService } from "../service/user.service.js";
 import { UserSignupRequestDto } from "../dto/user.dto.js";
 import { UserLoginRequestDto } from "../dto/user.dto.js";
+import { UpdateMyprofileDto } from "../dto/user.dto.js";
 import { verifyJwt } from "../../jwt.config.js";
 
 // 로그인 요청 
@@ -36,6 +37,39 @@ export const addUser = async(req, res, next) => {
         // 3. 성공 응답 반환
         res.status(StatusCodes.CREATED).success(result);
     } catch(err) {
+        next(err);
+    }
+}
+
+// 사용자 프로필 조회 
+export const getUserProfile = async(req, res, next) => {
+    try{
+        console.log("Decoded JWT from req.user:", req.user);
+
+        const userId = req.user.userId.toString();
+        console.log(userId);
+
+        const result = await UserService.getUserProfile(userId);
+
+        res.status(StatusCodes.OK).success(result);
+    } catch(err){
+        next(err);
+    }
+}
+
+// 나의 프로필 수정하기 
+export const UpdateMyprofile = async(req, res, next) => {
+    try{
+        console.log("Decoded JWT from req.user:", req.user);
+
+        const userId = req.user.userId.toString();
+        console.log("userId : ", userId);
+
+        const dto = new UpdateMyprofileDto(req.body);
+
+        const result = await UserService.updateMyprofile(userId, dto);
+        res.status(StatusCodes.OK).success(result);
+    } catch(err){
         next(err);
     }
 }
