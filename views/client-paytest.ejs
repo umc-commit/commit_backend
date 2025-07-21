@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>아임포트 결제 테스트</title>
+    <script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
+  </head>
+  <body>
+    <h1>아임포트 결제 테스트 페이지</h1>
+    <button id="payment-button">결제하기</button>
+
+    <script>
+      const IMP = window.IMP;
+      IMP.init("<%= impKey %>");
+
+      document.getElementById("payment-button").addEventListener("click", () => {
+        IMP.request_pay(
+          {
+            pg: "kakaopay", // 테스트용 PG사 선택
+            pay_method: "card",
+            merchant_uid: "order_no_" + new Date().getTime(), // 주문번호
+            name: "테스트 상품",
+            amount: 1200, // 테스트 결제 금액
+            buyer_email: "test@example.com",
+            buyer_name: "테스트 사용자",
+            buyer_tel: "010-1234-5678",
+          },
+          function (rsp) {
+            if (rsp.success) {
+              // 결제 성공 시 백엔드 검증 요청
+              console.log("결제 성공", rsp);
+
+              fetch("http://localhost:3000/api/payments/complete", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  impUid: rsp.imp_uid,
+                  merchantUid: rsp.merchant_uid,
+                  productId: 1, // productId
+                  userId: 1, // userId
+                  requestId: 1, // requestId
+                }),
+              })
+                .then((res) => res.json())
+                .then((data) => {
+                  console.log("백엔드 검증 결과:", data);
+                  console.log(rsp.merchant_uid);
+                  alert("결제 및 검증 성공", rsp.merchant_uid);
+                })
+                .catch((err) => {
+                  console.error(err);
+                  alert("백엔드 검증 실패");
+                });
+            } else {
+              console.log("결제 실패", rsp);
+              alert("결제 실패: " + rsp.error_msg);
+            }
+          }
+        );
+      });
+    </script>
+  </body>
+</html>

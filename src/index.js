@@ -14,6 +14,7 @@ import { kakaoStrategy } from './auth.config.js';
 import { naverStrategy } from './auth.config.js';
 import { twitterStrategy } from './auth.config.js';
 import { prisma } from "./db.config.js";
+import path from "path";
 
 
 dotenv.config();
@@ -95,6 +96,12 @@ app.get("/signup", (req, res) => {
   res.send("Signup Page");
 });
 
+// 결제 테스트 페이지를 위한 ejs 설정
+app.set("view engine", "ejs");
+app.set("views", path.join(process.cwd(), "views"));
+app.get("/client-paytest", (req, res) => {
+  res.render("client-paytest", { impKey: process.env.PUBLIC_IMP_KEY });
+});
 
 // Swagger 설정 
 setupSwagger(app);  
