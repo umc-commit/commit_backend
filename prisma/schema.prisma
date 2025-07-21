@@ -136,9 +136,11 @@ model Payment {
   requestId     BigInt   @map("request_id")
   userId        BigInt   @map("user_id")
   productId     BigInt   @map("product_id")
+  pgProvider    String   @map("pg_provider") @db.VarChar(100)
   price         Int
   status        String   @db.VarChar(20)
-  transactionId String   @map("transaction_id") @db.VarChar(100)
+  impUid        String   @map("imp_uid") @db.VarChar(100)
+  merchantUid   String   @map("merchant_uid") @db.VarChar(100)
   createdAt     DateTime @default(now()) @map("created_at")
 
   request           Request            @relation(fields: [requestId], references: [id])
@@ -161,7 +163,7 @@ model Product {
 
 model Point {
   id        BigInt   @id @default(autoincrement())
-  userId    BigInt   @map("user_id")
+  userId    BigInt   @unique @map("user_id")
   amount    Int
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -176,6 +178,7 @@ model PointTransaction {
   userId    BigInt   @map("user_id")
   paymentId BigInt   @map("payment_id")
   status    String   @db.VarChar(20)
+  amount    Int
   balance   Int
   createdAt DateTime @default(now()) @map("created_at")
 
