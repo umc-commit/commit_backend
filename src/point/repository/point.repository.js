@@ -40,4 +40,8 @@ export const PointRepository = {
       data: { balance },
     });
   },
+
+  async getAllProducts() {
+    return await prisma.product.findMany();
+  },
 };

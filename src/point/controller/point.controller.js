@@ -14,3 +14,14 @@ export const getUserPoint = async(req, res, next) => {
     next(err);
   }
 }
+
+export const getProducts = async(req, res, next) => {
+  try {
+    const products = await PointService.getAllProducts();
+    const responseData = parseWithBigInt(stringifyWithBigInt(products));
+
+    res.status(StatusCodes.OK).success(responseData);
+  } catch (error) {
+    next(error);
+  }
+}
