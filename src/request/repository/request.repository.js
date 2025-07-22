@@ -98,4 +98,54 @@ export const RequestRepository = {
       }
     });
   },
+
+  /**
+   * Request ID로 상세 조회 (Commission 정보 포함)
+   */
+  async findRequestWithCommissionById(requestId) {
+    return await prisma.request.findUnique({
+      where: {
+        id: BigInt(requestId)
+      },
+      include: {
+        commission: {
+          select: {
+            artistId: true
+          }
+        }
+      }
+    });
+  },
+
+  /**
+   * Request 상태 업데이트
+   */
+  async updateRequestStatus(requestId, status) {
+    const updateData = {
+      status: status
+    };
+
+    // 상태에 따른 타임스탬프 업데이트
+    switch (status) {
+      case 'APPROVED':
+        updateData.approvedAt = new Date();
+        break;
+      case 'IN_PROGRESS':
+        updateData.inProgressAt = new Date();
+        break;
+      case 'SUBMITTED':
+        updateData.submittedAt = new Date();
+        break;
+      case 'COMPLETED':
+        updateData.completedAt = new Date();
+        break;
+    }
+
+    return await prisma.request.update({
+      where: {
+        id: BigInt(requestId)
+      },
+      data: updateData
+    });
+  },
 };
