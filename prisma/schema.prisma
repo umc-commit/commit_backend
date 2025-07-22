@@ -121,6 +121,10 @@ model Request {
   waitlist     Int?
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
+  approvedAt   DateTime?     @map("approved_at")
+  inProgressAt DateTime?     @map("in_progress_at") 
+  submittedAt  DateTime?     @map("submitted_at")
+  completedAt  DateTime?     @map("completed_at")
 
   user             User               @relation(fields: [userId], references: [id])
   commission       Commission         @relation(fields: [commissionId], references: [id])
@@ -294,7 +298,7 @@ model Review {
   id        BigInt   @id @default(autoincrement())
   userId    BigInt   @map("user_id")
   requestId BigInt   @map("request_id")
-  rate      Int
+  rate      Float
   content   String   @db.VarChar(1000)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
