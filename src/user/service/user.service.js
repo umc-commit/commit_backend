@@ -2,6 +2,7 @@ import { UserRepository } from "../repository/user.repository.js";
 import { OauthIdAlreadyExistError, MissingCategoryError, MissingRequiredAgreementError, UserNotSignupedError } from "../../common/errors/user.errors.js";
 import axios from "axios";
 import { signJwt } from "../../jwt.config.js";
+import { AccessUserCategories } from "../controller/user.controller.js";
 
 export const UserService = {
     
@@ -132,5 +133,20 @@ export const UserService = {
                 description: updatedUser.description,
             }
         };
+    },
+
+    // 사용자가 선택한 카테고리 조회 
+    async accessUserCategories(userId) {
+        const user = await UserRepository.AccessUserCategories(userId);
+        if(!user) return null;
+
+        const categoryName = user.userCategories.map(uc => uc.category.name);
+
+        return {
+            message:"사용자가 선택한 카테고리 조회에 성공했습니다.",
+            user:{
+                categories:categoryName,
+            }
+        }
     }
 }

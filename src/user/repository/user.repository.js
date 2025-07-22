@@ -1,4 +1,5 @@
 import { prisma } from "../../db.config.js"
+import { AccessUserCategories } from "../controller/user.controller.js";
 
 /**
  * 사용자 ID로 사용자 조회 
@@ -104,6 +105,20 @@ export const UserRepository = {
     return await prisma.user.update({
       where:{id: userId},
       data:updates,
+    })
+  },
+
+  // 사용자가 선택한 카테고리 조회 
+  async AccessUserCategories(userId){
+    return await prisma.user.findUnique({
+      where :{id:userId}, 
+      include:{
+        userCategories:{
+          include:{
+            category:true,
+          }
+        }
+      }
     })
   }
 };
