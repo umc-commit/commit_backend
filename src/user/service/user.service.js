@@ -2,7 +2,6 @@ import { UserRepository } from "../repository/user.repository.js";
 import { OauthIdAlreadyExistError, MissingCategoryError, MissingRequiredAgreementError, UserNotSignupedError } from "../../common/errors/user.errors.js";
 import axios from "axios";
 import { signJwt } from "../../jwt.config.js";
-import { CheckUserNickname } from "../controller/user.controller.js";
 
 export const UserService = {
     
