@@ -132,5 +132,19 @@ export const UserService = {
                 description: updatedUser.description,
             }
         };
+    },
+    
+    // 사용자 닉네임 중복 확인 
+    async isNicknameDuplicate(nickname) {
+        const duplicate = await UserRepository.checkNicknameDuplicate(nickname);
+
+        if(duplicate) return{
+            message:"중복된 닉네임입니다.",
+            nickname: nickname
+        }
+        return {
+            message:"사용 가능한 닉네임입니다.",
+            nickname : nickname
+        }
     }
 }

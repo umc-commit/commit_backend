@@ -73,3 +73,17 @@ export const UpdateMyprofile = async(req, res, next) => {
         next(err);
     }
 }
+
+// 닉네임 중복 확인 
+export const CheckUserNickname = async(req, res, next) => {
+    try{
+        const {nickname}= req.query;
+
+        const result = await UserService.isNicknameDuplicate(nickname);
+
+        res.status(StatusCodes.OK).success(result);
+
+    } catch(err) {
+        next(err);
+    }
+}

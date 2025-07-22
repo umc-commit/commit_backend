@@ -282,8 +282,77 @@
           }
         }
       }
+    },
+    "/api/users/check-nickname":{
+      "get":{
+        "tags":["User"],
+        "summary": "닉네임 중복 확인하기",
+        "description": "닉네임 설정시 중복 확인하기",
+        "parameters": [
+          {
+            "name": "nickname",
+            "in": "query",
+            "required": true,
+            "description": "중복 확인할 닉네임",
+            "schema": {
+              "type": "string"
+            },
+            "example": "탱"
+          }
+        ],
+        "responses":{
+          "200":{
+            "description":"사용 가능한 닉네임입니다.",
+            "content":{
+              "application/json": {
+                "schema":{
+                  "type":"object",
+                  "properties":{
+                    "resultType":{"type":"object", "example":"SUCCESS"},
+                    "error":{"type":null, "example":null},
+                    "success":{
+                      "type":"object",
+                      "properties":{
+                        "message": {"type":"string", "example":"사용 가능한 닉네임입니다."},
+                        "nickname": {"type":"string", "example":"탱"}
+                      }
+                    }
+                  }
+
+                }
+              }
+            }
+          },
+          "401":{
+            "description": "중복된 닉네임입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "resultType": { "type": "string", "example": "FAIL" },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "errorCode": { "type": "string", "example": "AUTH001" },
+                        "reason": { "type": "string", "example": "중복된 닉네임입니다." },
+                        "data": { 
+                          "type":"object",
+                          "properties" :{
+                            "nickname" :{"type":"string", "example":"생귤탱굴"}
+                          }
+                         }
+                      }
+                    },
+                    "success": { "type": "null", "example": null }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
-    
     
   }
 }
