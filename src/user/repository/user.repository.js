@@ -105,5 +105,12 @@ export const UserRepository = {
       where:{id: userId},
       data:updates,
     })
+  },
+
+  // 닉네임 중복 확인 
+  async checkNicknameDuplicate(nickname) {
+    return await prisma.user.findFirst({
+      where :{nickname}
+    });
   }
 };
