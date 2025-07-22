@@ -107,7 +107,6 @@ export const UserRepository = {
       data:updates,
     })
   },
-
   // 사용자가 선택한 카테고리 조회 
   async AccessUserCategories(userId){
     return await prisma.user.findUnique({
@@ -120,5 +119,11 @@ export const UserRepository = {
         }
       }
     })
+  },
+  // 닉네임 중복 확인 
+  async checkNicknameDuplicate(nickname) {
+    return await prisma.user.findFirst({
+      where :{nickname}
+    });
   }
 };

@@ -1,5 +1,5 @@
 import express from "express";
-import { addUser, userLogin, getUserProfile, UpdateMyprofile, AccessUserCategories } from "./controller/user.controller.js";
+import { addUser, userLogin, getUserProfile, UpdateMyprofile, AccessUserCategories, CheckUserNickname } from "./controller/user.controller.js";
 import { signJwt } from "../jwt.config.js";
 import passport from "passport";
 import { authenticate } from "../middlewares/auth.middleware.js";
@@ -159,7 +159,12 @@ router.get('/:userId/reviews',
 // 사용자 프로필 수정
 router.patch("/me", authenticate, UpdateMyprofile);
 
+
 // 사용자가 선택한 카테고리 조회
 router.get("/categories", authenticate, AccessUserCategories);
+
+// 닉네임 중복 확인 
+router.get("/check-nickname", CheckUserNickname);
+
 
 export default router;

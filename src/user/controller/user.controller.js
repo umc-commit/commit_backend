@@ -84,7 +84,21 @@ export const AccessUserCategories = async(req, res, next) => {
 
         const result = await UserService.accessUserCategories(userId);
         res.status(StatusCodes.OK).success(result);
-    } catch(err){
+    } catch(err) {
+        next(err);
+    }
+}
+
+// 닉네임 중복 확인 
+export const CheckUserNickname = async(req, res, next) => {
+    try{
+        const {nickname}= req.query;
+
+        const result = await UserService.isNicknameDuplicate(nickname);
+
+        res.status(StatusCodes.OK).success(result);
+
+    } catch(err) {
         next(err);
     }
 }
