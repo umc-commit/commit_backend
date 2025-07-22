@@ -11,3 +11,14 @@ export class RequestNotFoundError extends BaseError {
     });
   }
 }
+
+export class InvalidRequestFilterError extends BaseError {
+  constructor(data = null) {
+    super({
+      errorCode: "R002",
+      reason: "유효하지 않은 필터 조건입니다. (all, ongoing, completed 중 하나여야 합니다)",
+      statusCode: 400,
+      data,
+    });
+  }
+}
