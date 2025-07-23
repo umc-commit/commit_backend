@@ -148,7 +148,7 @@ export const UserService = {
                 categories:categoryName,
             }
         }
-    }
+    },
     
     // 사용자 닉네임 중복 확인 
     async isNicknameDuplicate(nickname) {
