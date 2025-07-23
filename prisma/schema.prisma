@@ -142,8 +142,9 @@ model Payment {
   productId   BigInt   @map("product_id")
   pgProvider  String   @map("pg_provider") @db.VarChar(100)
   price       Int
+  pointAmount Int      @map("point_amount") @default(0)
   status      String   @db.VarChar(20)
-  impUid      String   @map("imp_uid") @db.VarChar(100)
+  impUid      String   @unique @map("imp_uid") @db.VarChar(100)
   merchantUid String   @map("merchant_uid") @db.VarChar(100)
   createdAt   DateTime @default(now()) @map("created_at")
 
