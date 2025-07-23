@@ -1,4 +1,5 @@
 import { prisma } from "../../db.config.js"
+import { AccessUserCategories } from "../controller/user.controller.js";
 
 /**
  * 사용자 ID로 사용자 조회 
@@ -106,7 +107,19 @@ export const UserRepository = {
       data:updates,
     })
   },
-
+  // 사용자가 선택한 카테고리 조회 
+  async AccessUserCategories(userId){
+    return await prisma.user.findUnique({
+      where :{id:userId}, 
+      include:{
+        userCategories:{
+          include:{
+            category:true,
+          }
+        }
+      }
+    })
+  },
   // 닉네임 중복 확인 
   async checkNicknameDuplicate(nickname) {
     return await prisma.user.findFirst({

@@ -74,6 +74,21 @@ export const UpdateMyprofile = async(req, res, next) => {
     }
 }
 
+// 사용자가 선택한 카테고리 조회하기 
+export const AccessUserCategories = async(req, res, next) => {
+    try{
+        console.log("Decoded JWT from req.user:", req.user);
+
+        const userId = req.user.userId.toString();
+        console.log("userId : ", userId);
+
+        const result = await UserService.accessUserCategories(userId);
+        res.status(StatusCodes.OK).success(result);
+    } catch(err) {
+        next(err);
+    }
+}
+
 // 닉네임 중복 확인 
 export const CheckUserNickname = async(req, res, next) => {
     try{

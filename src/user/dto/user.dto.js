@@ -25,3 +25,4 @@ export class UpdateMyprofileDto{
         this.profileImage = profileImage;
     }
 }
+
