@@ -1,4 +1,3 @@
-// /src/commission/repository/commission.repository.js
 import { prisma } from "../../db.config.js"
 
 export const CommissionRepository = {
@@ -66,6 +65,41 @@ export const CommissionRepository = {
         targetId: BigInt(commissionId)
       },
       orderBy: { orderIndex: 'asc' }
+    });
+  },
+
+  /**
+   * 커미션 ID로 신청폼 조회 (작가 정보 포함)
+   */
+  async findCommissionFormById(commissionId) {
+    return await prisma.commission.findUnique({
+      where: {
+        id: BigInt(commissionId)
+      },
+      include: {
+        artist: {
+          select: {
+            id: true,
+            nickname: true,
+          }
+        }
+      }
+    });
+  },
+
+  /**
+   * 커미션 썸네일 이미지 조회
+   */
+  async findThumbnailImageByCommissionId(commissionId) {
+    return await prisma.image.findFirst({
+      where: {
+        target: 'commission',
+        targetId: BigInt(commissionId),
+        orderIndex: 0
+      },
+      select: {
+        imageUrl: true
+      }
     });
   },
 };
