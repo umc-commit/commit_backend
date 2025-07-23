@@ -1,9 +1,9 @@
 import { prisma } from "../../db.config.js"
 
-/**
- * 사용자 ID로 사용자 조회 
- */ 
 export const UserRepository = {
+  /**
+   * 사용자 ID로 사용자 조회 
+   */
   async findUserById(userId) {
     return await prisma.user.findUnique({
       where: {
@@ -15,6 +15,9 @@ export const UserRepository = {
     });
   },
 
+  /**
+   * 작가 ID로 작가 조회 
+   */
   async findArtistById(artistId) {
     return await prisma.artist.findUnique({
       where: {
