@@ -4,7 +4,7 @@
       "post": {
         "tags": ["User"],
         "summary": "회원가입",
-        "description": "소셜 로그인 후 가입되지 않은 사용자일 경우, 전달받은 JWT 토큰을 포함하여 사용자가 입력한 정보들을 DB에 등록합니다. (닉네임까지 입력 마친 후 호출)",
+        "description": "소셜 로그인 후 가입되지 않은 사용자일 경우, 전달받은 JWT 토큰을 포함하여 사용자가 입력한 정보들을 DB에 등록합니다. (닉네임까지 입력 마친 후 호출) , 작가인 경우 role='artist', 신청자일 경우 role='client'",
         "requestBody": {
             "required" : true,
             "content" : {
@@ -14,6 +14,7 @@
                         "properties" : {
                             "token": {"type": "string", "example" : "eyJhbGciOiJIUzI1NiIs..."},
                             "nickname": { "type": "string", "example": "코지" },
+                            "role":{"type":"string", "example":"artist"},
                             "categories": {
                                 "type": "array",
                                 "items": { "type": "integer" },

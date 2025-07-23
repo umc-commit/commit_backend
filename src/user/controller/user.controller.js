@@ -31,7 +31,6 @@ export const addUser = async(req, res, next) => {
         // 1. Request body를 dto로 변환
         const dto = new UserSignupRequestDto(req.body);
 
-        // 2. Service 호출 
         const result = await UserService.addAccount(dto);
 
         // 3. 성공 응답 반환
