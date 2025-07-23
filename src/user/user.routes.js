@@ -1,5 +1,5 @@
 import express from "express";
-import { addUser, userLogin, getUserProfile, UpdateMyprofile, AccessUserCategories, CheckUserNickname } from "./controller/user.controller.js";
+import { addUser, userLogin, getUserProfile, UpdateMyprofile, AccessUserCategories, CheckUserNickname, FollowArtist } from "./controller/user.controller.js";
 import { signJwt } from "../jwt.config.js";
 import passport from "passport";
 import { authenticate } from "../middlewares/auth.middleware.js";
@@ -165,6 +165,9 @@ router.get("/categories", authenticate, AccessUserCategories);
 
 // 닉네임 중복 확인 
 router.get("/check-nickname", CheckUserNickname);
+
+// 사용자가 원하는 작가 팔로우하기 
+router.post("/follows/:artistId", authenticate,FollowArtist);
 
 
 export default router;

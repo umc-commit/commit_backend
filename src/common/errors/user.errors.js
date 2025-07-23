@@ -66,3 +66,25 @@ export class UserRoleError extends BaseError {
     })
   }
 };
+
+export class UserAlreadyFollowArtist extends BaseError {
+  constructor(data=null){
+    super({
+      errorCode:"U007",
+      reason : '이미 해당 작가를 팔로우하고 있습니다.',
+      statusCode: 404,
+      data,
+    })
+  }
+};
+
+export class ArtistNotFound extends BaseError {
+  constructor(data=null){
+    super({
+      errorCode:"U008",
+      reason : '해당 작가가 존재하지 않습니다.',
+      statusCode: 404,
+      data,
+    })
+  }
+};
