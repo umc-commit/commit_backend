@@ -72,7 +72,7 @@ export class UserAlreadyFollowArtist extends BaseError {
     super({
       errorCode:"U007",
       reason : '이미 해당 작가를 팔로우하고 있습니다.',
-      statusCode: 404,
+      statusCode: 409,
       data,
     })
   }
