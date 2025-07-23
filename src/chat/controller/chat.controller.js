@@ -2,6 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import { parseWithBigInt, stringifyWithBigInt } from "../../bigintJson.js";
 import { ShowMessagesDto } from "../dto/chat.dto.js";
 import { ChatService } from "../service/chat.service.js";
+import { FindChatroomByMessageDto } from "../dto/chat.dto.js";
 
 export const showMessages = async (req, res, next) => {
   try {
@@ -18,4 +19,17 @@ export const showMessages = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-}
+};
+
+export const getMessageByKeyword = async (req, res, next) => {
+  try {
+    const dto = new FindChatroomByMessageDto(req.query);
+    
+    const messages = await ChatService.searchMessagesByKeyword(dto.keyword);
+    const responseData = parseWithBigInt(stringifyWithBigInt(messages));
+
+    res.status(StatusCodes.OK).success(responseData);
+  } catch(err) {
+    next(err);
+  }
+};
