@@ -101,3 +101,21 @@ export const CheckUserNickname = async(req, res, next) => {
         next(err);
     }
 }
+
+// 작가 팔로우하기
+export const FollowArtist = async(req, res, next) => {
+    try{
+        console.log("Decoded JWT from req.user:", req.user);
+
+        const userId = req.user.userId.toString();
+        console.log("userId : ", userId);
+
+        const artistId = req.params.artistId;
+
+        const result = await UserService.FollowArtist(userId, artistId);
+
+        res.status(StatusCodes.CREATED).success(result);
+    } catch(err) {
+        next(err);
+    }
+}

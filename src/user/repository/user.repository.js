@@ -1,4 +1,5 @@
 import { prisma } from "../../db.config.js"
+import { FollowArtist } from "../controller/user.controller.js";
 
 export const UserRepository = {
   /**
@@ -150,5 +151,22 @@ export const UserRepository = {
     return await prisma.user.findFirst({
       where :{nickname}
     });
-  }
+  },
+
+  // 작가 팔로우하기 
+  async FollowArtist(userId, artistId) {
+    return await prisma.follow.create({
+      data:{
+        userId,
+        artistId
+      }
+    })
+  },
+
+  // 사용자가 팔로우중인지 확인
+  async AlreadyFollow(userId, artistId) {
+    return await prisma.follow.findFirst({
+      where:{userId, artistId}
+    })
+  },
 };
