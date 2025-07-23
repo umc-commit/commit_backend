@@ -111,4 +111,87 @@ export const HomeService = {
       }))
     };
   },
+
+  /**
+   * 팔로잉 작가 커미션 조회
+   */
+  async getFollowingCommissions(userId, dto) {
+    const { offset, limit, page } = dto;
+
+    // 팔로잉 작가 커미션 목록 조회
+    const commissions = await HomeRepository.findFollowingCommissions(userId, offset, limit);
+    
+    // 총 개수 조회
+    const totalCount = await HomeRepository.countFollowingCommissions(userId);
+    
+    // 커미션 ID 목록으로 이미지 조회
+    const commissionIds = commissions.map(commission => commission.id);
+    const images = await HomeRepository.findImagesByCommissionIds(commissionIds);
+    
+    // 이미지를 커미션별로 그룹화
+    const imagesByCommissionId = images.reduce((acc, image) => {
+      const commissionId = image.targetId.toString();
+      if (!acc[commissionId]) acc[commissionId] = [];
+      acc[commissionId].push({
+        id: image.id,
+        imageUrl: image.imageUrl,
+        orderIndex: image.orderIndex
+      });
+      return acc;
+    }, {});
+
+    // timeago 계산 (KST 기준)
+    const calculateTimeAgo = (createdAt) => {
+      const now = new Date();
+      const kstNow = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+      const kstCreatedAt = new Date(new Date(createdAt).getTime() + (9 * 60 * 60 * 1000));
+      
+      const diffMs = kstNow - kstCreatedAt;
+      const diffMinutes = Math.floor(diffMs / (1000 * 60));
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const diffMonths = Math.floor(diffDays / 30);
+
+      if (diffMinutes < 1) {
+        return "방금";
+      } else if (diffMinutes < 60) {
+        return `${diffMinutes}분 전`;
+      } else if (diffHours < 24) {
+        return `${diffHours}시간 전`;
+      } else if (diffDays < 30) {
+        return `${diffDays}일 전`;
+      } else {
+        return `${diffMonths}달 전`;
+      }
+    };
+
+    // 응답 데이터
+    const items = commissions.map(commission => ({
+      id: commission.id,
+      title: commission.title,
+      summary: commission.summary,
+      images: imagesByCommissionId[commission.id.toString()] || [],
+      timeAgo: calculateTimeAgo(commission.createdAt),
+      createdAt: commission.createdAt.toISOString(),
+      isBookmarked: commission.bookmarks?.length > 0 || false,
+      artist: {
+        id: commission.artist.id,
+        nickname: commission.artist.nickname,
+        profileImageUrl: commission.artist.profileImage,
+        followCount: commission.artist._count.follows
+      }
+    }));
+
+    const totalPages = Math.ceil(totalCount / limit);
+
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages
+      }
+    };
+  },
 };

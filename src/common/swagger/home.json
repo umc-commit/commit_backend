@@ -3,8 +3,8 @@
     "/api/home": {
       "get": {
         "tags": ["Home"],
-        "summary": "홈화면 데이터 조회",
-        "description": "홈화면에 표시될 6개 섹션의 데이터를 한 번에 조회합니다. (추천 커미션, 신규등록, 신청폭주, 마감임박, 최신 후기, 신규 작가)",
+        "summary": "홈 화면 조회",
+        "description": "홈화면에 표시될 6개 섹션의 데이터를 한 번에 조회합니다.",
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
@@ -70,6 +70,60 @@
           }
         }
       }
+    },
+    "/api/home/following": {
+      "get": {
+        "tags": ["Home"],
+        "summary": "팔로잉 작가 커미션 조회",
+        "description": "사용자가 팔로우한 작가들의 커미션 게시글들을 타임라인 형태로 최신순 조회합니다.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 1, "minimum": 1 },
+            "description": "페이지 번호"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 10, "minimum": 1, "maximum": 50 },
+            "description": "페이지당 항목 수"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "팔로잉 작가 커미션 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "resultType": { "type": "string", "example": "SUCCESS" },
+                    "error": { "type": "null", "example": null },
+                    "success": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/FollowingCommissionItem"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/PaginationInfo"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -101,6 +155,41 @@
                 "nullable": true,
                 "example": "https://example.com/profile.jpg"
               }
+            }
+          }
+        }
+      },
+      "FollowingCommissionItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 13 },
+          "title": { "type": "string", "example": "커미션 제목" },
+          "summary": { "type": "string", "example": "커미션 요약 텍스트" },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer", "example": 1 },
+                "imageUrl": { "type": "string", "example": "https://example.com/image1.jpg" },
+                "orderIndex": { "type": "integer", "example": 0 }
+              }
+            }
+          },
+          "timeAgo": { "type": "string", "example": "5분 전" },
+          "createdAt": { "type": "string", "format": "date-time", "example": "2025-07-23T10:30:00.000Z" },
+          "isBookmarked": { "type": "boolean", "example": false },
+          "artist": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer", "example": 1 },
+              "nickname": { "type": "string", "example": "작가1" },
+              "profileImageUrl": {
+                "type": "string",
+                "nullable": true,
+                "example": "https://cdn.example.com/artist1.jpg"
+              },
+              "followCount": { "type": "integer", "example": 245 }
             }
           }
         }
@@ -153,6 +242,15 @@
             "nullable": true,
             "example": "https://example.com/profile.jpg"
           }
+        }
+      },
+      "PaginationInfo": {
+        "type": "object",
+        "properties": {
+          "page": { "type": "integer", "example": 1 },
+          "limit": { "type": "integer", "example": 10 },
+          "totalCount": { "type": "integer", "example": 25 },
+          "totalPages": { "type": "integer", "example": 3 }
         }
       }
     }

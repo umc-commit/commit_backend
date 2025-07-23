@@ -262,4 +262,75 @@ export const HomeRepository = {
       }
     });
   },
+
+  /**
+   * 사용자가 팔로우한 작가들의 커미션 목록 조회
+   */
+  async findFollowingCommissions(userId, offset, limit) {
+    return await prisma.commission.findMany({
+      where: {
+        artist: {
+          follows: {
+            some: {
+              userId: BigInt(userId)
+            }
+          }
+        }
+      },
+      include: {
+        artist: {
+          select: {
+            id: true,
+            nickname: true,
+            profileImage: true,
+            _count: {
+              select: {
+                follows: true
+              }
+            }
+          }
+        },
+        bookmarks: {
+          where: { userId: BigInt(userId) }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      skip: offset,
+      take: limit
+    });
+  },
+
+  /**
+   * 사용자가 팔로우한 작가들의 커미션 총 개수 조회
+   */
+  async countFollowingCommissions(userId) {
+    return await prisma.commission.count({
+      where: {
+        artist: {
+          follows: {
+            some: {
+              userId: BigInt(userId)
+            }
+          }
+        }
+      }
+    });
+  },
+
+  /**
+   * 커미션 ID 목록으로 이미지 조회
+   */
+  async findImagesByCommissionIds(commissionIds) {
+    return await prisma.image.findMany({
+      where: {
+        target: 'commission',
+        targetId: {
+          in: commissionIds.map(id => BigInt(id))
+        }
+      },
+      orderBy: { orderIndex: 'asc' }
+    });
+  },
 };
