@@ -118,6 +118,7 @@ model Request {
   commissionId BigInt        @map("commission_id")
   status       RequestStatus
   formAnswer   Json          @map("form_answer")
+  totalPrice   Int           @map("total_price")
   waitlist     Int?
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")

@@ -45,4 +45,58 @@ export const CommissionService = {
      createdAt: commission.createdAt.toISOString()
    };
  },
+
+   /**
+   * 커미션 신청폼 조회
+   */
+  async getCommissionForm(userId, dto) {
+    const { commissionId } = dto;
+
+    // 커미션 존재 여부 확인 및 조회
+    const commission = await CommissionRepository.findCommissionFormById(commissionId);
+    if (!commission) {
+      throw new CommissionNotFoundError({ commissionId });
+    }
+
+    // 썸네일 이미지 조회
+    const thumbnailImage = await CommissionRepository.findThumbnailImageByCommissionId(commissionId);
+
+    // formSchema 처리
+    const customFields = commission.formSchema?.fields || [];
+    
+    // 기본 필드들 (항상 마지막에 추가)
+    const defaultFields = [
+      {
+        id: (customFields.length + 1).toString(),
+        type: "file",
+        label: "참고 이미지",
+        required: false,
+        maxFiles: 10,
+        acceptedTypes: ["image/jpeg", "image/png"]
+      },
+      {
+        id: (customFields.length + 2).toString(),
+        type: "textarea",
+        label: "신청 내용",
+        required: false,
+        maxLength: 5000
+      }
+    ];
+
+    // 4. 응답 데이터 구성
+    return {
+      commission: {
+        id: commission.id,
+        title: commission.title,
+        thumbnailImageUrl: thumbnailImage?.imageUrl || null,
+        artist: {
+          id: commission.artist.id,
+          nickname: commission.artist.nickname
+        }
+      },
+      formSchema: {
+        fields: [...customFields, ...defaultFields]
+      }
+    };
+  },
 };
