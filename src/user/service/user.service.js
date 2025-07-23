@@ -1,14 +1,13 @@
 import { UserRepository } from "../repository/user.repository.js";
-import { OauthIdAlreadyExistError, MissingCategoryError, MissingRequiredAgreementError, UserNotSignupedError } from "../../common/errors/user.errors.js";
+import { OauthIdAlreadyExistError, MissingCategoryError, MissingRequiredAgreementError, UserRoleError } from "../../common/errors/user.errors.js";
 import axios from "axios";
 import { signJwt } from "../../jwt.config.js";
-import { AccessUserCategories } from "../controller/user.controller.js";
 
 export const UserService = {
     
     // 사용자(계정) 추가 
     async addAccount(dto) {
-        const {oauth_id, provider, nickname, agreements, categories} = dto;
+        const {oauth_id, provider, nickname, agreements, categories, role} = dto;
 
         const requiredAgreements = [1, 2];
         const hasAllRequired = requiredAgreements.every(id => agreements.includes(id));
@@ -29,26 +28,44 @@ export const UserService = {
         // 2. 사용자(계정) 생성
         const account = await UserRepository.createAccount(provider, oauth_id);
 
-        // 3. 사용자 프로필 생성 
-        const userProfile = await UserRepository.createUserProfile(account.id, nickname, ".");
+        let profile;
 
-        // 4. 사용자 약관 동의 처리 (agreements -> 사용자가 동의한 agreement id 배열)
-        const userAgreement = await UserRepository.createUserAgreements(userProfile.id, agreements);
+        if(role === "client") {
+            // 3. 사용자 프로필 생성 
+            profile = await UserRepository.createUserProfile(account.id, nickname, ".");
 
-        // 5. 사용자가 선한 카테고리 처리 (categories -> 사용자가 선택한 category id 배열 )
-        const userCategory = await UserRepository.createUserCategories(userProfile.id, categories);
+            // 4. 사용자 약관 동의 처리 (agreements -> 사용자가 동의한 agreement id 배열)
+            await UserRepository.createUserAgreements(profile.id, agreements);
+
+            // 5. 사용자가 선한 카테고리 처리 (categories -> 사용자가 선택한 category id 배열 )
+            await UserRepository.createUserCategories(profile.id, categories);
+        } 
+        else if (role === "artist") {
+            // 3. 사용자 프로필 생성 
+            profile = await UserRepository.createArtistProfile(account.id, nickname, ".");
+
+            // 4. 사용자 약관 동의 처리 (agreements -> 사용자가 동의한 agreement id 배열)
+            await UserRepository.createUserAgreements(profile.id, agreements);
+
+            // 5. 사용자가 선한 카테고리 처리 (categories -> 사용자가 선택한 category id 배열 )
+            await UserRepository.createUserCategories(profile.id, categories);
+        }
+        else {
+            throw new UserRoleError();
+        }
+
 
         // 6. 회원가입 완료 -> 정식 로그인 토큰 발급 
         const loginToken = signJwt({
-            userId: userProfile.id.toString(),
+            userId: profile.id.toString(),
         })
 
         return {
             message : "회원가입이 성공적으로 완료되었습니다.",
             token:loginToken,
             user: {
-                userId : userProfile.id,
-                nickname : userProfile.nickname,
+                userId : profile.id,
+                nickname : profile.nickname,
                 provider,
                 oauth_id,
                 createdAt : account.createdAt

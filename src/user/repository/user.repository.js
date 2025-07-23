@@ -1,5 +1,4 @@
 import { prisma } from "../../db.config.js"
-import { AccessUserCategories } from "../controller/user.controller.js";
 
 /**
  * 사용자 ID로 사용자 조회 
@@ -50,6 +49,18 @@ export const UserRepository = {
    */
   async createUserProfile (accountId, nickname, description){
     return await prisma.user.create({
+      data: {
+        accountId,
+        nickname,
+        description,
+      }
+    })
+  },
+   /**
+   * Artist 프로필 생성
+   */
+  async createArtistProfile (accountId, nickname, description){
+    return await prisma.artist.create({
       data: {
         accountId,
         nickname,
