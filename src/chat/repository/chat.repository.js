@@ -36,4 +36,14 @@ export const ChatRepository = {
 
     return merged;
   },
+
+  async searchByKeyword(keyword) {
+    return await prisma.chatMessage.findMany({
+      where: {
+        content: {
+          contains: keyword
+        }
+      }
+    });
+  },
 };

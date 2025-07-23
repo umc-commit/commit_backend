@@ -15,6 +15,17 @@ export const UserRepository = {
     });
   },
 
+  async findArtistById(artistId) {
+    return await prisma.artist.findUnique({
+      where: {
+        id: artistId,
+      },
+      include : {
+        account:true,
+      }
+    });
+  },
+
   /**
    * oauth_id로 계정 존재 여부 확인 
    */
