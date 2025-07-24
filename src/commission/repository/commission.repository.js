@@ -113,6 +113,7 @@ export const CommissionRepository = {
         commissionId: requestData.commissionId,
         formAnswer: requestData.formAnswer,
         totalPrice: requestData.totalPrice,
+        waitlist: requestData.waitlist,
         status: 'PENDING'
       }
     });
