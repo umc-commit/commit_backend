@@ -214,18 +214,18 @@
                                 },
                                 {
                                   "id": "2",
+                                  "type": "textarea",
+                                  "label": "신청 내용",
+                                  "required": false,
+                                  "maxLength": 5000
+                                },
+                                {
+                                  "id": "3",
                                   "type": "file",
                                   "label": "참고 이미지",
                                   "required": false,
                                   "maxFiles": 10,
                                   "acceptedTypes": ["image/jpeg", "image/png"]
-                                },
-                                {
-                                  "id": "3",
-                                  "type": "textarea",
-                                  "label": "신청 내용",
-                                  "required": false,
-                                  "maxLength": 5000
                                 }
                               ]
                             }

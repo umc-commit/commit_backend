@@ -68,18 +68,18 @@ export const CommissionService = {
     const defaultFields = [
       {
         id: (customFields.length + 1).toString(),
+        type: "textarea",
+        label: "신청 내용",
+        required: false,
+        maxLength: 5000
+      },
+      {
+        id: (customFields.length + 2).toString(),
         type: "file",
         label: "참고 이미지",
         required: false,
         maxFiles: 10,
         acceptedTypes: ["image/jpeg", "image/png"]
-      },
-      {
-        id: (customFields.length + 2).toString(),
-        type: "textarea",
-        label: "신청 내용",
-        required: false,
-        maxLength: 5000
       }
     ];
 
