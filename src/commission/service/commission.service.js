@@ -1,10 +1,130 @@
-// /src/commission/service/commission.service.js
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import { CommissionRepository } from "../repository/commission.repository.js";
 import {
- CommissionNotFoundError
+ CommissionNotFoundError,
+  FileSizeExceededError,
+  UnsupportedImageFormatError,
+  ImageUploadFailedError
 } from "../../common/errors/commission.errors.js";
 
 export const CommissionService = {
+  // 업로드 디렉토리 설정
+  uploadDir: path.join(process.cwd(), 'uploads', 'request-images'),
+
+  /**
+   * 업로드 디렉토리 생성
+   */
+  ensureUploadDir() {
+    if (!fs.existsSync(this.uploadDir)) {
+      fs.mkdirSync(this.uploadDir, { recursive: true });
+      console.log(`업로드 디렉토리 생성: ${this.uploadDir}`);
+    }
+  },
+
+  /**
+   * multer 저장소 설정
+   */
+  storage: multer.diskStorage({
+    destination: function(req, file, cb) {
+      const uploadDir = path.join(process.cwd(), 'uploads', 'request-images');
+      cb(null, uploadDir);
+    },
+    filename: function(req, file, cb) {
+      // 파일명: request_현재시간_랜덤값.확장자
+      const timestamp = Date.now();
+      const random = Math.round(Math.random() * 1E9);
+      const ext = path.extname(file.originalname);
+      cb(null, `request_${timestamp}_${random}${ext}`);
+    }
+  }),
+
+  /**
+   * 파일 필터 (이미지만 허용)
+   */
+  fileFilter(req, file, cb) {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new UnsupportedImageFormatError({ 
+        fileType: file.mimetype,
+        allowedTypes 
+      }), false);
+    }
+  },
+
+  /**
+   * multer 인스턴스 생성
+   */
+  getUploadMiddleware() {
+    // 업로드 디렉토리 확인
+    this.ensureUploadDir();
+    
+    return multer({
+      storage: this.storage,
+      fileFilter: this.fileFilter,
+      limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB 제한
+      }
+    }).single('image');
+  },
+
+  /**
+   * 이미지 업로드 처리
+   */
+  async uploadRequestImage(file) {
+    try {
+      // 1. 파일 존재 여부 확인
+      if (!file) {
+        throw new ImageUploadFailedError('파일이 업로드되지 않았습니다');
+      }
+
+      // 2. 파일 크기 추가 검증
+      if (file.size > 5 * 1024 * 1024) {
+        this.deleteFile(file.path);
+        throw new FileSizeExceededError({
+          maxSize: '5MB',
+          receivedSize: `${Math.round(file.size / 1024 / 1024 * 100) / 100}MB`
+        });
+      }
+
+      // 3. 파일 URL 생성
+      const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+      const imageUrl = `${baseUrl}/uploads/request-images/${file.filename}`;
+
+      // 4. 성공 응답 반환
+      return {
+        image_url: imageUrl,
+        file_size: file.size,
+        file_type: file.mimetype
+      };
+
+    } catch (error) {
+      // 오류 발생 시 업로드된 파일 삭제
+      if (file && file.path) {
+        this.deleteFile(file.path);
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * 파일 삭제 헬퍼 메서드
+   */
+  deleteFile(filePath) {
+    try {
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        console.log(`파일 삭제: ${filePath}`);
+      }
+    } catch (error) {
+      console.error('파일 삭제 실패:', error);
+    }
+  },
+
 
  /**
   * 커미션 게시글 상세글 조회

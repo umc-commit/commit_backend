@@ -39,3 +39,25 @@ export const getCommissionForm = async (req, res, next) => {
     next(err);
   }
 };
+
+// 커미션 신청 이미지 업로드
+export const uploadRequestImage = async (req, res, next) => {
+  // multer 미들웨어 적용
+  const upload = CommissionService.getUploadMiddleware();
+  
+  upload(req, res, async (err) => {
+    try {
+      // multer 에러 처리
+      if (err) {
+        return next(err);
+      }
+
+      // 파일 업로드 처리
+      const result = await CommissionService.uploadRequestImage(req.file);
+      
+      res.status(StatusCodes.OK).success(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+}
