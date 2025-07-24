@@ -90,7 +90,7 @@
       "get": {
         "tags": ["Commission"],
         "summary": "커미션 신청폼 조회",
-        "description": "커미션의 신청폼 동적 스키마를 조회합니다.",
+        "description": "커미션의 신청폼 동적 스키마를 조회합니다. 작가가 설정한 커스텀 필드들과 기본 필드들을 UI 표시 순서대로 반환합니다.",
         "security": [
           {
             "bearerAuth": []
@@ -166,9 +166,20 @@
                                   },
                                   {
                                     "type": "object",
+                                    "description": "Textarea 필드",
+                                    "properties": {
+                                      "id": { "type": "string", "example": "2" },
+                                      "type": { "type": "string", "example": "textarea" },
+                                      "label": { "type": "string", "example": "신청 내용" },
+                                      "required": { "type": "boolean", "example": false },
+                                      "maxLength": { "type": "integer", "example": 5000 }
+                                    }
+                                  },
+                                  {
+                                    "type": "object",
                                     "description": "File 필드",
                                     "properties": {
-                                      "id": { "type": "string", "example": "4" },
+                                      "id": { "type": "string", "example": "3" },
                                       "type": { "type": "string", "example": "file" },
                                       "label": { "type": "string", "example": "참고 이미지" },
                                       "required": { "type": "boolean", "example": false },
@@ -178,17 +189,6 @@
                                         "items": { "type": "string" },
                                         "example": ["image/jpeg", "image/png"]
                                       }
-                                    }
-                                  },
-                                  {
-                                    "type": "object",
-                                    "description": "Textarea 필드",
-                                    "properties": {
-                                      "id": { "type": "string", "example": "5" },
-                                      "type": { "type": "string", "example": "textarea" },
-                                      "label": { "type": "string", "example": "신청 내용" },
-                                      "required": { "type": "boolean", "example": false },
-                                      "maxLength": { "type": "integer", "example": 5000 }
                                     }
                                   }
                                 ]
@@ -214,18 +214,18 @@
                                 },
                                 {
                                   "id": "2",
+                                  "type": "textarea",
+                                  "label": "신청 내용",
+                                  "required": false,
+                                  "maxLength": 5000
+                                },
+                                {
+                                  "id": "3",
                                   "type": "file",
                                   "label": "참고 이미지",
                                   "required": false,
                                   "maxFiles": 10,
                                   "acceptedTypes": ["image/jpeg", "image/png"]
-                                },
-                                {
-                                  "id": "3",
-                                  "type": "textarea",
-                                  "label": "신청 내용",
-                                  "required": false,
-                                  "maxLength": 5000
                                 }
                               ]
                             }
@@ -234,6 +234,285 @@
                       }
                     }
                   }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "커미션을 찾을 수 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "resultType": { "type": "string", "example": "FAIL" },
+                    "error": { "type": "string", "example": "존재하지 않는 커미션입니다." },
+                    "success": { "type": "null", "example": null }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/commissions/request-images/upload": {
+      "post": {
+        "tags": ["Commission"],
+        "summary": "커미션 신청 이미지 업로드",
+        "description": "커미션 신청 시 첨부할 이미지를 업로드합니다.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "업로드할 이미지 파일 (JPG, PNG, 최대 5MB)"
+                  }
+                },
+                "required": ["image"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "이미지 업로드 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "resultType": { "type": "string", "example": "SUCCESS" },
+                    "error": { "type": "null", "example": null },
+                    "success": {
+                      "type": "object",
+                      "properties": {
+                        "image_url": { 
+                          "type": "string", 
+                          "example": "http://localhost:3000/uploads/request-images/request_1732123456_789.jpg" 
+                        },
+                        "file_size": { "type": "integer", "example": 1234567 },
+                        "file_type": { "type": "string", "example": "image/jpeg" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "업로드 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "resultType": { "type": "string", "example": "FAIL" },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "errorCode": { "type": "string", "example": "C002" },
+                        "reason": { "type": "string", "example": "파일 크기가 너무 큽니다." },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "maxSize": { "type": "string", "example": "5MB" },
+                            "receivedSize": { "type": "string", "example": "7.2MB" }
+                          }
+                        }
+                      }
+                    },
+                    "success": { "type": "null", "example": null }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+        "/api/commissions/{commissionId}/requests": {
+      "post": {
+        "tags": ["Commission"],
+        "summary": "커미션 신청 제출",
+        "description": "사용자가 작성한 신청폼 데이터를 제출하여 커미션을 신청합니다.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "commissionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "커미션 ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "formAnswer": {
+                    "type": "object",
+                    "description": "신청폼 답변 데이터",
+                    "properties": {
+                      "1": {
+                        "type": "string",
+                        "description": "라디오 필드 답변",
+                        "example": "option_1"
+                      },
+                      "2": {
+                        "type": "string", 
+                        "description": "라디오 필드 답변",
+                        "example": "option_2"
+                      },
+                      "3": {
+                        "type": "string",
+                        "description": "라디오 필드 답변", 
+                        "example": "option_1"
+                      },
+                      "4": {
+                        "type": "string",
+                        "description": "신청 내용 (textarea)",
+                        "example": "귀엽게 그려주세요~"
+                      },
+                      "5": {
+                        "type": "array",
+                        "description": "참고 이미지 URL 배열",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "http://localhost:3000/uploads/request-images/request_123.jpg",
+                          "http://localhost:3000/uploads/request-images/request_456.jpg"
+                        ]
+                      }
+                    },
+                    "required": ["formAnswer"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "커미션 신청 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "resultType": { "type": "string", "example": "SUCCESS" },
+                    "error": { "type": "null", "example": null },
+                    "success": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": { "type": "integer", "example": 123 },
+                        "userId": { "type": "integer", "example": 456 },
+                        "message": { "type": "string", "example": "커미션 신청이 완료되었습니다." },
+                        "submitted": {
+                          "type": "object",
+                          "properties": {
+                            "totalPrice": { "type": "integer", "example": 15000 },
+                            "waitlist": { "type": "integer", "example": 1},
+                            "formData": {
+                              "type": "object",
+                              "description": "변환된 신청 데이터",
+                              "properties": {
+                                "당일마감": { "type": "string", "example": "O" },
+                                "신청 내용": { "type": "string", "example": "귀엽게 그려주세요~" },
+                                "참고 이미지": {
+                                  "type": "array",
+                                  "items": { "type": "string" },
+                                  "example": ["http://localhost:3000/uploads/request-images/request_123.jpg"]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "신청 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "description": "필수 필드 누락",
+                      "properties": {
+                        "resultType": { "type": "string", "example": "FAIL" },
+                        "error": {
+                          "type": "object",
+                          "properties": {
+                            "errorCode": { "type": "string", "example": "C005" },
+                            "reason": { "type": "string", "example": "필수 필드가 누락되었습니다." },
+                            "data": {
+                              "type": "object",
+                              "properties": {
+                                "missingFields": {
+                                  "type": "array",
+                                  "items": { "type": "string" },
+                                  "example": ["1", "2"]
+                                },
+                                "requiredFields": {
+                                  "type": "array", 
+                                  "items": { "type": "string" },
+                                  "example": ["1", "2", "3"]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "success": { "type": "null", "example": null }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "description": "중복 신청",
+                      "properties": {
+                        "resultType": { "type": "string", "example": "FAIL" },
+                        "error": {
+                          "type": "object",
+                          "properties": {
+                            "errorCode": { "type": "string", "example": "C010" },
+                            "reason": { "type": "string", "example": "이미 신청한 커미션입니다." },
+                            "data": {
+                              "type": "object",
+                              "properties": {
+                                "existingRequestId": { "type": "integer", "example": 123 }
+                              }
+                            }
+                          }
+                        },
+                        "success": { "type": "null", "example": null }
+                      }
+                    }
+                  ]
                 }
               }
             }

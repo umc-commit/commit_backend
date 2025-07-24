@@ -2,7 +2,8 @@ import { StatusCodes } from "http-status-codes";
 import { CommissionService } from '../service/commission.service.js';
 import 
 { GetCommissionDetailDto,
-  GetCommissionFormDto
+  GetCommissionFormDto,
+  SubmitCommissionRequestDto
  } from "../dto/commission.dto.js";
 import { parseWithBigInt, stringifyWithBigInt } from "../../bigintJson.js";
 
@@ -32,6 +33,46 @@ export const getCommissionForm = async (req, res, next) => {
     });
 
     const result = await CommissionService.getCommissionForm(userId, dto);
+    const responseData = parseWithBigInt(stringifyWithBigInt(result));
+
+    res.status(StatusCodes.OK).success(responseData);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// 커미션 신청 이미지 업로드
+export const uploadRequestImage = async (req, res, next) => {
+  // multer 미들웨어 적용
+  const upload = CommissionService.getUploadMiddleware();
+  
+  upload(req, res, async (err) => {
+    try {
+      // multer 에러 처리
+      if (err) {
+        return next(err);
+      }
+
+      // 파일 업로드 처리
+      const result = await CommissionService.uploadRequestImage(req.file);
+      
+      res.status(StatusCodes.OK).success(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+}
+
+// 커미션 신청 제출
+export const submitCommissionRequest = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    const dto = new SubmitCommissionRequestDto({
+      commissionId: BigInt(req.params.commissionId),
+      formAnswer: req.body.formAnswer
+    });
+
+    const result = await CommissionService.submitCommissionRequest(userId, dto);
     const responseData = parseWithBigInt(stringifyWithBigInt(result));
 
     res.status(StatusCodes.OK).success(responseData);

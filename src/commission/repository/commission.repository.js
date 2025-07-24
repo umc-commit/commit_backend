@@ -102,4 +102,46 @@ export const CommissionRepository = {
       }
     });
   },
-};
+
+  /**
+   * 커미션 신청 생성
+   */
+  async createRequest(requestData) {
+    return await prisma.request.create({
+      data: {
+        userId: requestData.userId,
+        commissionId: requestData.commissionId,
+        formAnswer: requestData.formAnswer,
+        totalPrice: requestData.totalPrice,
+        waitlist: requestData.waitlist,
+        status: 'PENDING'
+      }
+    });
+  },
+
+  /**
+   * 사용자의 중복 신청 여부 확인
+   */
+  async findExistingRequest(userId, commissionId) {
+    return await prisma.request.findFirst({
+      where: {
+        userId: BigInt(userId),
+        commissionId: BigInt(commissionId),
+        status: {
+          notIn: ['CANCELED', 'REJECTED', 'COMPLETED']  // 취소/거절/완료된 것은 제외 (재신청 가능)
+        }
+      }
+    });
+  },
+
+  /**
+   * 대기 중인 신청서 계산
+   */
+  async countAllRequestsByCommissionId(commissionId) {
+    return await prisma.request.count({
+      where: {
+        commissionId: BigInt(commissionId)
+      }
+    });
+  }
+}
