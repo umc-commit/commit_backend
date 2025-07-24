@@ -6,7 +6,13 @@ import {
  CommissionNotFoundError,
   FileSizeExceededError,
   UnsupportedImageFormatError,
-  ImageUploadFailedError
+  ImageUploadFailedError,
+  RequiredFieldMissingError,
+  InvalidOptionValueError,
+  FileCountExceededError,
+  TextLengthExceededError,
+  InvalidFormSchemaError,
+  DuplicateRequestError
 } from "../../common/errors/commission.errors.js";
 
 export const CommissionService = {
@@ -219,4 +225,219 @@ export const CommissionService = {
       }
     };
   },
+
+  /**
+   * 커미션 신청 제출
+   */
+  async submitCommissionRequest(userId, dto) {
+    const { commissionId, formAnswer } = dto;
+
+    // 커미션 존재 여부 확인
+    const commission = await CommissionRepository.findCommissionFormById(commissionId);
+    if (!commission) {
+      throw new CommissionNotFoundError({ commissionId });
+    }
+
+    // 중복 신청 확인
+    const existingRequest = await CommissionRepository.findExistingRequest(userId, commissionId);
+    if (existingRequest) {
+      throw new DuplicateRequestError({ 
+        userId, 
+        commissionId,
+        existingRequestId: existingRequest.id
+      });
+    }
+
+    // formSchema 가져오기
+    const customFields = commission.formSchema?.fields || [];
+    const defaultFields = [
+      {
+        id: (customFields.length + 1).toString(),
+        type: "textarea",
+        label: "신청 내용",
+        required: false,
+        maxLength: 5000
+      },
+      {
+        id: (customFields.length + 2).toString(),
+        type: "file",
+        label: "참고 이미지",
+        required: false,
+        maxFiles: 10,
+        acceptedTypes: ["image/jpeg", "image/png"]
+      }
+    ];
+    const allFields = [...customFields, ...defaultFields];
+
+    // formAnswer 검증
+    const { additionalPrice, processedFormData } = this.validateFormAnswer(formAnswer, allFields);
+    const totalPrice = commission.minPrice + additionalPrice;
+
+    // waitlist 계산
+    const totalRequestCount = await CommissionRepository.countAllRequestsByCommissionId(commissionId);
+    const waitlist = totalRequestCount + 1;
+
+    // Request 생성
+    const newRequest = await CommissionRepository.createRequest({
+      userId: BigInt(userId),
+      commissionId: BigInt(commissionId),
+      formAnswer: formAnswer,
+      totalPrice: totalPrice,
+      waitlist: waitlist
+    });
+
+    // 응답 데이터 구성
+    return {
+      requestId: newRequest.id,
+      userId: userId,
+      message: "커미션 신청이 완료되었습니다.",
+      submitted: {
+        totalPrice: totalPrice,
+        formData: processedFormData,
+        waitlist: waitlist
+      }
+    };
+  },
+
+  /**
+   * formAnswer 검증 및 가격 계산
+   */
+  validateFormAnswer(formAnswer, fields) {
+    let additionalPrice = 0;
+    const processedFormData = {};
+
+    // 필수 필드 검증
+    const requiredFields = fields.filter(f => f.required);
+    const missingFields = [];
+
+    for (const field of requiredFields) {
+      if (!formAnswer[field.id] || formAnswer[field.id] === '') {
+        missingFields.push(field.id);
+      }
+    }
+
+    if (missingFields.length > 0) {
+      throw new RequiredFieldMissingError({
+        missingFields,
+        requiredFields: requiredFields.map(f => f.id)
+      });
+    }
+
+    // 각 필드별 검증
+    for (const [fieldId, value] of Object.entries(formAnswer)) {
+      const field = fields.find(f => f.id === fieldId);
+      
+      if (!field) {
+        throw new InvalidFormSchemaError({
+          invalidField: fieldId,
+          reason: "존재하지 않는 필드입니다"
+        });
+      }
+
+      // 필드 타입별 검증
+      switch (field.type) {
+        case 'radio':
+          this.validateRadioField(field, value, fieldId);
+          // 가격 계산
+          const selectedOption = field.options.find(opt => opt.value === value);
+           additionalPrice += selectedOption.additionalPrice;
+          // 형태 변환
+          processedFormData[field.label] = selectedOption.label;
+          break;
+
+        case 'textarea':
+          this.validateTextareaField(field, value, fieldId);
+          processedFormData[field.label] = value;
+          break;
+
+        case 'file':
+          this.validateFileField(field, value, fieldId);
+          processedFormData[field.label] = value;
+          break;
+
+        default:
+          throw new InvalidFormSchemaError({
+            fieldId,
+            reason: `지원하지 않는 필드 타입: ${field.type}`
+          });
+      }
+    }
+
+    return { additionalPrice, processedFormData };
+  },
+
+  /**
+   * Radio 필드 검증
+   */
+  validateRadioField(field, value, fieldId) {
+    if (typeof value !== 'string') {
+      throw new InvalidFormSchemaError({
+        fieldId,
+        expectedType: 'string',
+        receivedType: typeof value
+      });
+    }
+
+    const validOptions = field.options.map(opt => opt.value);
+    if (!validOptions.includes(value)) {
+      throw new InvalidOptionValueError({
+        fieldId,
+        invalidValue: value,
+        validOptions
+      });
+    }
+  },
+
+  /**
+   * Textarea 필드 검증
+   */
+  validateTextareaField(field, value, fieldId) {
+    if (typeof value !== 'string') {
+      throw new InvalidFormSchemaError({
+        fieldId,
+        expectedType: 'string',
+        receivedType: typeof value
+      });
+    }
+
+    if (field.maxLength && value.length > field.maxLength) {
+      throw new TextLengthExceededError({
+        fieldId,
+        maxLength: field.maxLength,
+        actualLength: value.length
+      });
+    }
+  },
+
+  /**
+   * File 필드 검증
+   */
+  validateFileField(field, value, fieldId) {
+    if (!Array.isArray(value)) {
+      throw new InvalidFormSchemaError({
+        fieldId,
+        expectedType: 'array',
+        receivedType: typeof value
+      });
+    }
+
+    if (field.maxFiles && value.length > field.maxFiles) {
+      throw new FileCountExceededError({
+        fieldId,
+        maxFiles: field.maxFiles,
+        actualCount: value.length
+      });
+    }
+
+    // URL 형식 간단 검증
+    for (const url of value) {
+      if (typeof url !== 'string' || !url.startsWith('http')) {
+        throw new InvalidFormSchemaError({
+          fieldId,
+          reason: "잘못된 이미지 URL 형식",
+          invalidUrl: url
+        });
+      }
+    }
+  }
 };
