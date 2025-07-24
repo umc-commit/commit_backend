@@ -19,3 +19,15 @@ export const paymentConfirm = async (req, res, next) => {
       next(err);
     }
 }
+
+export const getPayments = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    const payments = await PaymentService.getPayments(userId);
+    const responseData = parseWithBigInt(stringifyWithBigInt(payments));
+    res.status(StatusCodes.OK).success(responseData);
+  } catch(err) {
+    next(err);
+  }
+}

@@ -79,6 +79,7 @@ async function main() {
     data: {
       userId: user2.id,
       commissionId: commission.id,
+      totalPrice: 0,
       status: "PENDING", // enum값
       formAnswer: {
         detail: "테스트 커미션 요청 상세 설명입니다.",

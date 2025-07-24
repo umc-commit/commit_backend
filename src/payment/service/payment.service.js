@@ -3,6 +3,7 @@ import { PaymentRepository } from "../repository/payment.repository.js";
 import { PointRepository } from "../../point/repository/point.repository.js";
 import { ProductNotFoundError } from "../../common/errors/payment.errors.js";
 import { PaymentAmountMismatchError } from "../../common/errors/payment.errors.js";
+import { DuplicatePaymentError } from "../../common/errors/payment.errors.js";
 
 export const PaymentService = {
   async createPayment(dto) {
@@ -19,6 +20,11 @@ export const PaymentService = {
     });
     const paymentData = paymentDataRes.data.response;
 
+    const existingPayment = await PaymentRepository.getPaymentByImpUid(paymentData.imp_uid);
+    if (existingPayment) {
+      throw new DuplicatePaymentError({ impUid: paymentData.imp_uid });
+    }
+
     // DB에서 product 가격 조회
     const product = await PaymentRepository.getProductById(dto.productId);
     if (!product) {
@@ -34,6 +40,7 @@ export const PaymentService = {
     const savedPayment = await PaymentRepository.createPayment({
       ...dto,
       price: paymentData.amount,
+      pointAmount: product.point,
       status: paymentData.status,
       impUid: paymentData.imp_uid,
       merchantUid: paymentData.merchant_uid,
@@ -63,4 +70,10 @@ export const PaymentService = {
 
     return savedPayment;
   },
+
+  async getPayments(userId) {
+    const payments = PaymentRepository.getPayments(userId);
+
+    return payments;
+  }
 };
