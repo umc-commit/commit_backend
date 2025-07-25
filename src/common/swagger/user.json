@@ -665,8 +665,8 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "errorCode": { "type": "string", "example": "U010" },
-                        "reason": { "type": "string", "example": "인증정보를 다시 확인해주세요." },
+                        "errorCode": { "type": "string", "example": "AUTH001" },
+                        "reason": { "type": "string", "example": "인증정보가 없습니다." },
                         "data": { "type": ["object", "null"], "example": null }
                       }
                     },
