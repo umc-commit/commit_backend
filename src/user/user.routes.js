@@ -1,5 +1,5 @@
 import express from "express";
-import { addUser, userLogin, getUserProfile, UpdateMyprofile, AccessUserCategories, CheckUserNickname, FollowArtist } from "./controller/user.controller.js";
+import { addUser, userLogin, getUserProfile, UpdateMyprofile, AccessUserCategories, CheckUserNickname, FollowArtist, CancelArtistFollow } from "./controller/user.controller.js";
 import { signJwt } from "../jwt.config.js";
 import passport from "passport";
 import { authenticate } from "../middlewares/auth.middleware.js";
@@ -168,6 +168,9 @@ router.get("/check-nickname", CheckUserNickname);
 
 // 사용자가 원하는 작가 팔로우하기 
 router.post("/follows/:artistId", authenticate,FollowArtist);
+
+// 작가 팔로우 취소하기 
+router.delete("/follows/:artistId", authenticate, CancelArtistFollow);
 
 
 export default router;

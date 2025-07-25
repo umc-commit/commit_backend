@@ -1,5 +1,5 @@
 import { UserRepository } from "../repository/user.repository.js";
-import { OauthIdAlreadyExistError, MissingCategoryError, MissingRequiredAgreementError, UserRoleError, UserAlreadyFollowArtist, ArtistNotFound } from "../../common/errors/user.errors.js";
+import { OauthIdAlreadyExistError, MissingCategoryError, MissingRequiredAgreementError, UserRoleError, UserAlreadyFollowArtist, ArtistNotFound, NotFollowingArtist } from "../../common/errors/user.errors.js";
 import axios from "axios";
 import { signJwt } from "../../jwt.config.js";
 
@@ -199,6 +199,26 @@ export const UserService = {
         return {
             message:"해당 작가 팔로우를 성공했습니다.",
             artistId:result.artistId
+        }
+    },
+
+    // 작가 팔로우 취소하기 
+    async CancelArtistFollow(userId, artistId) {
+        const artist = await UserRepository.findArtistById(artistId);
+
+        if(!artist)
+            throw new ArtistNotFound();
+
+        const FollowState = await UserRepository.AlreadyFollow(userId, artistId);
+
+        if(!FollowState)
+            throw new NotFollowingArtist();
+
+        const result = await UserRepository.CancelArtistFollow(userId, artistId);
+
+        return {
+            message: "해당 작가 팔로우를 취소했습니다.",
+            artistId: result.artistId
         }
     }
 }

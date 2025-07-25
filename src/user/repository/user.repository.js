@@ -1,5 +1,4 @@
 import { prisma } from "../../db.config.js"
-import { FollowArtist } from "../controller/user.controller.js";
 
 export const UserRepository = {
   /**
@@ -169,4 +168,16 @@ export const UserRepository = {
       where:{userId, artistId}
     })
   },
+
+  // 작가 팔로우 취소하기 
+  async CancelArtistFollow(userId, artistId) {
+    return await prisma.follow.delete({
+      where:{
+        userId_artistId:{
+          userId,
+          artistId
+        }
+      }
+    });
+  }
 };
