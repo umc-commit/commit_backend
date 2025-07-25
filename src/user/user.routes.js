@@ -1,10 +1,11 @@
 import express from "express";
-import { addUser, userLogin, getUserProfile, UpdateMyprofile, AccessUserCategories, CheckUserNickname, FollowArtist, CancelArtistFollow } from "./controller/user.controller.js";
+import { addUser, userLogin, getUserProfile, UpdateMyprofile, AccessUserCategories, CheckUserNickname, FollowArtist, CancelArtistFollow, LookUserFollow } from "./controller/user.controller.js";
 import { signJwt } from "../jwt.config.js";
 import passport from "passport";
 import { authenticate } from "../middlewares/auth.middleware.js";
 // 리뷰 관련 import 추가
 import reviewController from '../review/controller/review.controller.js';
+import { createRoutesFromChildren } from "react-router-dom";
 
 const router = express.Router();
 
@@ -171,6 +172,9 @@ router.post("/follows/:artistId", authenticate,FollowArtist);
 
 // 작가 팔로우 취소하기 
 router.delete("/follows/:artistId", authenticate, CancelArtistFollow);
+
+// 사용자가 팔로우하는 작가 조회하기 
+router.get("/follows", authenticate, LookUserFollow);
 
 
 export default router;

@@ -179,5 +179,23 @@ export const UserRepository = {
         }
       }
     });
+  },
+
+  // 사용자가 팔로우한 작가 조회하기 
+  async LookUserFollow(userId){
+    return await prisma.follow.findMany({
+      where:{
+        userId:userId
+      },
+      select:{
+        artist:{
+          select:{
+            id:true,
+            nickname:true, 
+            profileImage:true
+          }
+        }
+      }
+    })
   }
 };

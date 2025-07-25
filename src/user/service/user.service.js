@@ -4,6 +4,7 @@ import axios from "axios";
 import { signJwt } from "../../jwt.config.js";
 
 
+
 export const UserService = {
     
     // 사용자(계정) 추가 
@@ -220,5 +221,20 @@ export const UserService = {
             message: "해당 작가 팔로우를 취소했습니다.",
             artistId: result.artistId
         }
+    },
+    
+    // 사용자가 팔로우한 작가 조회하기 
+    async LookUserFollow(userId) {
+        const artistList = await UserRepository.LookUserFollow(userId);
+
+        if(artistList.length === 0) return {
+            message:"팔로우하는 작가가 없습니다.",
+            artistList:[]
+        };
+
+        return{
+            message:"사용자가 팔로우하는 작가 목록입니다.",
+            artistList
+        };
     }
 }
