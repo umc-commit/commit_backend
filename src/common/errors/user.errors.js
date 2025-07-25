@@ -99,3 +99,14 @@ export class NotFollowingArtist extends BaseError {
     })
   }
 };
+
+export class TokenCheck extends BaseError {
+  constructor(data=null){
+    super({
+      errorCode:"U010",
+      reason : '인증정보를 다시 확인해주세요.',
+      statusCode: 409,
+      data,
+    })
+  }
+};
