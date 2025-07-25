@@ -148,4 +148,45 @@ export const RequestRepository = {
       data: updateData
     });
   },
+
+/**
+ * Request 상세 조회 (Commission, Artist 정보 포함)
+ */
+async findRequestDetailById(requestId) {
+  return await prisma.request.findUnique({
+    where: {
+      id: BigInt(requestId)
+    },
+    include: {
+      commission: {
+        select: {
+          id: true,
+          title: true,
+          minPrice: true,
+          formSchema: true,
+          artist: {
+            select: {
+              id: true,
+              nickname: true
+            }
+          }
+        }
+      }
+    }
+  });
+},
+
+/**
+ * Request의 최근 거래 내역 조회
+ */
+async findLatestPointTransactionByRequestId(requestId) {
+  return await prisma.pointTransaction.findFirst({
+    where: {
+      requestId: BigInt(requestId)
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  });
+ }
 };

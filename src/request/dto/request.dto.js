@@ -15,3 +15,10 @@ export class UpdateRequestStatusDto {
     this.status = status;
   }
 }
+
+// 신청함 상세 조회 DTO
+export class GetRequestDetailDto {
+  constructor({ requestId }) {
+    this.requestId = BigInt(requestId);
+  }
+}
