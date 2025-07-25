@@ -119,3 +119,37 @@ export const FollowArtist = async(req, res, next) => {
         next(err);
     }
 }
+
+// 작가 팔로우 취소하기 
+export const CancelArtistFollow = async(req, res, next) => {
+    try{
+        console.log("Decoded JWT from req.user:", req.user);
+
+        const userId = req.user.userId.toString();
+        console.log("userId : ", userId);
+
+        const artistId = req.params.artistId;
+
+        const result = await UserService.CancelArtistFollow(userId, artistId);
+
+        res.status(StatusCodes.OK).success(result);
+    } catch(err) {
+        next(err);
+    }
+}
+
+// 사용자가 팔로우 한 작가 조회하기 
+export const LookUserFollow = async(req, res, next) => {
+    try{
+        console.log("Decoded JWT from req.user:", req.user);
+
+        const userId = req.user.userId.toString();
+        console.log("userId : ", userId);
+
+        const result = await UserService.LookUserFollow(userId);
+
+        res.status(StatusCodes.OK).success(result);
+    }catch(err) {
+        next(err);
+    }
+}

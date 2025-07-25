@@ -88,3 +88,14 @@ export class ArtistNotFound extends BaseError {
     })
   }
 };
+
+export class NotFollowingArtist extends BaseError {
+  constructor(data=null){
+    super({
+      errorCode:"U009",
+      reason : '해당 작가를 팔로우하고 있지 않습니다.',
+      statusCode: 409,
+      data,
+    })
+  }
+};
