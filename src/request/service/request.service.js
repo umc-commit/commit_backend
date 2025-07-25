@@ -184,5 +184,135 @@ export const RequestService = {
 
     // 권한이 아예 없는 경우
     return { isValid: false, errorType: 'UNAUTHORIZED' };
+  },
+
+  /**
+  * 신청함 상세 조회
+  */
+  async getRequestDetail(userId, requestId) {
+    // Request 존재 여부 및 권한 확인
+    const request = await RequestRepository.findRequestDetailById(requestId);
+    if (!request || request.userId !== BigInt(userId)) {
+     throw new RequestNotFoundError({ requestId });
+   }
+
+    // 썸네일 이미지 조회
+    const thumbnailImages = await RequestRepository.findThumbnailImagesByCommissionIds([request.commission.id]);
+    const thumbnailImageUrl = thumbnailImages.length > 0 ? thumbnailImages[0].imageUrl : null;
+
+    // PointTransaction 조회 (결제 정보)
+    let payment = null;
+    let paidAt = null;
+  
+    if (['APPROVED', 'IN_PROGRESS', 'SUBMITTED', 'COMPLETED'].includes(request.status)) {
+      const pointTransaction = await RequestRepository.findLatestPointTransactionByRequestId(requestId);
+      if (pointTransaction) {
+        paidAt = pointTransaction.createdAt.toISOString();
+      }
+    
+      const additionalPrice = request.totalPrice - request.commission.minPrice;
+      payment = {
+        minPrice: request.commission.minPrice,
+        additionalPrice: additionalPrice,
+        totalPrice: request.totalPrice,
+        paidAt: paidAt
+      };
+    }
+
+    // 타임라인 구성
+    const timeline = [];
+    if (request.approvedAt) {
+      timeline.push({
+        status: 'APPROVED',
+        timestamp: request.approvedAt.toISOString()
+     });
+    }
+    if (paidAt) {
+      timeline.push({
+       status: 'PAID', 
+       timestamp: paidAt
+     });
+    }
+    if (request.inProgressAt) {
+     timeline.push({
+       status: 'IN_PROGRESS',
+       timestamp: request.inProgressAt.toISOString()
+     });
+    }
+    if (request.submittedAt) {
+     timeline.push({
+       status: 'SUBMITTED',
+       timestamp: request.submittedAt.toISOString()
+     });
+    }
+    if (request.completedAt) {
+      timeline.push({
+       status: 'COMPLETED',
+       timestamp: request.completedAt.toISOString()
+      });
+    }
+
+    // 폼데이터 구성
+  	const formData = [];
+  	if (['APPROVED', 'IN_PROGRESS', 'SUBMITTED', 'COMPLETED'].includes(request.status)) {
+	  	// 커스텀 필드와 기본 필드 합성
+	  	const customFields = request.commission.formSchema?.fields || [];
+		  const defaultFields = [
+		  	{
+			  	id: (customFields.length + 1).toString(),
+			  	type: "textarea",
+			  	label: "신청 내용"
+		  	},
+		  	{
+		  		id: (customFields.length + 2).toString(),
+		  		type: "file",
+		  		label: "참고 이미지"
+		  	}
+		  ];
+		  const allFields = [...customFields, ...defaultFields];
+		
+  		for (const field of allFields) {
+	  		const fieldId = field.id;
+		  	const answer = request.formAnswer[fieldId];
+		
+		  	let value = null;
+			  if (field.type === 'radio' && field.options) {
+			  	// 선택된 옵션의 label 찾기
+			  	const selectedOption = field.options.find(option => option.value === answer);
+				  value = selectedOption ? selectedOption.label : null;
+	  		} else if (field.type === 'textarea' || field.type === 'file') {
+		  		// textarea나 file은 그대로 사용
+			  	value = answer || null;
+		  	}
+		
+		  	formData.push({
+			  	id: fieldId,
+  				label: field.label,
+	  			value: value,
+		  		type: field.type
+		  	});
+		  }
+	  }
+
+    return {
+      request: {
+        id: request.id,
+        status: request.status,
+        totalPrice: request.totalPrice,
+        createdAt: request.createdAt.toISOString()
+      },
+      commission: {
+        id: request.commission.id,
+        title: request.commission.title,
+        thumbnailImageUrl: thumbnailImageUrl,
+        artist: {
+          id: request.commission.artist.id,
+          nickname: request.commission.artist.nickname
+        }
+      },
+      payment: payment,
+      timeline: timeline,
+      formData: formData
+    };
   }
 };
