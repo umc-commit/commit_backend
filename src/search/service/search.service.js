@@ -43,6 +43,12 @@ export class SearchService {
       limit: searchDto.limit
     });
 
+    //  검색어 저장
+    if (userId) {
+      SearchRepository.saveSearchHistory(userId, searchDto.keyword)
+        .catch(err => console.error('검색어 저장 실패:', err));
+    }
+
     // 커미션 ID 목록 추출
     const commissionIds = commissions.map(commission => commission.id);
 

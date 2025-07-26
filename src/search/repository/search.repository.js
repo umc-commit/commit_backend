@@ -227,4 +227,41 @@ export class SearchRepository {
   static async getRandomTags(limit = 6) {
     return await prisma.$queryRawUnsafe(`SELECT id, name FROM tags ORDER BY RAND() LIMIT ${limit}`);
   }
+
+  /**
+   * 검색어 저장 (최대 10개까지만 유지)
+   */
+  static async saveSearchHistory(userId, keyword) {
+    // 동일한 검색어가 이미 있으면 삭제 후 새로 추가 (최신 순 유지)
+    await prisma.searchHistory.deleteMany({
+      where: {
+        userId: userId,
+        keyword: keyword
+      }
+    });
+
+    // 새 검색어 저장
+    await prisma.searchHistory.create({
+      data: {
+        userId: userId,
+        keyword: keyword
+      }
+    });
+
+    // 최대 10개까지만 유지 (오래된 검색어 삭제)
+    const searchHistories = await prisma.searchHistory.findMany({
+      where: { userId: userId },
+      orderBy: { createdAt: 'desc' },
+      skip: 10 // 최신 10개를 제외한 나머지
+    });
+
+    if (searchHistories.length > 0) {
+      const idsToDelete = searchHistories.map(history => history.id);
+      await prisma.searchHistory.deleteMany({
+        where: {
+          id: { in: idsToDelete }
+        }
+      });
+    }
+  }
 }
