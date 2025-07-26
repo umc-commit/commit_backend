@@ -63,3 +63,10 @@ export class RecentSearchItemDto {
     this.createdAt = createdAt;
   }
 }
+
+// 최근 검색어 개별 삭제 DTO
+export class DeleteRecentSearchDto {
+  constructor({ keyword }) {
+    this.keyword = keyword;
+  }
+}

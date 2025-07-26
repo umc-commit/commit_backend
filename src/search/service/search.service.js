@@ -1,7 +1,7 @@
 import { SearchRepository } from '../repository/search.repository.js';
 import { 
   CommissionItemDto,
-  RecentSearchItemDto
+  RecentSearchItemDto,
  } from '../dto/search.dto.js';
 import { 
   InvalidSearchKeywordError,
@@ -166,5 +166,21 @@ export class SearchService {
     }));
 
     return { recentSearches };
+  }
+
+  /**
+   * 최근 검색어 개별 삭제
+   */
+  static async deleteRecentSearch(deleteRecentSearchDto, userId) {
+    await SearchRepository.deleteRecentSearch(userId, deleteRecentSearchDto.keyword);
+    return { message: "검색어가 삭제되었습니다." };
+  }
+
+  /**
+   * 최근 검색어 전체 삭제
+   */
+  static async deleteAllRecentSearches(userId) {
+    await SearchRepository.deleteAllRecentSearches(userId);
+    return { message: "모든 검색어가 삭제되었습니다." };
   }
 }

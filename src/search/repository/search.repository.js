@@ -280,4 +280,25 @@ export class SearchRepository {
       }
     });
   }
+
+  /**
+   * 최근 검색어 개별 삭제
+   */
+  static async deleteRecentSearch(userId, keyword) {
+    await prisma.searchHistory.deleteMany({
+      where: {
+        userId: userId,
+        keyword: keyword
+      }
+    });
+  }
+
+  /**
+   * 최근 검색어 전체 삭제
+   */
+  static async deleteAllRecentSearches(userId) {
+    await prisma.searchHistory.deleteMany({
+      where: { userId: userId }
+    });
+  }
 }

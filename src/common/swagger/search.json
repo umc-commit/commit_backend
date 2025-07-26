@@ -297,6 +297,84 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": ["Search"],
+        "summary": "최근 검색어 개별 삭제",
+        "description": "특정 검색어를 최근 검색어에서 삭제합니다.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "일러스트"
+            },
+            "description": "삭제할 검색어"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "검색어 삭제 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "resultType": { "type": "string", "example": "SUCCESS" },
+                    "error": { "type": "null", "example": null },
+                    "success": {
+                      "type": "object",
+                      "properties": {
+                        "message": { "type": "string", "example": "검색어가 삭제되었습니다." }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search/recent/all": {
+      "delete": {
+        "tags": ["Search"],
+        "summary": "최근 검색어 전체 삭제",
+        "description": "사용자의 모든 최근 검색어를 삭제합니다.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "모든 검색어 삭제 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "resultType": { "type": "string", "example": "SUCCESS" },
+                    "error": { "type": "null", "example": null },
+                    "success": {
+                      "type": "object",
+                      "properties": {
+                        "message": { "type": "string", "example": "모든 검색어가 삭제되었습니다." }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
