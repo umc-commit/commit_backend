@@ -5,13 +5,13 @@ import { parseWithBigInt, stringifyWithBigInt } from "../../bigintJson.js";
 
 export const getUserPoint = async(req, res, next) => {
   try {
-    const userId = BigInt(req.user.id);
+    const userId = BigInt(req.user.userId);
 
     const point = await PointService.getCurrentPoint(userId);
     const responseData = parseWithBigInt(stringifyWithBigInt(point));
 
     res.status(StatusCodes.OK).success(responseData);
-  } catch(error) {
+  } catch(err) {
     next(err);
   }
 }
@@ -22,8 +22,8 @@ export const getProducts = async(req, res, next) => {
     const responseData = parseWithBigInt(stringifyWithBigInt(products));
 
     res.status(StatusCodes.OK).success(responseData);
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 }
 
@@ -38,10 +38,6 @@ export const transferPoint = async(req, res, next) => {
       amount: req.body.amount,
       userId: userId,
     });
-
-    console.log("dto.requestId", dto.requestId);
-    console.log("dto.amount", dto.amount);
-    console.log("dto.userId", dto.userId);
 
     const point = await PointService.transferPoint(dto);
     const responseData = parseWithBigInt(stringifyWithBigInt(point));
