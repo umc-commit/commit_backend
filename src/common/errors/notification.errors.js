@@ -76,3 +76,48 @@ export class NoNotificationsSelectedError extends BaseError {
         });
     }
 }
+
+// 특정 사용자의 FCM 토큰을 찾는데 없는 경우
+export class PushTokenNotFoundError extends BaseError {
+    constructor(data = null) {
+        super({
+            errorCode: "N008",
+            reason: "등록된 FCM 토큰이 없습니다",
+            statusCode: 404,
+            data
+        });
+    }
+}
+
+export class PushTokenInvalidError extends BaseError {
+    constructor(data = null) {
+        super({
+            errorCode: "N009",
+            reason: "FCM 토큰이 비어있거나 유효하지 않습니다",
+            statusCode: 400,
+            data
+        });
+    }
+}
+
+export class FCMSendFailedError extends BaseError {
+    constructor(data = null) {
+        super({
+            errorCode: "N010",
+            reason: "FCM Push 알림 발송에 실패했습니다",
+            statusCode: 500,
+            data
+        });
+    }
+}
+
+export class PushTokenAlreadyExistsError extends BaseError {
+    constructor(data = null) {
+        super({
+            errorCode: "N011",
+            reason: "이미 등록된 FCM 토큰입니다",
+            statusCode: 409,
+            data
+        });
+    }
+}
