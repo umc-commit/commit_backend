@@ -23,31 +23,7 @@
                       "example": true
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string",
-                          "example": "1"
-                        },
-                        "userId": {
-                          "type": "string",
-                          "example": "1"
-                        },
-                        "amount": {
-                          "type": "integer",
-                          "example": 3000
-                        },
-                        "createdAt": {
-                          "type": "string",
-                          "format": "date-time",
-                          "example": "2025-07-21T09:30:00.000Z"
-                        },
-                        "updatedAt": {
-                          "type": "string",
-                          "format": "date-time",
-                          "example": "2025-07-21T09:30:00.000Z"
-                        }
-                      }
+                      "$ref": "#/components/schemas/Point"
                     }
                   }
                 }
@@ -59,17 +35,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "error": {
-                      "type": "string",
-                      "example": "Unauthorized"
-                    }
-                  }
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -79,17 +45,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "error": {
-                      "type": "string",
-                      "example": "Internal Server Error"
-                    }
-                  }
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -118,6 +74,124 @@
           }
         }
       }
+    },
+    "/api/points/transfer": {
+      "post": {
+        "tags": ["Points"],
+        "summary": "포인트 사용 (거래)",
+        "description": "사용자가 특정 요청(request)에 대해 포인트를 사용합니다. 현재 포인트가 부족하면 에러를 반환합니다.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferPointRequest"
+              },
+              "example": {
+                "requestId": 123,
+                "amount": 500
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "포인트 사용 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferPointResponse"
+                },
+                "example": {
+                  "resultType": "SUCCESS",
+                  "success": {
+                    "updatedPoint": {
+                      "id": 1,
+                      "userId": 1,
+                      "amount": 1500,
+                      "createdAt": "2025-07-23T10:00:00.000Z",
+                      "updatedAt": "2025-07-23T10:05:00.000Z"
+                    },
+                    "pointTransaction": {
+                      "id": 10,
+                      "userId": 1,
+                      "requestId": 123,
+                      "paymentId": null,
+                      "status": "USED",
+                      "amount": -500,
+                      "balance": 1500,
+                      "createdAt": "2025-07-23T10:05:00.000Z"
+                    }
+                  },
+                  "error": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잔액 부족 혹은 유효하지 않은 요청",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "resultType": "FAIL",
+                  "error": {
+                    "errorCode": "InsufficientPointError",
+                    "reason": "잔액이 부족합니다. 현재 포인트: 200, 요청 금액: 500",
+                    "data": null
+                  },
+                  "success": null
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "JWT 인증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "resultType": "FAIL",
+                  "error": {
+                    "errorCode": "UnauthorizedError",
+                    "reason": "로그인이 필요합니다.",
+                    "data": null
+                  },
+                  "success": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "resultType": "FAIL",
+                  "error": {
+                    "errorCode": "unknown",
+                    "reason": "Internal Server Error",
+                    "data": null
+                  },
+                  "success": null
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -129,6 +203,33 @@
       }
     },
     "schemas": {
+      "Point": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "1"
+          },
+          "userId": {
+            "type": "string",
+            "example": "1"
+          },
+          "amount": {
+            "type": "integer",
+            "example": 3000
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-07-21T09:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-07-21T09:30:00.000Z"
+          }
+        }
+      },
       "Product": {
         "type": "object",
         "properties": {
@@ -143,6 +244,76 @@
           "price": {
             "type": "integer",
             "example": 1200
+          }
+        }
+      },
+      "TransferPointRequest": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "integer",
+            "description": "커미션 요청 ID"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "사용할 포인트 금액"
+          }
+        },
+        "required": ["requestId", "amount"]
+      },
+      "TransferPointResponse": {
+        "type": "object",
+        "properties": {
+          "resultType": {
+            "type": "string",
+            "example": "SUCCESS"
+          },
+          "success": {
+            "type": "object",
+            "properties": {
+              "updatedPoint": {
+                "$ref": "#/components/schemas/Point"
+              },
+              "pointTransaction": {
+                "$ref": "#/components/schemas/PointTransaction"
+              }
+            }
+          },
+          "error": {
+            "type": ["object", "null"]
+          }
+        }
+      },
+      "PointTransaction": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "userId": { "type": "integer" },
+          "requestId": { "type": ["integer", "null"] },
+          "paymentId": { "type": ["integer", "null"] },
+          "status": { "type": "string" },
+          "amount": { "type": "integer" },
+          "balance": { "type": "integer" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "resultType": {
+            "type": "string",
+            "example": "FAIL"
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "errorCode": { "type": "string" },
+              "reason": { "type": "string" },
+              "data": { "type": ["object", "null"] }
+            }
+          },
+          "success": {
+            "type": ["object", "null"]
           }
         }
       }
