@@ -5,7 +5,6 @@ import passport from "passport";
 import { authenticate } from "../middlewares/auth.middleware.js";
 // 리뷰 관련 import 추가
 import reviewController from '../review/controller/review.controller.js';
-import { createRoutesFromChildren } from "react-router-dom";
 
 const router = express.Router();
 
