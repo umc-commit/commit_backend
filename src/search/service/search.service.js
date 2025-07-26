@@ -1,5 +1,8 @@
 import { SearchRepository } from '../repository/search.repository.js';
-import { CommissionItemDto } from '../dto/search.dto.js';
+import { 
+  CommissionItemDto,
+  RecentSearchItemDto,
+ } from '../dto/search.dto.js';
 import { 
   InvalidSearchKeywordError,
   SearchKeywordTooLongError,
@@ -42,6 +45,12 @@ export class SearchService {
       page: searchDto.page,
       limit: searchDto.limit
     });
+
+    //  검색어 저장
+    if (userId) {
+      SearchRepository.saveSearchHistory(userId, searchDto.keyword)
+        .catch(err => console.error('검색어 저장 실패:', err));
+    }
 
     // 커미션 ID 목록 추출
     const commissionIds = commissions.map(commission => commission.id);
@@ -142,5 +151,36 @@ export class SearchService {
    */
   static async getRecommendedTags() {
     return await SearchRepository.getRandomTags(6);
+  }
+
+  /**
+   * 최근 검색어 조회
+   */
+  static async getRecentSearches(getRecentSearchDto, userId) {
+    const searches = await SearchRepository.getRecentSearches(userId, getRecentSearchDto.limit);
+    
+    const recentSearches = searches.map(search => new RecentSearchItemDto({
+      id: search.id,
+      keyword: search.keyword,
+      createdAt: search.createdAt
+    }));
+
+    return { recentSearches };
+  }
+
+  /**
+   * 최근 검색어 개별 삭제
+   */
+  static async deleteRecentSearch(deleteRecentSearchDto, userId) {
+    await SearchRepository.deleteRecentSearch(userId, deleteRecentSearchDto.keyword);
+    return { message: "검색어가 삭제되었습니다." };
+  }
+
+  /**
+   * 최근 검색어 전체 삭제
+   */
+  static async deleteAllRecentSearches(userId) {
+    await SearchRepository.deleteAllRecentSearches(userId);
+    return { message: "모든 검색어가 삭제되었습니다." };
   }
 }

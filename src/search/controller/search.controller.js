@@ -1,6 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
 import { SearchService } from '../service/search.service.js';
-import { SearchCommissionDto } from '../dto/search.dto.js';
+import {
+  SearchCommissionDto,
+  GetRecentSearchDto,
+  DeleteRecentSearchDto
+ } from '../dto/search.dto.js';
 import { parseWithBigInt, stringifyWithBigInt } from '../../bigintJson.js';
 
 /**
@@ -31,6 +35,59 @@ export const getRecommendedTags = async (req, res, next) => {
     const response = parseWithBigInt(stringifyWithBigInt({
       tags,
     }));
+
+    return res.status(StatusCodes.OK).success(response);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * 최근 검색어 조회
+ */
+export const getRecentSearches = async (req, res, next) => {
+  try {
+    const getRecentSearchDto = new GetRecentSearchDto(req.query);
+    const userId = req.user.userId;
+
+    const result = await SearchService.getRecentSearches(getRecentSearchDto, userId);
+
+    const response = parseWithBigInt(stringifyWithBigInt(result));
+
+    return res.status(StatusCodes.OK).success(response);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * 최근 검색어 개별 삭제
+ */
+export const deleteRecentSearch = async (req, res, next) => {
+  try {
+    const deleteRecentSearchDto = new DeleteRecentSearchDto(req.query);
+    const userId = req.user.userId;
+
+    const result = await SearchService.deleteRecentSearch(deleteRecentSearchDto, userId);
+
+    const response = parseWithBigInt(stringifyWithBigInt(result));
+
+    return res.status(StatusCodes.OK).success(response);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * 최근 검색어 전체 삭제
+ */
+export const deleteAllRecentSearches = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+
+    const result = await SearchService.deleteAllRecentSearches(userId);
+
+    const response = parseWithBigInt(stringifyWithBigInt(result));
 
     return res.status(StatusCodes.OK).success(response);
   } catch (err) {
