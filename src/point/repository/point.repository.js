@@ -44,4 +44,23 @@ export const PointRepository = {
   async getAllProducts() {
     return await prisma.product.findMany();
   },
+
+  async getUserTransactions(userId, requestId) {
+    return await prisma.pointTransaction.findMany({
+      where: {
+        userId: BigInt(userId),
+        ...(requestId && { requestId: BigInt(requestId) }),
+      },
+      include: {
+        request: {
+          include: {
+            commission: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  },
 };

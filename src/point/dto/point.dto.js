@@ -8,3 +8,10 @@ export class TransferPointDto {
     this.userId = userId;
   }
 }
+
+export class TransactionHistoryDto {
+  constructor({ requestId, userId }) {
+    this.requestId = requestId;
+    this.userId = userId;
+  }
+}

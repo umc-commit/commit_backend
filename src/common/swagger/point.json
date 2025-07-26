@@ -75,6 +75,74 @@
         }
       }
     },
+    "/api/points/transactions": {
+      "get": {
+        "tags": ["Points"],
+        "summary": "포인트 거래 내역 조회",
+        "description": "사용자의 포인트 거래 내역을 조회합니다. 선택적으로 requestId를 쿼리로 넘겨 특정 요청의 거래 내역만 조회할 수 있습니다.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "123"
+            },
+            "description": "조회할 커미션 요청 ID (선택)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "거래 내역 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TransactionHistoryItem"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "JWT 인증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/points/transfer": {
       "post": {
         "tags": ["Points"],
@@ -134,20 +202,39 @@
             }
           },
           "400": {
-            "description": "잔액 부족 혹은 유효하지 않은 요청",
+            "description": "잔액 부족 / 중복 결제 / 유효하지 않은 요청",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 },
-                "example": {
-                  "resultType": "FAIL",
-                  "error": {
-                    "errorCode": "InsufficientPointError",
-                    "reason": "잔액이 부족합니다. 현재 포인트: 200, 요청 금액: 500",
-                    "data": null
+                "examples": {
+                  "InsufficientPointError": {
+                    "summary": "포인트 부족",
+                    "value": {
+                      "resultType": "FAIL",
+                      "error": {
+                        "errorCode": "InsufficientPointError",
+                        "reason": "잔액이 부족합니다.",
+                        "data": null
+                      },
+                      "success": null
+                    }
                   },
-                  "success": null
+                  "DuplicatePaymentError": {
+                    "summary": "중복 결제",
+                    "value": {
+                      "resultType": "FAIL",
+                      "error": {
+                        "errorCode": "P003",
+                        "reason": "중복된 거래입니다.",
+                        "data": {
+                          "requestId": 123
+                        }
+                      },
+                      "success": null
+                    }
+                  }
                 }
               }
             }
@@ -295,6 +382,31 @@
           "amount": { "type": "integer" },
           "balance": { "type": "integer" },
           "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "TransactionHistoryItem": {
+        "type": "object",
+        "properties": {
+          "time": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-07-26T12:34:56.000Z"
+          },
+          "baseAmount": {
+            "type": "integer",
+            "description": "기본 금액 (Commission.minPrice)",
+            "example": 1000
+          },
+          "extraAmount": {
+            "type": "integer",
+            "description": "추가 금액 (amount - base)",
+            "example": 500
+          },
+          "totalAmount": {
+            "type": "integer",
+            "description": "총 결제 금액 (Request.totalPrice)",
+            "example": 1500
+          }
         }
       },
       "ErrorResponse": {

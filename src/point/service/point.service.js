@@ -1,5 +1,6 @@
 import { PointRepository } from "../repository/point.repository.js";
 import { RequestRepository } from "../../request/repository/request.repository.js";
+import { DuplicatePaymentError } from "../../common/errors/payment.errors.js";
 import { InsufficientPointError } from "../../common/errors/point.errors.js";
 import { RequestNotFoundError } from "../../common/errors/request.errors.js";
 import { prisma } from "../../db.config.js";
@@ -22,6 +23,10 @@ export const PointService = {
         throw new RequestNotFoundError({ requestId: dto.requestId });
       }
 
+      if (request.PointTransaction && request.PointTransaction.length > 0) {
+        throw new DuplicatePaymentError({ requestId: dto.requestId });
+      }
+
       const point = await PointRepository.getUserPoint(dto.userId);
       if (point.amount < dto.amount) {
         throw new InsufficientPointError({ amount: dto.amount});
@@ -42,5 +47,19 @@ export const PointService = {
 
       return { updatedPoint, pointTransaction };
     });
-  }
+  },
+
+  async getTransactionHistory(data) {
+    const transactions = await PointRepository.getUserTransactions(data.userId, data.requestId);
+
+    return transactions.map((tx) => {
+      const base = tx.request?.commission?.minPrice ?? 0;
+      return {
+        baseAmount: base,
+        extraAmount: Math.abs(tx.amount) - base,
+        totalAmount: Math.abs(tx.amount),
+        time: tx.createdAt,
+      };
+    });
+  },
 }
