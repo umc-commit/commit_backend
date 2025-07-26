@@ -222,7 +222,7 @@ export class SearchRepository {
   }
 
   /**
-   * 태그 5개를 랜덤으로 조회
+   * 태그 6개를 랜덤으로 조회
    */
   static async getRandomTags(limit = 6) {
     return await prisma.$queryRawUnsafe(`SELECT id, name FROM tags ORDER BY RAND() LIMIT ${limit}`);
@@ -263,5 +263,21 @@ export class SearchRepository {
         }
       });
     }
+  }
+
+  /**
+   * 최근 검색어 조회
+   */
+  static async getRecentSearches(userId, limit = 10) {
+    return await prisma.searchHistory.findMany({
+      where: { userId: userId },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      select: {
+        id: true,
+        keyword: true,
+        createdAt: true
+      }
+    });
   }
 }

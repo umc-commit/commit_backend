@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { 
     searchCommissions,
-    getRecommendedTags 
+    getRecommendedTags,
+    getRecentSearches
 } from './controller/search.controller.js';
 import { authenticate } from "../middlewares/auth.middleware.js";
 
@@ -12,5 +13,8 @@ router.get('/', authenticate, searchCommissions);
 
 // 추천 태그 조회 API
 router.get('/tags', authenticate, getRecommendedTags);
+
+// 최근 검색어 조회 API
+router.get('/recent', authenticate, getRecentSearches);
 
 export default router;

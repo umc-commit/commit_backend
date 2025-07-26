@@ -1,5 +1,8 @@
 import { SearchRepository } from '../repository/search.repository.js';
-import { CommissionItemDto } from '../dto/search.dto.js';
+import { 
+  CommissionItemDto,
+  RecentSearchItemDto
+ } from '../dto/search.dto.js';
 import { 
   InvalidSearchKeywordError,
   SearchKeywordTooLongError,
@@ -148,5 +151,20 @@ export class SearchService {
    */
   static async getRecommendedTags() {
     return await SearchRepository.getRandomTags(6);
+  }
+
+  /**
+   * 최근 검색어 조회
+   */
+  static async getRecentSearches(getRecentSearchDto, userId) {
+    const searches = await SearchRepository.getRecentSearches(userId, getRecentSearchDto.limit);
+    
+    const recentSearches = searches.map(search => new RecentSearchItemDto({
+      id: search.id,
+      keyword: search.keyword,
+      createdAt: search.createdAt
+    }));
+
+    return { recentSearches };
   }
 }

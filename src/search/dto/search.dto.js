@@ -47,3 +47,19 @@ export class CommissionItemDto {
     this.tags = tags;
   }
 }
+
+// 최근 검색어 조회 DTO
+export class GetRecentSearchDto {
+  constructor({ limit = 10 }) {
+    this.limit = Number(limit);
+  }
+}
+
+// 최근 검색어 응답용 아이템 DTO
+export class RecentSearchItemDto {
+  constructor({ id, keyword, createdAt }) {
+    this.id = id;
+    this.keyword = keyword;
+    this.createdAt = createdAt;
+  }
+}
