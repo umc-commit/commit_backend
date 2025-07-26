@@ -1,4 +1,4 @@
-import { messaging } from '../../../../config/firebase.js';
+import { messaging } from '../../../firebase.config.js';
 import notificationRepository from '../../repository/notification.repository.js';
 import pushRepository from '../repository/push.repository.js';
 
