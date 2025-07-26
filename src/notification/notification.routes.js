@@ -1,5 +1,6 @@
 import express from 'express';
 import notificationController from './controller/notification.controller.js';
+import pushController from './fcm/controller/push.controller.js';
 import { authenticate } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
@@ -62,6 +63,38 @@ router.delete('/all',
 // router.post('/create',
 //     authenticate,
 //     notificationController.createNotification
+// );
+
+/**
+ * FCM 토큰 등록 API
+ * POST /api/notifications/fcm/token
+ */
+router.post('/fcm/token',
+    authenticate,
+    pushController.registerPushToken
+);
+
+/**
+ * FCM 토큰 삭제 API
+ * DELETE /api/notifications/fcm/token
+ */
+router.delete('/fcm/token',
+    authenticate,
+    pushController.deletePushToken
+);
+
+/**
+ * 테스트 Push 알림 발송 API (개발 테스트용)
+ * POST /api/notifications/fcm/test
+ * 
+ * 로컬 테스트 환경에서는 주석 처리 해제 후 사용
+ * 
+ * TODO: 테스트 후에는 반드시 주석 처리
+ *       추후 불필요해지면 삭제 예정
+ */
+// router.post('/fcm/test',
+//     authenticate,
+//     pushController.sendTestPush
 // );
 
 export default router;
