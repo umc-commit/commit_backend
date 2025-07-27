@@ -86,15 +86,10 @@ router.delete('/fcm/token',
 /**
  * 테스트 Push 알림 발송 API (개발 테스트용)
  * POST /api/notifications/fcm/test
- * 
- * 로컬 테스트 환경에서는 주석 처리 해제 후 사용
- * 
- * TODO: 테스트 후에는 반드시 주석 처리
- *       추후 불필요해지면 삭제 예정
  */
-// router.post('/fcm/test',
-//     authenticate,
-//     pushController.sendTestPush
-// );
+router.post('/fcm/test',
+    authenticate,
+    pushController.sendTestPush
+);
 
 export default router;

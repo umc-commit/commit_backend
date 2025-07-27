@@ -3,7 +3,9 @@ import { stringifyWithBigInt } from "../../../bigintJson.js";
 import {
     PushTokenDeleteResponseDto,
     PushTokenRegisterDto,
-    PushTokenResponseDto
+    PushTokenResponseDto,
+    TestPushRequestDto,
+    PushSendResponseDto
 } from '../dto/push.dto.js';
 import pushService from '../service/push.service.js';
 
@@ -70,42 +72,38 @@ class PushController {
 
     /**
      * 테스트 Push 알림 발송 API (개발 테스트용)
-     * 로컬 테스트 환경에서는 주석 처리 해제 후 사용
-     * 
-     * TODO: 테스트 후에는 반드시 주석 처리
-     *       추후 불필요해지면 삭제 예정
      */
-    // async sendTestPush(req, res, next) {
-    //     try {
-    //         // 요청 본문 데이터를 DTO로 구조화
-    //         const testPushDto = new TestPushRequestDto(req.body);
+    async sendTestPush(req, res, next) {
+        try {
+            // 요청 본문 데이터를 DTO로 구조화
+            const testPushDto = new TestPushRequestDto(req.body);
 
-    //         // 대상 사용자 ID 추출
-    //         const targetUserId = BigInt(testPushDto.target_user_id);
+            // 대상 사용자 ID 추출
+            const targetUserId = BigInt(testPushDto.target_user_id);
 
-    //         // 테스트 Push 발송 서비스 호출
-    //         const result = await pushService.sendTestPush(
-    //             testPushDto.title,
-    //             testPushDto.body,
-    //             targetUserId,
-    //             testPushDto.data
-    //         );
+            // 테스트 Push 발송 서비스 호출
+            const result = await pushService.sendTestPush(
+                testPushDto.title,
+                testPushDto.body,
+                targetUserId,
+                testPushDto.data
+            );
 
-    //         // 발송 결과를 응답용 DTO로 가공
-    //         const responseData = new PushSendResponseDto(result);
+            // 발송 결과를 응답용 DTO로 가공
+            const responseData = new PushSendResponseDto(result);
 
-    //         // 클라이언트에 응답 전송 (200 OK)
-    //         res.status(StatusCodes.OK).json({
-    //             resultType: "SUCCESS",
-    //             error: null,
-    //             success: responseData
-    //         });
+            // 클라이언트에 응답 전송 (200 OK)
+            res.status(StatusCodes.OK).json({
+                resultType: "SUCCESS",
+                error: null,
+                success: responseData
+            });
 
-    //     } catch (error) {
-    //         // 에러 발생 시 에러 처리 미들웨어로 넘김
-    //         next(error);
-    //     }
-    // }
+        } catch (error) {
+            // 에러 발생 시 에러 처리 미들웨어로 넘김
+            next(error);
+        }
+    }
 
 }
 
