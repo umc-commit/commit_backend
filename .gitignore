@@ -143,3 +143,6 @@ uploads/
 
 # macOS 시스템 파일 무시
 .DS_Store
+
+# Firebase 설정 파일
+config/service-account-key.json

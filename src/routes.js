@@ -18,16 +18,12 @@ router.use("/", bookmarkRouter);
 router.use("/search", searchRouter)
 router.use("/commissions", commissionRouter);
 router.use("/users", userRouter);
-router.use("/reviews", reviewRouter);  // 리뷰 관련 API들
-router.use("/requests", reviewRouter); // 임시 리뷰 작성 API
+router.use("/reviews", reviewRouter);
 router.use("/notifications", notificationRouter);
 router.use("/payments", paymentRouter);
 router.use("/points", pointRouter);
 router.use("/requests", requestRouter);
 router.use("/home", homeRouter);
-
-// TODO: 커미션 신청 페이지 작업 완료되면 라우터 분리 예정
-// router.use("/requests", requestRouter);
 
 
 export default router;

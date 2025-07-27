@@ -2,9 +2,10 @@ import { Router } from 'express';
 import {
     getRequestList,
     getRequestDetail,
-    updateRequestStatus 
+    updateRequestStatus
 } from "./controller/request.controller.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
+import reviewController from '../review/controller/review.controller.js';
 
 const router = Router();
 
@@ -14,5 +15,14 @@ router.get('/', authenticate, getRequestList);
 router.get('/:requestId', authenticate, getRequestDetail);
 // 신청 상태 변경 API
 router.patch('/:requestId/status', authenticate, updateRequestStatus);
+
+/**
+ * 리뷰 작성 API
+ * POST /api/requests/:requestId/reviews
+ */
+router.post('/:requestId/reviews',
+    authenticate,
+    reviewController.createReview
+);
 
 export default router;
