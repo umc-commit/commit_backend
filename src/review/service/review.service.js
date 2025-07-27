@@ -54,7 +54,7 @@ class ReviewService {
             if (allowedTypes.includes(file.mimetype)) {
                 cb(null, true);
             } else {
-                cb(new UnsupportedImageFormatError(file.mimetype), false);
+                cb(new UnsupportedImageFormatError({ fileType: file.mimetype }), false);
             }
         };
 
@@ -93,14 +93,14 @@ class ReviewService {
         try {
             // 1. 파일 존재 여부 확인 (사용자가 파일을 보내지 않았거나, multer에서 처리 실패 시)
             if (!file) {
-                throw new ImageUploadFailedError('파일이 업로드되지 않았습니다');
+                throw new ImageUploadFailedError({ reason: '파일이 업로드되지 않았습니다' });
             }
 
             // 2. 파일 크기 추가 검증
             if (file.size > 5 * 1024 * 1024) {
                 // 업로드된 파일 삭제
                 this.deleteFile(file.path);
-                throw new FileSizeExceededError(file.size);
+                throw new FileSizeExceededError({ fileSize: file.size });
             }
 
             // 3. 파일 URL 생성 (현재: 로컬 환경용)
@@ -156,37 +156,37 @@ class ReviewService {
         // 1. 커미션 신청 존재 여부 및 권한 확인
         const request = await reviewRepository.findRequestByIdForReview(requestId);
         if (!request) {
-            throw new RequestNotFoundError(requestId);
+            throw new RequestNotFoundError({ requestId });
         }
 
         // 2. 리뷰 작성 권한 확인 (본인이 신청한 커미션인지)
         if (request.userId !== userId) {
-            throw new ReviewPermissionDeniedError(userId, requestId);
+            throw new ReviewPermissionDeniedError({ userId, requestId });
         }
 
         // 3. 커미션 완료 상태 확인 (완료된 커미션만 리뷰 작성 가능)
         if (request.status !== 'COMPLETED') {
-            throw new RequestNotCompletedError(requestId, request.status);
+            throw new RequestNotCompletedError({ requestId, status: request.status });
         }
 
         // 4. 이미 리뷰가 작성되었는지 확인 (중복 리뷰 방지)
         const existingReview = await reviewRepository.findReviewByRequestId(requestId);
         if (existingReview) {
-            throw new ReviewAlreadyExistsError(requestId);
+            throw new ReviewAlreadyExistsError({ requestId });
         }
 
         // 5. 세부 입력값 검증
         // 5-1. 별점 검증 (1-5점 사이)
         if (!rate || rate < 1 || rate > 5) {
-            throw new ReviewRatingInvalidError(rate);
+            throw new ReviewRatingInvalidError({ rate });
         }
         // 5-2. 내용 최소 길이 검증 (10자 이상)
         if (!content || content.trim().length < 10) {
-            throw new ReviewContentTooShortError(content ? content.trim().length : 0);
+            throw new ReviewContentTooShortError({ contentLength: content ? content.trim().length : 0 });
         }
         // 5-3. 내용 최대 길이 검증 (1000자 이하)
         if (content.trim().length > 1000) {
-            throw new ReviewContentTooLongError(content.trim().length);
+            throw new ReviewContentTooLongError({ contentLength: content.trim().length });
         }
 
         // 6. 리뷰 데이터 DB 저장
@@ -234,26 +234,26 @@ class ReviewService {
         // 1. 리뷰 존재 여부 확인
         const review = await reviewRepository.findReviewById(reviewId);
         if (!review) {
-            throw new ReviewNotFoundError(reviewId);
+            throw new ReviewNotFoundError({ reviewId });
         }
 
         // 2. 권한 확인 (작성자 본인만 수정 가능)
         if (review.userId !== userId) {
-            throw new ReviewPermissionDeniedError(userId, reviewId);
+            throw new ReviewPermissionDeniedError({ userId, reviewId });
         }
 
         // 3. 세부 입력값 검증
         // 3-1. 별점 검증 (1-5점 사이)
         if (!rate || rate < 1 || rate > 5) {
-            throw new ReviewRatingInvalidError(rate);
+            throw new ReviewRatingInvalidError({ rate });
         }
         // 3-2. 내용 최소 길이 검증 (10자 이상)
         if (!content || content.trim().length < 10) {
-            throw new ReviewContentTooShortError(content ? content.trim().length : 0);
+            throw new ReviewContentTooShortError({ contentLength: content ? content.trim().length : 0 });
         }
         // 3-3. 내용 최대 길이 검증 (1000자 이하)
         if (content.trim().length > 1000) {
-            throw new ReviewContentTooLongError(content.trim().length);
+            throw new ReviewContentTooLongError({ contentLength: content.trim().length });
         }
 
         // 4. 리뷰 업데이트
@@ -303,12 +303,12 @@ class ReviewService {
         // 1. 리뷰 존재 여부 확인
         const review = await reviewRepository.findReviewById(reviewId);
         if (!review) {
-            throw new ReviewNotFoundError(reviewId);
+            throw new ReviewNotFoundError({ reviewId });
         }
 
         // 2. 권한 확인 (작성자 본인만 삭제 가능)
         if (review.userId !== userId) {
-            throw new ReviewPermissionDeniedError(userId, reviewId);
+            throw new ReviewPermissionDeniedError({ userId, reviewId });
         }
 
         // 3. 관련 이미지들 먼저 삭제
