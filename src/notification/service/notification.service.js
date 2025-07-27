@@ -7,6 +7,7 @@ import {
     NoUnreadNotificationsError
 } from '../../common/errors/notification.errors.js';
 import { UserNotFoundError } from '../../common/errors/user.errors.js';
+import pushService from '../fcm/service/push.service.js';
 
 // Repository import
 import notificationRepository from '../repository/notification.repository.js';
@@ -183,6 +184,7 @@ class NotificationService {
 
     /**
      * 알림 생성 (다른 API에서 호출하는 공통 메서드)
+     * 인앱 알림 + FCM Push 알림 동시 발송
      * 
      * @param {Object} notificationData - 알림 데이터
      * @param {BigInt} notificationData.userId - 대상 사용자 ID
@@ -207,7 +209,7 @@ class NotificationService {
         // 3. 알림 타입에 따른 title과 content 생성
         const { title, content } = this.generateNotificationText(type, notificationData.relatedData || {});
 
-        // 4. 알림 생성
+        // 4. 인앱 알림 생성
         const notification = await notificationRepository.createNotification({
             userId: BigInt(userId),
             title: title,
@@ -216,7 +218,32 @@ class NotificationService {
             relatedData: notificationData.relatedData || {}
         });
 
-        // 5. 생성 결과 반환
+        // 5. FCM Push 알림 발송
+        try {
+            console.log('FCM Push 알림 발송 시도:', {
+                userId: userId,
+                title: title,
+                type: type
+            });
+
+            await pushService.sendPushToUsers(
+                [BigInt(userId)],
+                title,
+                content,
+                {
+                    type: type,
+                    notificationId: notification.id.toString(),
+                    ...notificationData.relatedData
+                }
+            );
+
+            console.log('FCM Push 알림 발송 성공');
+        } catch (fcmError) {
+            // FCM 발송 실패해도 인앱 알림은 성공이므로 에러로 처리하지 않음
+            console.error('FCM Push 알림 발송 실패 (인앱 알림은 성공):', fcmError.message);
+        }
+
+        // 6. 생성 결과 반환
         return notification;
     }
 
@@ -224,38 +251,43 @@ class NotificationService {
      * 알림 타입에 따라 title과 content를 생성하는 템플릿 함수
      */
     generateNotificationText(type, relatedData) {
-        const { creatorName, amount, commissionTitle } = relatedData;
+        const { creatorName, amount, commissionTitle, nickname } = relatedData;
 
         switch (type) {
             case 'commission_submitted':
                 return {
                     title: '커미션 신청 완료!',
-                    content: `${creatorName}님의 ${commissionTitle || '커미션'} 신청서가 접수됐어요. 작가님의 수락을 기다리는 중이에요.`
+                    content: `${creatorName || '작가'}님의 ${commissionTitle || '커미션'} 신청서가 접수됐어요. 작가님의 수락을 기다리는 중이에요.`
                 };
             case 'commission_approved':
                 return {
                     title: '커미션 신청이 수락됐어요',
-                    content: `${creatorName}님이 ${commissionTitle || '커미션'} 신청서를 수락했어요.`
+                    content: `${creatorName || '작가'}님이 ${commissionTitle || '커미션'} 신청서를 수락했어요.`
                 };
             case 'commission_rejected':
                 return {
                     title: '커미션 신청이 거절됐어요',
-                    content: `${creatorName}님이 ${commissionTitle || '커미션'} 신청서를 거절했어요.`
+                    content: `${creatorName || '작가'}님이 ${commissionTitle || '커미션'} 신청서를 거절했어요.`
                 };
             case 'payment_request':
                 return {
                     title: '결제 요청이 도착했어요',
-                    content: `${creatorName}님이 ${amount} 포인트 결제 요청을 보냈어요.`
+                    content: `${creatorName || '작가'}님이 ${amount} 포인트 결제 요청을 보냈어요.`
                 };
             case 'work_started':
                 return {
                     title: '작업이 시작됐어요',
-                    content: `${creatorName}님이 ${commissionTitle || '커미션'} 작업을 시작했어요.`
+                    content: `${creatorName || '작가'}님이 ${commissionTitle || '커미션'} 작업을 시작했어요.`
                 };
             case 'work_completed':
                 return {
                     title: '커미션 작업 완료!',
-                    content: `${creatorName}님의 ${commissionTitle || '커미션'} 작업이 완료됐어요. 결과물을 확인해보세요!`
+                    content: `${creatorName || '작가'}님의 ${commissionTitle || '커미션'} 작업이 완료됐어요. 결과물을 확인해보세요!`
+                };
+            case 'artist_new_post':
+                return {
+                    title: '',
+                    content: `${nickname || '작가'}님이 새 커미션 타입글을 업로드했어요.`
                 };
             default:
                 return {
