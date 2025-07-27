@@ -40,9 +40,11 @@ class ReviewRepository {
         });
     }
 
-
-    // TODO: 추후 RequestRepository와 통합 필요
-    // 현재는 리뷰 작성 API 개발을 위한 임시 구현
+    /**
+     * 리뷰 작성 시 Request 정보 조회
+     * @param {number} requestId - Request ID
+     * @returns {Object} Request 정보
+     */
     async findRequestByIdForReview(requestId) {
         return await prisma.request.findUnique({
             where: { id: BigInt(requestId) },
@@ -69,16 +71,22 @@ class ReviewRepository {
         });
     }
 
-    // TODO: 추후 RequestRepository와 통합 필요
-    // 현재는 리뷰 작성 API 개발을 위한 임시 구현
+    /**
+     * Request ID로 리뷰 조회 (중복 리뷰 방지용)
+     * @param {number} requestId - Request ID
+     * @returns {Object|null} 리뷰 정보 또는 null
+     */
     async findReviewByRequestId(requestId) {
         return await prisma.review.findFirst({
             where: { requestId: BigInt(requestId) }
         });
     }
 
-    // TODO: 추후 RequestRepository와 통합 필요
-    // 현재는 리뷰 작성 API 개발을 위한 임시 구현
+    /**
+     * 리뷰 생성
+     * @param {Object} reviewData - 리뷰 데이터
+     * @returns {Object} 생성된 리뷰 정보
+     */
     async createReview(reviewData) {
         return await prisma.review.create({
             data: {
