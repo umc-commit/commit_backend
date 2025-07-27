@@ -335,6 +335,134 @@
                     }
                 }
             }
+        },
+        "/api/notifications/fcm/token": {
+            "post": {
+                "tags": ["Notification"],
+                "summary": "FCM 토큰 등록",
+                "description": "사용자의 FCM 토큰을 서버에 등록합니다. 등록된 토큰은 이후 Push 알림 발송 시 사용됩니다.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FCMTokenRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "FCM 토큰 등록 성공",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FCMTokenResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "유효하지 않은 FCM 토큰",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "example": {
+                                    "resultType": "FAIL",
+                                    "error": {
+                                        "errorCode": "N009",
+                                        "reason": "FCM 토큰이 비어있거나 유효하지 않습니다",
+                                        "data": {
+                                            "fcm_token": "invalid_token"
+                                        }
+                                    },
+                                    "success": null
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "사용자를 찾을 수 없음",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": ["Notification"],
+                "summary": "FCM 토큰 삭제",
+                "description": "사용자의 FCM 토큰을 서버에서 삭제합니다. 삭제 후에는 해당 사용자에게 FCM Push 알림이 발송되지 않습니다.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "FCM 토큰 삭제 성공",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FCMTokenDeleteResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "인증 실패",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "등록된 FCM 토큰을 찾을 수 없음",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "example": {
+                                    "resultType": "FAIL",
+                                    "error": {
+                                        "errorCode": "N008",
+                                        "reason": "등록된 FCM 토큰이 없습니다",
+                                        "data": {
+                                            "userId": "999"
+                                        }
+                                    },
+                                    "success": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -585,6 +713,87 @@
                         "type": "integer",
                         "description": "전체 페이지 수",
                         "example": 3
+                    }
+                }
+            },
+            "FCMTokenRequest": {
+                "type": "object",
+                "required": ["fcm_token"],
+                "properties": {
+                    "fcm_token": {
+                        "type": "string",
+                        "description": "Firebase에서 발급받은 FCM 등록 토큰",
+                        "example": "eUEgH26SRvyQXjA95fW7E-:APA91bEBBsIhHEo7z0iVzFHpQT-gnR5IGHU27w6ROMyIgZ0MO3ihZE3z6JY8_OwV3Bef3bC19MOdnACIEJ8KjsZ44NG_sruDF6y2suaxVRp4DBqI3gg96Tw"
+                    }
+                }
+            },
+            "FCMTokenResponse": {
+                "type": "object",
+                "properties": {
+                    "resultType": {
+                        "type": "string",
+                        "example": "SUCCESS"
+                    },
+                    "error": {
+                        "type": "null"
+                    },
+                    "success": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "FCM 토큰 DB ID",
+                                "example": "1"
+                            },
+                            "user_id": {
+                                "type": "string",
+                                "description": "사용자 ID",
+                                "example": "999"
+                            },
+                            "fcm_token": {
+                                "type": "string",
+                                "description": "등록된 FCM 토큰",
+                                "example": "eUEgH26SRvyQXjA95fW7E-:APA91bE..."
+                            },
+                            "is_active": {
+                                "type": "boolean",
+                                "description": "토큰 활성화 상태",
+                                "example": true
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "format": "date-time",
+                                "description": "생성 시간 (KST)",
+                                "example": "2025-07-27T18:30:00.000+09:00"
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "format": "date-time",
+                                "description": "수정 시간 (KST)",
+                                "example": "2025-07-27T18:30:00.000+09:00"
+                            }
+                        }
+                    }
+                }
+            },
+            "FCMTokenDeleteResponse": {
+                "type": "object",
+                "properties": {
+                    "resultType": {
+                        "type": "string",
+                        "example": "SUCCESS"
+                    },
+                    "error": {
+                        "type": "null"
+                    },
+                    "success": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "example": "FCM 토큰이 성공적으로 삭제되었습니다."
+                            }
+                        }
                     }
                 }
             }
