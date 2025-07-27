@@ -5,3 +5,9 @@ export class ShowMessagesDto {
     this.cursor = cursor ? BigInt(cursor) : null;
   }
 }
+
+export class FindChatroomByMessageDto {
+  constructor(query) {
+    this.keyword = query.keyword;
+  }
+}

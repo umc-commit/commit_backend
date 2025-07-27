@@ -284,6 +284,90 @@
           }
         }
       }
+    },
+    "/api/chatrooms/search/messages": {
+      "get": {
+        "summary": "메시지 키워드 검색",
+        "description": "키워드가 포함된 메시지를 검색하여 반환합니다.",
+        "tags": ["Chat"],
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "검색 키워드",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "커미션"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "검색 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "3"
+                      },
+                      "chatroomId": {
+                        "type": "string",
+                        "example": "1"
+                      },
+                      "senderId": {
+                        "type": "string",
+                        "example": "1"
+                      },
+                      "content": {
+                        "type": "string",
+                        "example": "안녕하세요 커미션 신청합니다!"
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-07-23T01:44:19.993Z"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "성공 예시",
+                    "value": [
+                      {
+                        "id": "3",
+                        "chatroomId": "1",
+                        "senderId": "1",
+                        "content": "안녕하세요 커미션 신청합니다!",
+                        "createdAt": "2025-07-23T01:44:19.993Z"
+                      },
+                      {
+                        "id": "4",
+                        "chatroomId": "2",
+                        "senderId": "2",
+                        "content": "안녕하세요 커미션 신청하고 싶어요",
+                        "createdAt": "2025-07-23T01:44:57.612Z"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청"
+          },
+          "500": {
+            "description": "서버 오류"
+          }
+        }
+      }
     }
   }
 }

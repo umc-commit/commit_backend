@@ -1,13 +1,15 @@
 import { UserRepository } from "../repository/user.repository.js";
-import { OauthIdAlreadyExistError, MissingCategoryError, MissingRequiredAgreementError, UserNotSignupedError } from "../../common/errors/user.errors.js";
+import { OauthIdAlreadyExistError, MissingCategoryError, MissingRequiredAgreementError, UserRoleError, UserAlreadyFollowArtist, ArtistNotFound, NotFollowingArtist } from "../../common/errors/user.errors.js";
 import axios from "axios";
 import { signJwt } from "../../jwt.config.js";
+
+
 
 export const UserService = {
     
     // 사용자(계정) 추가 
     async addAccount(dto) {
-        const {oauth_id, provider, nickname, agreements, categories} = dto;
+        const {oauth_id, provider, nickname, agreements, categories, role} = dto;
 
         const requiredAgreements = [1, 2];
         const hasAllRequired = requiredAgreements.every(id => agreements.includes(id));
@@ -28,26 +30,44 @@ export const UserService = {
         // 2. 사용자(계정) 생성
         const account = await UserRepository.createAccount(provider, oauth_id);
 
-        // 3. 사용자 프로필 생성 
-        const userProfile = await UserRepository.createUserProfile(account.id, nickname, ".");
+        let profile;
 
-        // 4. 사용자 약관 동의 처리 (agreements -> 사용자가 동의한 agreement id 배열)
-        const userAgreement = await UserRepository.createUserAgreements(userProfile.id, agreements);
+        if(role === "client") {
+            // 3. 사용자 프로필 생성 
+            profile = await UserRepository.createUserProfile(account.id, nickname, ".");
 
-        // 5. 사용자가 선한 카테고리 처리 (categories -> 사용자가 선택한 category id 배열 )
-        const userCategory = await UserRepository.createUserCategories(userProfile.id, categories);
+            // 4. 사용자 약관 동의 처리 (agreements -> 사용자가 동의한 agreement id 배열)
+            await UserRepository.createUserAgreements(profile.id, agreements);
+
+            // 5. 사용자가 선한 카테고리 처리 (categories -> 사용자가 선택한 category id 배열 )
+            await UserRepository.createUserCategories(profile.id, categories);
+        } 
+        else if (role === "artist") {
+            // 3. 사용자 프로필 생성 
+            profile = await UserRepository.createArtistProfile(account.id, nickname, ".");
+
+            // 4. 사용자 약관 동의 처리 (agreements -> 사용자가 동의한 agreement id 배열)
+            await UserRepository.createUserAgreements(profile.id, agreements);
+
+            // 5. 사용자가 선한 카테고리 처리 (categories -> 사용자가 선택한 category id 배열 )
+            await UserRepository.createUserCategories(profile.id, categories);
+        }
+        else {
+            throw new UserRoleError();
+        }
+
 
         // 6. 회원가입 완료 -> 정식 로그인 토큰 발급 
         const loginToken = signJwt({
-            userId: userProfile.id.toString(),
+            userId: profile.id.toString(),
         })
 
         return {
             message : "회원가입이 성공적으로 완료되었습니다.",
             token:loginToken,
             user: {
-                userId : userProfile.id,
-                nickname : userProfile.nickname,
+                userId : profile.id,
+                nickname : profile.nickname,
                 provider,
                 oauth_id,
                 createdAt : account.createdAt
@@ -131,6 +151,90 @@ export const UserService = {
                 profileImage: updatedUser.profileImage,
                 description: updatedUser.description,
             }
+        };
+    },
+
+    // 사용자가 선택한 카테고리 조회 
+    async accessUserCategories(userId) {
+        const user = await UserRepository.AccessUserCategories(userId);
+        if(!user) return null;
+
+        const categoryName = user.userCategories.map(uc => uc.category.name);
+
+        return {
+            message:"사용자가 선택한 카테고리 조회에 성공했습니다.",
+            user:{
+                categories:categoryName,
+            }
+        }
+    },
+    
+    // 사용자 닉네임 중복 확인 
+    async isNicknameDuplicate(nickname) {
+        const duplicate = await UserRepository.checkNicknameDuplicate(nickname);
+
+        if(duplicate) return{
+            message:"중복된 닉네임입니다.",
+            nickname: nickname
+        }
+        return {
+            message:"사용 가능한 닉네임입니다.",
+            nickname : nickname
+        }
+    },
+
+    // 작가 팔로우하기 
+    async FollowArtist(userId, artistId) {
+        const artist = await UserRepository.findArtistById(artistId);
+
+        if(!artist) 
+            throw new ArtistNotFound();
+
+        const alreadyFollowing = await UserRepository.AlreadyFollow(userId, artistId);
+
+        if(alreadyFollowing) 
+            throw new UserAlreadyFollowArtist();
+        
+        const result = await UserRepository.FollowArtist(userId, artistId);
+
+        return {
+            message:"해당 작가 팔로우를 성공했습니다.",
+            artistId:result.artistId
+        }
+    },
+
+    // 작가 팔로우 취소하기 
+    async CancelArtistFollow(userId, artistId) {
+        const artist = await UserRepository.findArtistById(artistId);
+
+        if(!artist)
+            throw new ArtistNotFound();
+
+        const FollowState = await UserRepository.AlreadyFollow(userId, artistId);
+
+        if(!FollowState)
+            throw new NotFollowingArtist();
+
+        const result = await UserRepository.CancelArtistFollow(userId, artistId);
+
+        return {
+            message: "해당 작가 팔로우를 취소했습니다.",
+            artistId: result.artistId
+        }
+    },
+    
+    // 사용자가 팔로우한 작가 조회하기 
+    async LookUserFollow(userId) {
+        const artistList = await UserRepository.LookUserFollow(userId);
+
+        if(artistList.length === 0) return {
+            message:"팔로우하는 작가가 없습니다.",
+            artistList:[]
+        };
+
+        return{
+            message:"사용자가 팔로우하는 작가 목록입니다.",
+            artistList
         };
     }
 }

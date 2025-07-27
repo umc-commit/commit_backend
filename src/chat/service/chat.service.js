@@ -12,4 +12,9 @@ export const ChatService = {
     const messages = await ChatRepository.findMessagesWithImages(dto);
     return messages;
   },
+
+  async searchMessagesByKeyword(keyword) {
+    const messages =  await ChatRepository.searchByKeyword(keyword);
+    return messages;
+  },
 };

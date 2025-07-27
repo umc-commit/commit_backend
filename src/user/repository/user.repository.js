@@ -1,13 +1,27 @@
 import { prisma } from "../../db.config.js"
 
-/**
- * 사용자 ID로 사용자 조회 
- */ 
 export const UserRepository = {
+  /**
+   * 사용자 ID로 사용자 조회 
+   */
   async findUserById(userId) {
     return await prisma.user.findUnique({
       where: {
         id: userId,
+      },
+      include : {
+        account:true,
+      }
+    });
+  },
+
+  /**
+   * 작가 ID로 작가 조회 
+   */
+  async findArtistById(artistId) {
+    return await prisma.artist.findUnique({
+      where: {
+        id: artistId,
       },
       include : {
         account:true,
@@ -49,6 +63,18 @@ export const UserRepository = {
    */
   async createUserProfile (accountId, nickname, description){
     return await prisma.user.create({
+      data: {
+        accountId,
+        nickname,
+        description,
+      }
+    })
+  },
+   /**
+   * Artist 프로필 생성
+   */
+  async createArtistProfile (accountId, nickname, description){
+    return await prisma.artist.create({
       data: {
         accountId,
         nickname,
@@ -104,6 +130,72 @@ export const UserRepository = {
     return await prisma.user.update({
       where:{id: userId},
       data:updates,
+    })
+  },
+  // 사용자가 선택한 카테고리 조회 
+  async AccessUserCategories(userId){
+    return await prisma.user.findUnique({
+      where :{id:userId}, 
+      include:{
+        userCategories:{
+          include:{
+            category:true,
+          }
+        }
+      }
+    })
+  },
+  // 닉네임 중복 확인 
+  async checkNicknameDuplicate(nickname) {
+    return await prisma.user.findFirst({
+      where :{nickname}
+    });
+  },
+
+  // 작가 팔로우하기 
+  async FollowArtist(userId, artistId) {
+    return await prisma.follow.create({
+      data:{
+        userId,
+        artistId
+      }
+    })
+  },
+
+  // 사용자가 팔로우중인지 확인
+  async AlreadyFollow(userId, artistId) {
+    return await prisma.follow.findFirst({
+      where:{userId, artistId}
+    })
+  },
+
+  // 작가 팔로우 취소하기 
+  async CancelArtistFollow(userId, artistId) {
+    return await prisma.follow.delete({
+      where:{
+        userId_artistId:{
+          userId,
+          artistId
+        }
+      }
+    });
+  },
+
+  // 사용자가 팔로우한 작가 조회하기 
+  async LookUserFollow(userId){
+    return await prisma.follow.findMany({
+      where:{
+        userId:userId
+      },
+      select:{
+        artist:{
+          select:{
+            id:true,
+            nickname:true, 
+            profileImage:true
+          }
+        }
+      }
     })
   }
 };

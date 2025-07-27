@@ -13,6 +13,7 @@ export const PaymentRepository = {
         userId: BigInt(data.userId),
         productId: BigInt(data.productId),
         price: data.price,
+        pointAmount: data.pointAmount,
         status: data.status,
         impUid: data.impUid,
         merchantUid: data.merchantUid,
@@ -20,4 +21,17 @@ export const PaymentRepository = {
       },
     });
   },
+
+  async getPaymentByImpUid(impUid) {
+    return await prisma.payment.findUnique({
+      where: { impUid },
+    });
+  },
+
+  async getPayments(userId) {
+    return await prisma.payment.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
+  } 
 };

@@ -48,6 +48,7 @@ model User {
   notifications    Notification[]
   userAgreements   UserAgreement[]
   userCategories   UserCategory[]
+  searchHistories  SearchHistory[]
   pushToken        PushToken?
 
   @@map("users")
@@ -100,6 +101,7 @@ model Commission {
   summary    String   @db.VarChar(1000)
   content    String   @db.Text
   minPrice   Int      @map("min_price")
+  deadline   Int?
   formSchema Json?    @map("form_schema")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
@@ -113,17 +115,29 @@ model Commission {
   @@map("commissions")
 }
 
+model SearchHistory {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt   @map("user_id")
+  keyword   String   @db.VarChar(200)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("search_histories")
+}
+
 model Request {
   id           BigInt        @id @default(autoincrement())
   userId       BigInt        @map("user_id")
   commissionId BigInt        @map("commission_id")
   status       RequestStatus
   formAnswer   Json          @map("form_answer")
+  totalPrice   Int           @map("total_price")
   waitlist     Int?
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
   approvedAt   DateTime?     @map("approved_at")
-  inProgressAt DateTime?     @map("in_progress_at") 
+  inProgressAt DateTime?     @map("in_progress_at")
   submittedAt  DateTime?     @map("submitted_at")
   completedAt  DateTime?     @map("completed_at")
 
@@ -142,8 +156,9 @@ model Payment {
   productId   BigInt   @map("product_id")
   pgProvider  String   @map("pg_provider") @db.VarChar(100)
   price       Int
+  pointAmount Int      @default(0) @map("point_amount")
   status      String   @db.VarChar(20)
-  impUid      String   @map("imp_uid") @db.VarChar(100)
+  impUid      String   @unique @map("imp_uid") @db.VarChar(100)
   merchantUid String   @map("merchant_uid") @db.VarChar(100)
   createdAt   DateTime @default(now()) @map("created_at")
 
@@ -180,7 +195,7 @@ model PointTransaction {
   id        BigInt   @id @default(autoincrement())
   userId    BigInt   @map("user_id")
   paymentId BigInt?  @map("payment_id")
-  requestId BigInt?  @map("request_id")
+  requestId BigInt?  @unique @map("request_id")
   status    String   @db.VarChar(20)
   amount    Int
   balance   Int

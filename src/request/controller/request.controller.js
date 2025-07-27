@@ -1,6 +1,10 @@
 import { StatusCodes } from "http-status-codes";
 import { RequestService } from '../service/request.service.js';
-import { GetRequestListDto } from "../dto/request.dto.js";
+import { 
+  GetRequestListDto,
+  UpdateRequestStatusDto,
+  GetRequestDetailDto
+} from "../dto/request.dto.js";
 import { parseWithBigInt, stringifyWithBigInt } from "../../bigintJson.js";
 
 // 신청 목록 조회
@@ -14,6 +18,41 @@ export const getRequestList = async (req, res, next) => {
     });
 
     const result = await RequestService.getRequestList(userId, dto);
+    const responseData = parseWithBigInt(stringifyWithBigInt(result));
+
+    res.status(StatusCodes.OK).success(responseData);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// 커미션 신청 상태 변경
+export const updateRequestStatus = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId ? BigInt(req.user.userId) : null;
+    const dto = new UpdateRequestStatusDto({
+      requestId: BigInt(req.params.requestId),
+      status: req.body.status
+    });
+
+    const result = await RequestService.updateRequestStatus(userId, dto);
+    const responseData = parseWithBigInt(stringifyWithBigInt(result));
+
+    res.status(StatusCodes.OK).success(responseData);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// 신청함 상세 조회
+export const getRequestDetail = async (req, res, next) => {
+  try {
+    const userId = BigInt(req.user.userId);
+    const dto = new GetRequestDetailDto({
+      requestId: req.params.requestId
+    });
+
+    const result = await RequestService.getRequestDetail(userId, dto.requestId);
     const responseData = parseWithBigInt(stringifyWithBigInt(result));
 
     res.status(StatusCodes.OK).success(responseData);

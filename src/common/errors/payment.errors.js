@@ -21,3 +21,14 @@ export class PaymentAmountMismatchError extends BaseError {
     });
   }
 }
+
+export class DuplicatePaymentError extends BaseError {
+  constructor(data = null) {
+    super({
+      errorCode: "P003",
+      reason: "중복된 거래입니다.",
+      statusCode: 400,
+      data,
+    });
+  }
+}

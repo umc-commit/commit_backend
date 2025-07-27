@@ -55,3 +55,47 @@ export class UserNotSignupedError extends BaseError {
     })
   }
 };
+
+export class UserRoleError extends BaseError {
+  constructor(data=null){
+    super({
+      errorCode:"U006",
+      reason : 'role을 정확히 전달해주세요.',
+      statusCode: 404,
+      data,
+    })
+  }
+};
+
+export class UserAlreadyFollowArtist extends BaseError {
+  constructor(data=null){
+    super({
+      errorCode:"U007",
+      reason : '이미 해당 작가를 팔로우하고 있습니다.',
+      statusCode: 409,
+      data,
+    })
+  }
+};
+
+export class ArtistNotFound extends BaseError {
+  constructor(data=null){
+    super({
+      errorCode:"U008",
+      reason : '해당 작가가 존재하지 않습니다.',
+      statusCode: 404,
+      data,
+    })
+  }
+};
+
+export class NotFollowingArtist extends BaseError {
+  constructor(data=null){
+    super({
+      errorCode:"U009",
+      reason : '해당 작가를 팔로우하고 있지 않습니다.',
+      statusCode: 409,
+      data,
+    })
+  }
+};

@@ -31,7 +31,6 @@ export const addUser = async(req, res, next) => {
         // 1. Request body를 dto로 변환
         const dto = new UserSignupRequestDto(req.body);
 
-        // 2. Service 호출 
         const result = await UserService.addAccount(dto);
 
         // 3. 성공 응답 반환
@@ -70,6 +69,87 @@ export const UpdateMyprofile = async(req, res, next) => {
         const result = await UserService.updateMyprofile(userId, dto);
         res.status(StatusCodes.OK).success(result);
     } catch(err){
+        next(err);
+    }
+}
+
+// 사용자가 선택한 카테고리 조회하기 
+export const AccessUserCategories = async(req, res, next) => {
+    try{
+        console.log("Decoded JWT from req.user:", req.user);
+
+        const userId = req.user.userId.toString();
+        console.log("userId : ", userId);
+
+        const result = await UserService.accessUserCategories(userId);
+        res.status(StatusCodes.OK).success(result);
+    } catch(err) {
+        next(err);
+    }
+}
+
+// 닉네임 중복 확인 
+export const CheckUserNickname = async(req, res, next) => {
+    try{
+        const {nickname}= req.query;
+
+        const result = await UserService.isNicknameDuplicate(nickname);
+
+        res.status(StatusCodes.OK).success(result);
+
+    } catch(err) {
+        next(err);
+    }
+}
+
+// 작가 팔로우하기
+export const FollowArtist = async(req, res, next) => {
+    try{
+        console.log("Decoded JWT from req.user:", req.user);
+
+        const userId = req.user.userId.toString();
+        console.log("userId : ", userId);
+
+        const artistId = req.params.artistId;
+
+        const result = await UserService.FollowArtist(userId, artistId);
+
+        res.status(StatusCodes.CREATED).success(result);
+    } catch(err) {
+        next(err);
+    }
+}
+
+// 작가 팔로우 취소하기 
+export const CancelArtistFollow = async(req, res, next) => {
+    try{
+        console.log("Decoded JWT from req.user:", req.user);
+
+        const userId = req.user.userId.toString();
+        console.log("userId : ", userId);
+
+        const artistId = req.params.artistId;
+
+        const result = await UserService.CancelArtistFollow(userId, artistId);
+
+        res.status(StatusCodes.OK).success(result);
+    } catch(err) {
+        next(err);
+    }
+}
+
+// 사용자가 팔로우 한 작가 조회하기 
+export const LookUserFollow = async(req, res, next) => {
+    try{
+        console.log("Decoded JWT from req.user:", req.user);
+
+        const userId = req.user.userId.toString();
+        console.log("userId : ", userId);
+
+        const result = await UserService.LookUserFollow(userId);
+
+        res.status(StatusCodes.OK).success(result);
+    }catch(err) {
         next(err);
     }
 }

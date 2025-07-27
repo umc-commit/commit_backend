@@ -7,3 +7,18 @@ export class GetRequestListDto {
     this.offset = (this.page - 1) * this.limit;
   }
 }
+
+// 리퀘스트 상태 변경 DTO
+export class UpdateRequestStatusDto {
+  constructor({ requestId, status }) {
+    this.requestId = requestId;
+    this.status = status;
+  }
+}
+
+// 신청함 상세 조회 DTO
+export class GetRequestDetailDto {
+  constructor({ requestId }) {
+    this.requestId = BigInt(requestId);
+  }
+}

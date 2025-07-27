@@ -69,7 +69,7 @@ async function main() {
     title: "테스트 커미션 글",
     summary: "이것은 테스트용 커미션 글입니다.",
     content: "테스트 커미션의 상세 설명입니다. 이 부분에는 커미션의 자세한 내용이 들어갑니다.",
-    minPrice: 50000, 
+    minPrice: 1000, 
     formSchema: {},
     },
   });
@@ -79,6 +79,7 @@ async function main() {
     data: {
       userId: user2.id,
       commissionId: commission.id,
+      totalPrice: 0,
       status: "PENDING", // enum값
       formAnswer: {
         detail: "테스트 커미션 요청 상세 설명입니다.",
