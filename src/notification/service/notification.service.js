@@ -65,17 +65,17 @@ class NotificationService {
         // 1. 알림 존재 여부 확인
         const notification = await notificationRepository.findNotificationById(notificationId);
         if (!notification) {
-            throw new NotificationNotFoundError(notificationId);
+            throw new NotificationNotFoundError({ notificationId });
         }
 
         // 2. 권한 확인 (본인의 알림만 읽음 처리 가능)
         if (notification.userId !== userId) {
-            throw new NotificationPermissionDeniedError(userId, notificationId);
+            throw new NotificationPermissionDeniedError({ userId, notificationId });
         }
 
         // 3. 이미 읽은 알림인지 확인 (중복 처리 방지)
         if (notification.isRead) {
-            throw new AlreadyReadNotificationError(notificationId);
+            throw new AlreadyReadNotificationError({ notificationId });
         }
 
         // 4. 읽음 처리 실행
@@ -107,7 +107,7 @@ class NotificationService {
 
         // 3. 읽음 처리할 알림이 없었던 경우
         if (result.count === 0) {
-            throw new NoUnreadNotificationsError(userId);
+            throw new NoUnreadNotificationsError({ userId });
         }
 
         // 4. 성공 응답 반환
