@@ -26,7 +26,7 @@ export class DuplicatePaymentError extends BaseError {
   constructor(data = null) {
     super({
       errorCode: "P003",
-      reason: "이미 결제된 거래입니다.",
+      reason: "중복된 거래입니다.",
       statusCode: 400,
       data,
     });
