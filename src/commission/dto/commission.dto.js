@@ -5,6 +5,15 @@ export class GetCommissionDetailDto {
   }
 }
 
+// 커미션 게시글 작가 정보 조회 dto
+export class GetCommissionArtistInfoDto {
+  constructor({ commissionId, page = 1, limit = 10 }) {
+    this.commissionId = commissionId;
+    this.page = parseInt(page);
+    this.limit = parseInt(limit);
+  }
+}
+
 // 커미션 신청폼 조회 dto
 export class GetCommissionFormDto {
   constructor({ commissionId }) {

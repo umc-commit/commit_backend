@@ -1,7 +1,9 @@
+// /src/commission/controller/commission.controller.js
 import { StatusCodes } from "http-status-codes";
 import { CommissionService } from '../service/commission.service.js';
 import 
 { GetCommissionDetailDto,
+  GetCommissionArtistInfoDto,
   GetCommissionFormDto,
   SubmitCommissionRequestDto
  } from "../dto/commission.dto.js";
@@ -22,6 +24,25 @@ export const getCommissionDetail = async (req, res, next) => {
  } catch (err) {
    next(err);
  }
+};
+
+// 커미션 게시글 작가 정보 조회
+export const getCommissionArtistInfo = async (req, res, next) => {
+  try {
+    const userId = req.user.userId ? BigInt(req.user.userId) : null;
+    const dto = new GetCommissionArtistInfoDto({
+      commissionId: BigInt(req.params.commissionId),
+      page: req.query.page,
+      limit: req.query.limit
+    });
+
+    const result = await CommissionService.getCommissionArtistInfo(userId, dto);
+    const responseData = parseWithBigInt(stringifyWithBigInt(result));
+
+    res.status(StatusCodes.OK).success(responseData);
+  } catch (err) {
+    next(err);
+  }
 };
 
 // 커미션 신청폼 조회
