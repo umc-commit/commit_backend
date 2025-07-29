@@ -439,5 +439,172 @@ export const CommissionService = {
         });
       }
     }
+  },
+
+  /**
+   * 커미션 게시글 작가 정보 조회
+   */
+  async getCommissionArtistInfo(userId, dto) {
+    const { commissionId, page, limit } = dto;
+
+    // 1. 커미션 존재 여부 확인 및 작가 정보 조회
+    const commission = await CommissionRepository.findArtistInfoByCommissionId(commissionId, userId);
+    if (!commission) {
+      throw new CommissionNotFoundError({ commissionId });
+    }
+
+    const artistId = commission.artist.id;
+
+    // 2. 작가 통계 정보 조회 (병렬 처리)
+    const [followerCount, completedWorksCount, reviewStats, reviews, totalReviews] = await Promise.all([
+      CommissionRepository.countFollowersByArtistId(artistId),
+      CommissionRepository.countCompletedWorksByArtistId(artistId), 
+      CommissionRepository.getReviewStatsByArtistId(artistId),
+      CommissionRepository.findReviewsByArtistId(artistId, page, limit),
+      CommissionRepository.countReviewsByArtistId(artistId)
+    ]);
+
+    // 3. 리뷰 통계 계산
+    const { averageRate, recommendationRate } = this.calculateReviewStatistics(reviewStats);
+
+    // 4. 리뷰 데이터 처리 (이미지 포함)
+    const processedReviews = await this.processReviews(reviews);
+
+    // 5. 페이지네이션 정보 계산
+    const totalPages = Math.ceil(totalReviews / limit);
+
+    return {
+      artist: {
+        artistId: commission.artist.id,
+        nickname: commission.artist.nickname,
+        profileImageUrl: commission.artist.profileImage,
+        follower: followerCount,
+        completedworks: completedWorksCount
+      },
+      isFollowing: commission.artist.follows?.length > 0 || false,
+      reviewStatistics: {
+        averageRate: averageRate,
+        totalReviews: totalReviews,
+        recommendationRate: recommendationRate
+      },
+      recentReviews: processedReviews,
+      pagination: {
+        page: page,
+        limit: limit,
+        total: totalReviews,
+        totalPages: totalPages
+      }
+    };
+  },
+
+  /**
+   * 리뷰 통계 계산
+   */
+  calculateReviewStatistics(reviewStats) {
+    if (reviewStats.length === 0) {
+      return {
+        averageRate: 0.0,
+        recommendationRate: 0
+      };
+    }
+
+    // 평균 별점 계산 (소수점 1자리)
+    const totalRate = reviewStats.reduce((sum, review) => sum + review.rate, 0);
+    const averageRate = Math.round((totalRate / reviewStats.length) * 10) / 10;
+
+    // 추천율 계산 (평균별점 * 20)
+    const recommendationRate = Math.round(averageRate * 20);
+
+    return {
+      averageRate,
+      recommendationRate
+    };
+  },
+
+  /**
+   * 리뷰 데이터 처리 (이미지, 작업기간, 상대시간 포함)
+   */
+  async processReviews(reviews) {
+    const processedReviews = [];
+
+    for (const review of reviews) {
+      // 리뷰 이미지 조회
+      const images = await CommissionRepository.findImagesByReviewId(review.id);
+
+      // 작업 기간 계산
+      const workperiod = this.calculateWorkPeriod(
+        review.request.inProgressAt,
+        review.request.completedAt
+      );
+
+      // 상대 시간 계산
+      const timeAgo = this.calculateTimeAgo(review.createdAt);
+
+      processedReviews.push({
+        id: review.id,
+        rate: review.rate,
+        content: review.content,
+        userNickname: review.user.nickname,
+        commissionTitle: review.request.commission.title,
+        workperiod: workperiod,
+        createdAt: review.createdAt.toISOString(),
+        timeAgo: timeAgo,
+        images: images.map(img => ({
+          id: img.id,
+          imageUrl: img.imageUrl,
+          orderIndex: img.orderIndex
+        }))
+      });
+    }
+
+    return processedReviews;
+  },
+
+  /**
+   * 작업 기간 계산
+   */
+  calculateWorkPeriod(inProgressAt, completedAt) {
+    if (!inProgressAt || !completedAt) {
+      return null;
+    }
+
+    const diffMs = new Date(completedAt) - new Date(inProgressAt);
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+
+    if (diffDays >= 30) {
+      const months = Math.floor(diffDays / 30);
+      return `${months}달`;
+    } else if (diffDays >= 1) {
+      return `${diffDays}일`;
+    } else if (diffHours >= 1) {
+      return `${diffHours}시간`;
+    } else {
+      return `${diffMinutes}분`;
+    }
+  },
+
+  /**
+   * 상대 시간 계산 (n일 전, n달 전)
+   */
+  calculateTimeAgo(createdAt) {
+    const now = new Date();
+    const created = new Date(createdAt);
+    const diffMs = now - created;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+
+    if (diffDays >= 30) {
+      const months = Math.floor(diffDays / 30);
+      return `${months}달 전`;
+    } else if (diffDays >= 1) {
+      return `${diffDays}일 전`;
+    } else if (diffHours >= 1) {
+      return `${diffHours}시간 전`;
+    } else {
+      return `${diffMinutes}분 전`;
+    }
   }
 };

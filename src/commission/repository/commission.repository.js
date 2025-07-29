@@ -1,3 +1,4 @@
+// /src/commission/repository/commission.repository.js
 import { prisma } from "../../db.config.js"
 
 export const CommissionRepository = {
@@ -142,6 +143,137 @@ export const CommissionRepository = {
       where: {
         commissionId: BigInt(commissionId)
       }
+    });
+  },
+
+  /**
+   * 커미션 ID로 작가 정보 조회 (팔로우 여부 포함)
+   */
+  async findArtistInfoByCommissionId(commissionId, userId) {
+    return await prisma.commission.findUnique({
+      where: {
+        id: BigInt(commissionId)
+      },
+      include: {
+        artist: {
+          include: {
+            follows: userId ? {
+              where: { userId: BigInt(userId) }
+            } : false
+          }
+        }
+      }
+    });
+  },
+
+  /**
+   * 작가의 팔로워 수 조회
+   */
+  async countFollowersByArtistId(artistId) {
+    return await prisma.follow.count({
+      where: {
+        artistId: BigInt(artistId)
+      }
+    });
+  },
+
+  /**
+   * 작가의 완료된 작업 수 조회
+   */
+  async countCompletedWorksByArtistId(artistId) {
+    return await prisma.request.count({
+      where: {
+        commission: {
+          artistId: BigInt(artistId)
+        },
+        status: 'COMPLETED'
+      }
+    });
+  },
+
+  /**
+   * 작가의 리뷰 통계 조회
+   */
+  async getReviewStatsByArtistId(artistId) {
+    const reviews = await prisma.review.findMany({
+      where: {
+        request: {
+          commission: {
+            artistId: BigInt(artistId)
+          }
+        }
+      },
+      select: {
+        rate: true
+      }
+    });
+
+    return reviews;
+  },
+
+  /**
+   * 작가의 리뷰 목록 조회 (페이지네이션, 이미지 포함)
+   */
+  async findReviewsByArtistId(artistId, page, limit) {
+    const skip = (page - 1) * limit;
+    
+    return await prisma.review.findMany({
+      where: {
+        request: {
+          commission: {
+            artistId: BigInt(artistId)
+          }
+        }
+      },
+      include: {
+        user: {
+          select: {
+            nickname: true
+          }
+        },
+        request: {
+          include: {
+            commission: {
+              select: {
+                title: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      skip,
+      take: limit
+    });
+  },
+
+  /**
+   * 작가의 전체 리뷰 수 조회
+   */
+  async countReviewsByArtistId(artistId) {
+    return await prisma.review.count({
+      where: {
+        request: {
+          commission: {
+            artistId: BigInt(artistId)
+          }
+        }
+      }
+    });
+  },
+
+  /**
+   * 리뷰 이미지 조회
+   */
+  async findImagesByReviewId(reviewId) {
+    return await prisma.image.findMany({
+      where: {
+        target: 'review',
+        targetId: BigInt(reviewId)
+      },
+      orderBy: { orderIndex: 'asc' }
     });
   }
 }

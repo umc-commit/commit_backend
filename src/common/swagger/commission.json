@@ -86,6 +86,141 @@
         }
       }
     },
+    "/api/commissions/{commissionId}/artist": {
+      "get": {
+        "tags": ["Commission"],
+        "summary": "커미션 작가 정보 조회",
+        "description": "커미션에 등록된 작가의 정보와 리뷰를 조회합니다. 팔로우 여부, 리뷰 통계, 최근 리뷰 목록을 포함합니다.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "commissionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "커미션 ID"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "페이지 번호"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "페이지당 리뷰 개수"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "작가 정보 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "resultType": { "type": "string", "example": "SUCCESS" },
+                    "error": { "type": "null", "example": null },
+                    "success": {
+                      "type": "object",
+                      "properties": {
+                        "artist": {
+                          "type": "object",
+                          "properties": {
+                            "artistId": { "type": "integer", "example": 456 },
+                            "nickname": { "type": "string", "example": "키르" },
+                            "profileImageUrl": { "type": "string", "example": "https://example.com/profile/kir.jpg" },
+                            "follower": { "type": "integer", "example": 32 },
+                            "completedworks": { "type": "integer", "example": 11 }
+                          }
+                        },
+                        "isFollowing": { "type": "boolean", "example": false },
+                        "reviewStatistics": {
+                          "type": "object",
+                          "properties": {
+                            "averageRate": { "type": "number", "example": 5.0 },
+                            "totalReviews": { "type": "integer", "example": 5 },
+                            "recommendationRate": { "type": "integer", "example": 100 }
+                          }
+                        },
+                        "recentReviews": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "integer", "example": 1 },
+                              "rate": { "type": "number", "example": 5.0 },
+                              "content": { "type": "string", "example": "친절하게 응대해주셨습니다. 감사해요!" },
+                              "userNickname": { "type": "string", "example": "워시" },
+                              "commissionTitle": { "type": "string", "example": "낙서 타입 커미션" },
+                              "workperiod": { "type": "string", "example": "3일" },
+                              "createdAt": { "type": "string", "format": "date-time", "example": "2025-07-27T15:30:00.000Z" },
+                              "timeAgo": { "type": "string", "example": "12시간 전" },
+                              "images": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": { "type": "integer", "example": 101 },
+                                    "imageUrl": { "type": "string", "example": "https://example.com/review/image1.jpg" },
+                                    "orderIndex": { "type": "integer", "example": 0 }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "pagination": {
+                          "type": "object",
+                          "properties": {
+                            "page": { "type": "integer", "example": 1 },
+                            "limit": { "type": "integer", "example": 10 },
+                            "total": { "type": "integer", "example": 25 },
+                            "totalPages": { "type": "integer", "example": 3 }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "커미션을 찾을 수 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "resultType": { "type": "string", "example": "FAIL" },
+                    "error": { "type": "string", "example": "존재하지 않는 커미션입니다." },
+                    "success": { "type": "null", "example": null }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/commissions/{commissionId}/forms": {
       "get": {
         "tags": ["Commission"],
@@ -340,7 +475,7 @@
         }
       }
     },
-        "/api/commissions/{commissionId}/requests": {
+    "/api/commissions/{commissionId}/requests": {
       "post": {
         "tags": ["Commission"],
         "summary": "커미션 신청 제출",

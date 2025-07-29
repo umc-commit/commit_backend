@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { 
     getCommissionDetail,
+    getCommissionArtistInfo,
     getCommissionForm,
     uploadRequestImage,
     submitCommissionRequest
@@ -11,6 +12,9 @@ const router = Router();
 
 // 커미션 게시글 상세글 조회 API
 router.get('/:commissionId', authenticate, getCommissionDetail);
+
+// 커미션 게시글 작가 정보 조회 API
+router.get('/:commissionId/artist', authenticate, getCommissionArtistInfo);
 
 // 커미션 신청폼 조회 API
 router.get('/:commissionId/forms', authenticate, getCommissionForm);
