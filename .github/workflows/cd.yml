@@ -19,6 +19,7 @@ jobs:
           mkdir -p ~/.ssh
           echo "$EC2_SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
 
           cat >>~/.ssh/config <<END
           Host ec2
@@ -31,10 +32,10 @@ jobs:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
 
-      - name: Copy code to EC2
+      - name: Copy code to EC2 (using rsync)
         run: |
           ssh ec2 "sudo mkdir -p /opt/app && sudo chown ubuntu:ubuntu /opt/app"
-          scp -r ./ ec2:/opt/app
+          rsync -avz --delete -e "ssh" ./ ec2:/opt/app
 
       - name: Create .env file
         run: |
@@ -45,5 +46,22 @@ jobs:
       - name: Install dependencies
         run: ssh ec2 "cd /opt/app && npm install"
 
-      - name: Restart systemd service
-        run: ssh ec2 "sudo systemctl restart app"
+      - name: Create systemd service
+        run: |
+          ssh ec2 "echo '[Unit]
+          Description=Node.js App
+          After=network.target
+
+          [Service]
+          User=ubuntu
+          ExecStart=/usr/bin/npm run start --prefix /opt/app/
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target' | sudo tee /etc/systemd/system/app.service"
+
+      - name: Enable & Restart systemd service
+        run: |
+          ssh ec2 "sudo systemctl daemon-reload"
+          ssh ec2 "sudo systemctl enable app"
+          ssh ec2 "sudo systemctl restart app"
