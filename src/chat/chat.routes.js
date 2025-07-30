@@ -9,7 +9,7 @@ import { authenticate } from "../middlewares/auth.middleware.js";
 const router = express.Router();
 
 // 채팅방 생성 API
-router.post("", createChatroom);
+router.post("", authenticate, createChatroom);
 
 // 채팅방 삭제 API
 router.delete("/delete", authenticate, deleteChatrooms);
@@ -18,7 +18,7 @@ router.delete("/delete", authenticate, deleteChatrooms);
 router.get("/search/messages", authenticate, getMessageByKeyword);
 
 // 채팅방 조회 API
-router.get("", authenticate, getChatroom);
+router.get("/list", authenticate, getChatroom);
 
 // 채팅 메시지 조회 API
 router.get("/:chatroomId/messages", authenticate, getMessages);

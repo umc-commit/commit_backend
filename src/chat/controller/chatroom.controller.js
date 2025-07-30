@@ -7,8 +7,10 @@ import { parseWithBigInt, stringifyWithBigInt } from "../../bigintJson.js";
 
 export const createChatroom = async (req, res, next) => {
   try {
+    const consumerId = BigInt(req.user.userId);
+
     const dto = new CreateChatroomDto({
-      consumerId: BigInt(req.body.consumerId),
+      consumerId: consumerId,
       artistId: BigInt(req.body.artistId),
       requestId: BigInt(req.body.requestId),
     });
