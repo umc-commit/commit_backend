@@ -4,6 +4,7 @@ import { showChatroom } from "./controller/chatroom.controller.js";
 import { deleteChatrooms } from "./controller/chatroom.controller.js";
 import { showMessages } from "./controller/chat.controller.js";
 import { getMessageByKeyword } from "./controller/chat.controller.js";
+import { authenticate } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -11,7 +12,7 @@ const router = express.Router();
 router.post("", createChatroom);
 
 // 채팅방 삭제 API
-router.delete("/delete", deleteChatrooms);
+router.delete("/delete", authenticate, deleteChatrooms);
 
 // 채팅 메시지 검색 API
 router.get("/search/messages", getMessageByKeyword);

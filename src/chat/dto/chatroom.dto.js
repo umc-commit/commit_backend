@@ -13,8 +13,9 @@ export class ShowChatroomDto {
 }
 
 export class DeleteChatroomDto {
-    constructor({ chatroomIds, userType }) {
-        this.chatroomIds = chatroomIds.map(id => BigInt(id));
-        this.userType = userType;
-    }
+  constructor({ chatroomIds, userType, userId }) {
+    this.chatroomIds = chatroomIds.map(id => BigInt(id));
+    this.userType = userType;
+    this.userId = BigInt(userId);
+  }
 }

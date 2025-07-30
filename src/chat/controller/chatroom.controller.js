@@ -39,9 +39,12 @@ export const showChatroom = async (req, res, next) => {
 
 export const deleteChatrooms = async (req, res, next) => {
   try {
+    const userId = BigInt(req.user.userId);
+
     const dto = new DeleteChatroomDto({
       chatroomIds: req.body.chatroomIds,
       userType: req.body.userType,
+      userId: userId,
     });
 
     const chatrooms = await ChatroomService.softDeleteChatroomsByUser(dto);
