@@ -76,8 +76,8 @@ export const getBookmarks = async (req, res, next) => {
     const userId = BigInt(req.user.userId);
     const dto = new GetBookmarksDto({
       sort: req.query.sort,
+      page: req.query.page ? parseInt(req.query.page) : undefined,
       limit: req.query.limit ? parseInt(req.query.limit) : undefined,
-      cursor: req.query.cursor,
       excludeFullSlots: req.query.excludeFullSlots === 'true'
     });
 
