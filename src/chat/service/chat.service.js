@@ -18,8 +18,11 @@ export const ChatService = {
     return messages;
   },
 
-  async searchMessagesByKeyword(keyword) {
-    const messages =  await ChatRepository.searchByKeyword(keyword);
+  async searchMessagesByKeyword(dto) {
+    const userChatrooms = await ChatroomRepository.findChatroomsByUser(dto.userId);
+    const chatroomIds = userChatrooms.map(cr => cr.id);
+
+    const messages =  await ChatRepository.searchByKeyword(dto.keyword, chatroomIds);
     return messages;
   },
 };

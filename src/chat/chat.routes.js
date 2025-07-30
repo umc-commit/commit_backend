@@ -14,8 +14,8 @@ router.post("", createChatroom);
 // 채팅방 삭제 API
 router.delete("/delete", authenticate, deleteChatrooms);
 
-// 채팅 메시지 검색 API
-router.get("/search/messages", getMessageByKeyword);
+// 채팅 메시지 검색 API (다중)
+router.get("/search/messages", authenticate, getMessageByKeyword);
 
 // 채팅방 조회 API
 router.get("", authenticate, getChatroom);

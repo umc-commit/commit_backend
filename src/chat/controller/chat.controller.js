@@ -26,9 +26,14 @@ export const getMessages = async (req, res, next) => {
 
 export const getMessageByKeyword = async (req, res, next) => {
   try {
-    const dto = new FindChatroomByMessageDto(req.query);
+    const userId = BigInt(req.user.userId);
+
+    const dto = new FindChatroomByMessageDto({
+      keyword: req.query.keyword,
+      userId: userId,
+    });
     
-    const messages = await ChatService.searchMessagesByKeyword(dto.keyword);
+    const messages = await ChatService.searchMessagesByKeyword(dto);
     const responseData = parseWithBigInt(stringifyWithBigInt(messages));
 
     res.status(StatusCodes.OK).success(responseData);

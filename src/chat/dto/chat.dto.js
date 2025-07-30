@@ -8,7 +8,8 @@ export class GetMessagesDto {
 }
 
 export class FindChatroomByMessageDto {
-  constructor(query) {
-    this.keyword = query.keyword;
+  constructor({ keyword, userId }) {
+    this.keyword = keyword;
+    this.userId = BigInt(userId);
   }
 }
