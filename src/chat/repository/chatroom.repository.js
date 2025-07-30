@@ -26,7 +26,8 @@ export const ChatroomRepository = {
     return await prisma.chatroom.findMany({
         where: {
             consumerId: consumerId,
-        },
+            hiddenConsumer: false,
+        }
     });
   },
 

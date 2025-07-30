@@ -6,9 +6,9 @@ export class CreateChatroomDto {
   }
 }
 
-export class ShowChatroomDto {
+export class GetChatroomDto {
     constructor({ consumerId }) {
-        this.consumerId = consumerId;
+        this.consumerId = BigInt(consumerId);
     }
 }
 
