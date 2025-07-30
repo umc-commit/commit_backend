@@ -188,5 +188,45 @@ async findLatestPointTransactionByRequestId(requestId) {
       createdAt: 'desc'
     }
   });
+ },
+
+ /**
+ * 제출된 신청서 조회용 - Request 상세 정보
+ */
+async findSubmittedRequestById(requestId) {
+  return await prisma.request.findUnique({
+    where: {
+      id: BigInt(requestId)
+    },
+    include: {
+      commission: {
+        select: {
+          id: true,
+          title: true,
+          formSchema: true,
+          artist: {
+            select: {
+              id: true,
+              nickname: true,
+              profileImage: true
+            }
+          }
+        }
+      }
+    }
+  });
+},
+
+/**
+ * Request 참고 이미지 조회
+ */
+async findImagesByRequestId(requestId) {
+  return await prisma.image.findMany({
+    where: {
+      target: 'request',
+      targetId: BigInt(requestId)
+    },
+    orderBy: { orderIndex: 'asc' }
+  });
  }
 };

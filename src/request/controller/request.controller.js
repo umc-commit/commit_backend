@@ -3,7 +3,8 @@ import { RequestService } from '../service/request.service.js';
 import { 
   GetRequestListDto,
   UpdateRequestStatusDto,
-  GetRequestDetailDto
+  GetRequestDetailDto,
+  GetRequestFormDto
 } from "../dto/request.dto.js";
 import { parseWithBigInt, stringifyWithBigInt } from "../../bigintJson.js";
 
@@ -59,4 +60,21 @@ export const getRequestDetail = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+
+// 제출된 신청서 조회
+export const getSubmittedRequestForm = async (req, res, next) => {
+   try {
+   	const userId = BigInt(req.user.userId);
+   	const dto = new GetRequestFormDto({
+   		requestId: BigInt(req.params.requestId)
+   	});
+
+   	const result = await RequestService.getSubmittedRequestForm(userId, dto);
+   	const responseData = parseWithBigInt(stringifyWithBigInt(result));
+
+   	res.status(StatusCodes.OK).success(responseData);
+   } catch (err) {
+   	next(err);
+   }
 };
