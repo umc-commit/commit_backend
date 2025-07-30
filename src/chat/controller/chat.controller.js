@@ -1,15 +1,18 @@
 import { StatusCodes } from "http-status-codes";
 import { parseWithBigInt, stringifyWithBigInt } from "../../bigintJson.js";
-import { ShowMessagesDto } from "../dto/chat.dto.js";
+import { GetMessagesDto } from "../dto/chat.dto.js";
 import { ChatService } from "../service/chat.service.js";
 import { FindChatroomByMessageDto } from "../dto/chat.dto.js";
 
-export const showMessages = async (req, res, next) => {
+export const getMessages = async (req, res, next) => {
   try {
-    const dto = new ShowMessagesDto ({
+    const userId = BigInt(req.user.userId);
+
+    const dto = new GetMessagesDto ({
       chatroomId: BigInt(req.params.chatroomId),
       limit: req.query.limit,
       cursor: req.query.cursor,
+      userId: userId,
     });
 
     const messages = await ChatService.getMessagesByChatroomId(dto);
