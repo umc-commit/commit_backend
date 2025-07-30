@@ -26,16 +26,19 @@ export const ChatroomRepository = {
     return await prisma.chatroom.findMany({
         where: {
             consumerId: consumerId,
-        },
+            hiddenConsumer: false,
+        }
     });
   },
 
-  async softDeleteChatrooms(chatroomIds, userType) {
+  async softDeleteChatrooms(chatroomIds, userType, userId) {
     const hiddenField = userType === "consumer" ? "hiddenConsumer" : "hiddenArtist";
+    const userField = userType === "consumer" ? "consumerId" : "artistId";
 
     await prisma.chatroom.updateMany({
       where: {
-        id: { in: chatroomIds }
+        id: { in: chatroomIds },
+        [userField]: userId
       },
       data: {
         [hiddenField]: true

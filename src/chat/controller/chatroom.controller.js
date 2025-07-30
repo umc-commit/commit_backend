@@ -1,14 +1,16 @@
 import { StatusCodes } from "http-status-codes";
 import { ChatroomService } from "../service/chatroom.service.js";
 import { CreateChatroomDto } from "../dto/chatroom.dto.js";
-import { ShowChatroomDto } from "../dto/chatroom.dto.js";
+import { GetChatroomDto } from "../dto/chatroom.dto.js";
 import { DeleteChatroomDto } from "../dto/chatroom.dto.js";
 import { parseWithBigInt, stringifyWithBigInt } from "../../bigintJson.js";
 
 export const createChatroom = async (req, res, next) => {
   try {
+    const consumerId = BigInt(req.user.userId);
+
     const dto = new CreateChatroomDto({
-      consumerId: BigInt(req.body.consumerId),
+      consumerId: consumerId,
       artistId: BigInt(req.body.artistId),
       requestId: BigInt(req.body.requestId),
     });
@@ -22,10 +24,10 @@ export const createChatroom = async (req, res, next) => {
   }
 };
 
-export const showChatroom = async (req, res, next) => {
+export const getChatroom = async (req, res, next) => {
   try {
-    const dto = new ShowChatroomDto({
-      consumerId: BigInt(req.params.consumerId)
+    const dto = new GetChatroomDto({
+      consumerId: BigInt(req.user.userId)
     });
 
     const chatrooms = await ChatroomService.getChatroomsByUserId(dto);
@@ -39,9 +41,12 @@ export const showChatroom = async (req, res, next) => {
 
 export const deleteChatrooms = async (req, res, next) => {
   try {
+    const userId = BigInt(req.user.userId);
+
     const dto = new DeleteChatroomDto({
       chatroomIds: req.body.chatroomIds,
       userType: req.body.userType,
+      userId: userId,
     });
 
     const chatrooms = await ChatroomService.softDeleteChatroomsByUser(dto);

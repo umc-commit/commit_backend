@@ -62,7 +62,7 @@ export const ChatroomService = {
         throw new ChatroomNotFoundError({ chatroomIds: dto.chatroomIds });
     }
 
-    await ChatroomRepository.softDeleteChatrooms(dto.chatroomIds, dto.userType);
+    await ChatroomRepository.softDeleteChatrooms(dto.chatroomIds, dto.userType, dto.userId);
 
     const chatrooms = await ChatroomRepository.findChatroomsByIds(dto.chatroomIds);
 

@@ -10,3 +10,14 @@ export class ChatroomNotFoundError extends BaseError {
     });
   }
 }
+
+export class ForbiddenError extends BaseError {
+  constructor(data = null) {
+    super({
+      errorCode: "M002",
+      reason: "권한이 없습니다.",
+      statusCode: 403,
+      data,
+    });
+  }
+}
