@@ -2,6 +2,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { CommissionRepository } from "../repository/commission.repository.js";
+import { RequestRepository } from "../../request/repository/request.repository.js";
 import {
  CommissionNotFoundError,
   FileSizeExceededError,
@@ -285,6 +286,21 @@ export const CommissionService = {
       totalPrice: totalPrice,
       waitlist: waitlist
     });
+
+    // 참고 이미지들을 Image 테이블에 저장
+    const fileFieldId = (customFields.length + 2).toString();
+    const imageUrls = formAnswer[fileFieldId] || [];
+
+    if (imageUrls.length > 0) {
+      for (let i = 0; i < imageUrls.length; i++) {
+        await RequestRepository.createRequestImage({
+          target: 'request',
+          targetId: newRequest.id,
+          imageUrl: imageUrls[i],
+          orderIndex: i
+        });
+      }
+    }
 
     // 응답 데이터 구성
     return {

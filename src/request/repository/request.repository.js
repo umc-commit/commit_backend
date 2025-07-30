@@ -228,5 +228,19 @@ async findImagesByRequestId(requestId) {
     },
     orderBy: { orderIndex: 'asc' }
   });
+ },
+
+ /**
+ * Request 이미지 생성
+ */
+async createRequestImage(imageData) {
+	return await prisma.image.create({
+		data: {
+			target: imageData.target,
+			targetId: imageData.targetId,
+			imageUrl: imageData.imageUrl,
+			orderIndex: imageData.orderIndex
+		}
+	});
  }
 };
