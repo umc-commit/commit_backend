@@ -336,15 +336,15 @@ export const CommissionService = {
 
       // 필드 타입별 검증
       switch (field.type) {
-        case 'radio':
+        case 'radio': {
           this.validateRadioField(field, value, fieldId);
           // 가격 계산
           const selectedOption = field.options.find(opt => opt.value === value);
-           additionalPrice += selectedOption.additionalPrice;
+          additionalPrice += selectedOption.additionalPrice;
           // 형태 변환
           processedFormData[field.label] = selectedOption.label;
           break;
-
+        }
         case 'textarea':
           this.validateTextareaField(field, value, fieldId);
           processedFormData[field.label] = value;

@@ -1,0 +1,49 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "$EC2_SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+          cat >>~/.ssh/config <<END
+          Host ec2
+            HostName $EC2_HOST
+            User ubuntu
+            IdentityFile ~/.ssh/id_rsa
+            StrictHostKeyChecking no
+          END
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Copy code to EC2
+        run: |
+          ssh ec2 "sudo mkdir -p /opt/app && sudo chown ubuntu:ubuntu /opt/app"
+          scp -r ./ ec2:/opt/app
+
+      - name: Create .env file
+        run: |
+          ssh ec2 "echo '$ENV_FILE' > /opt/app/.env"
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+
+      - name: Install dependencies
+        run: ssh ec2 "cd /opt/app && npm install"
+
+      - name: Restart systemd service
+        run: ssh ec2 "sudo systemctl restart app"
