@@ -5,7 +5,8 @@ import {
   UpdateRequestStatusDto,
   GetRequestDetailDto,
   GetRequestFormDto,
-  GetCompletedRequestsDto
+  GetCompletedRequestsDto,
+  GetRequestResultDto
 } from "../dto/request.dto.js";
 import { parseWithBigInt, stringifyWithBigInt } from "../../bigintJson.js";
 
@@ -97,4 +98,21 @@ export const getCompletedRequests = async (req, res, next) => {
    } catch (err) {
    	next(err);
    }
+};
+
+// 작업물 조회
+export const getRequestResult = async (req, res, next) => {
+  try {
+    const userId = BigInt(req.user.userId);
+    const dto = new GetRequestResultDto({
+      requestId: req.params.requestId
+    });
+
+    const result = await RequestService.getRequestResult(userId, dto);
+    const responseData = parseWithBigInt(stringifyWithBigInt(result));
+
+    res.status(StatusCodes.OK).success(responseData);
+  } catch (err) {
+    next(err);
+  }
 };

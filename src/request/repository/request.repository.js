@@ -303,5 +303,41 @@ async countCompletedRequestsByUserId(userId) {
    		status: 'COMPLETED'
    	}
    });
+ },
+
+ /**
+ * Request 작업물 조회
+ */
+async findRequestResultById(requestId) {
+  return await prisma.request.findUnique({
+    where: {
+      id: BigInt(requestId)
+    },
+    select: {
+      id: true,
+      userId: true,
+      status: true,
+      submittedAt: true,
+      commission: {
+        select: {
+          id: true,
+          title: true
+        }
+      }
+    }
+  });
+},
+
+/**
+ * Request 작업물 이미지들 조회
+ */
+async findResultImagesByRequestId(requestId) {
+  return await prisma.image.findMany({
+    where: {
+      target: 'request-result',
+      targetId: BigInt(requestId)
+    },
+    orderBy: { orderIndex: 'asc' }
+  });
  }
 };
