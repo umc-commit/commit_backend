@@ -242,5 +242,66 @@ async createRequestImage(imageData) {
 			orderIndex: imageData.orderIndex
 		}
 	});
+ },
+
+/**
+* 완료된 신청내역 조회
+*/
+async findCompletedRequestsByUserId(userId, sort, offset, limit) {
+   // 정렬 조건 설정
+   let orderBy = {};
+   
+   switch (sort) {
+   	case 'latest':
+   		orderBy = { completedAt: 'desc' };
+   		break;
+   	case 'oldest':
+   		orderBy = { completedAt: 'asc' };
+   		break;
+   	case 'price_low':
+   		orderBy = { totalPrice: 'asc' };
+   		break;
+   	case 'price_high':
+   		orderBy = { totalPrice: 'desc' };
+   		break;
+   	default:
+   		orderBy = { completedAt: 'desc' };
+   }
+
+   return await prisma.request.findMany({
+   	where: {
+   		userId: BigInt(userId),
+   		status: 'COMPLETED'
+   	},
+   	include: {
+   		commission: {
+   			select: {
+   				id: true,
+   				title: true,
+   				artist: {
+   					select: {
+   						id: true,
+   						nickname: true
+   					}
+   				}
+   			}
+   		}
+   	},
+   	orderBy: orderBy,
+   	skip: offset,
+   	take: limit
+   });
+},
+
+/**
+* 완료된 신청내역 총 개수 조회
+*/
+async countCompletedRequestsByUserId(userId) {
+   return await prisma.request.count({
+   	where: {
+   		userId: BigInt(userId),
+   		status: 'COMPLETED'
+   	}
+   });
  }
 };

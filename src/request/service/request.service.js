@@ -404,5 +404,66 @@ export const RequestService = {
    	formResponses: formResponses,
    	requestContent: requestContent
    };
-  }
+  },
+
+/**
+* 완료된 신청내역 조회
+*/
+async getCompletedRequests(userId, dto) {
+   const { sort, page, limit } = dto;
+   const offset = (page - 1) * limit;
+
+   // 정렬 옵션 유효성 검증
+   const validSorts = ['latest', 'oldest', 'price_low', 'price_high'];
+   if (!validSorts.includes(sort)) {
+   	throw new InvalidRequestFilterError({ 
+   		filter: sort,
+   		validOptions: validSorts
+   	});
+   }
+
+   // 완료된 신청내역 조회
+   const requests = await RequestRepository.findCompletedRequestsByUserId(userId, sort, offset, limit);
+   
+   // 총 개수 조회
+   const totalCount = await RequestRepository.countCompletedRequestsByUserId(userId);
+   const totalPages = Math.ceil(totalCount / limit);
+
+   // 커미션 ID로 썸네일 이미지 조회
+   const commissionIds = requests.map(request => request.commission.id);
+   const thumbnailImages = await RequestRepository.findThumbnailImagesByCommissionIds(commissionIds);
+   
+   // 썸네일 이미지 매핑
+   const thumbnailMap = {};
+   thumbnailImages.forEach(image => {
+   	thumbnailMap[image.targetId.toString()] = image.imageUrl;
+   });
+
+   // 응답 데이터 구성
+   const responseRequests = requests.map(request => ({
+   	requestId: request.id,
+   	status: request.status,
+   	title: request.commission.title,
+   	totalPrice: request.totalPrice,
+   	completedAt: request.completedAt.toISOString(),
+   	thumbnailImageUrl: thumbnailMap[request.commission.id.toString()] || null,
+   	artist: {
+   		id: request.commission.artist.id,
+   		nickname: request.commission.artist.nickname
+   	},
+   	commission: {
+   		id: request.commission.id
+   	}
+   }));
+
+   return {
+   	requests: responseRequests,
+   	pagination: {
+   		page,
+   		limit,
+   		totalCount,
+   		totalPages
+   	}
+   };
+ }
 };

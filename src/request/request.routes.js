@@ -3,7 +3,8 @@ import {
     getRequestList,
     getRequestDetail,
     updateRequestStatus,
-    getSubmittedRequestForm
+    getSubmittedRequestForm,
+    getCompletedRequests
 } from "./controller/request.controller.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
 import reviewController from '../review/controller/review.controller.js';
@@ -12,6 +13,8 @@ const router = Router();
 
 // 신청 목록 조회 API
 router.get('/', authenticate, getRequestList);
+// 완료된 신청내역 조회 API
+router.get('/record', authenticate, getCompletedRequests);
 // 신청 상세 조회 API
 router.get('/:requestId', authenticate, getRequestDetail);
 // 신청 상태 변경 API
