@@ -17,7 +17,9 @@ import { prisma } from "./db.config.js";
 import path from "path";
 
 
-dotenv.config();
+dotenv.config({
+  path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env'
+});
 
 passport.use("google", googleStrategy);
 passport.use("kakao", kakaoStrategy);
