@@ -6,7 +6,7 @@ import { authenticate } from "../middlewares/auth.middleware.js";
 const router = express.Router();
 
 // 결제 정보 저장 API
-router.post("/complete", paymentConfirm);
+router.post("/complete", authenticate, paymentConfirm);
 
 // 결제 정보 조회 API
 router.get("", authenticate, getPayments);
