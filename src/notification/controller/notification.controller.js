@@ -18,7 +18,7 @@ class NotificationController {
     async getNotifications(req, res, next) {
         try {
             // 현재 로그인한 사용자 ID
-            const userId = BigInt(req.user.id);
+            const userId = BigInt(req.user.userId);
 
             // 쿼리 파라미터에서 페이지네이션 정보 추출
             const page = req.query.page || 1;
@@ -57,7 +57,7 @@ class NotificationController {
             const notificationId = BigInt(req.params.notificationId);
 
             // 현재 로그인한 사용자 ID
-            const userId = BigInt(req.user.id);
+            const userId = BigInt(req.user.userId);
 
             // 알림 읽음 처리 서비스 호출
             const result = await notificationService.markNotificationAsRead(notificationId, userId);
@@ -86,7 +86,7 @@ class NotificationController {
     async markAllNotificationsAsRead(req, res, next) {
         try {
             // 현재 로그인한 사용자 ID
-            const userId = BigInt(req.user.id);
+            const userId = BigInt(req.user.userId);
 
             // 모든 알림 읽음 처리 서비스 호출
             const result = await notificationService.markAllNotificationsAsRead(userId);
@@ -113,7 +113,7 @@ class NotificationController {
             const { notification_ids } = req.body;
 
             // 현재 로그인한 사용자 ID
-            const userId = BigInt(req.user.id);
+            const userId = BigInt(req.user.userId);
 
             // 선택 알림 삭제 서비스 호출
             const result = await notificationService.deleteNotificationsByIds(notification_ids, userId);
@@ -140,7 +140,7 @@ class NotificationController {
     async deleteAllNotifications(req, res, next) {
         try {
             // 현재 로그인한 사용자 ID
-            const userId = BigInt(req.user.id);
+            const userId = BigInt(req.user.userId);
 
             // 전체 알림 삭제 서비스 호출
             const result = await notificationService.deleteAllNotifications(userId);

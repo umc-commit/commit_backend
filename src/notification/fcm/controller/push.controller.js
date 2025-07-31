@@ -20,7 +20,7 @@ class PushController {
     async registerPushToken(req, res, next) {
         try {
             // 현재 로그인한 사용자 ID
-            const userId = BigInt(req.user.id);
+            const userId = BigInt(req.user.userId);
 
             // 요청 본문 데이터를 DTO로 구조화
             const tokenDto = new PushTokenRegisterDto(req.body);
@@ -52,7 +52,7 @@ class PushController {
     async deletePushToken(req, res, next) {
         try {
             // 현재 로그인한 사용자 ID
-            const userId = BigInt(req.user.id);
+            const userId = BigInt(req.user.userId);
 
             // FCM 토큰 삭제 서비스 호출
             const result = await pushService.deletePushToken(userId);
