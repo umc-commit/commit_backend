@@ -2,7 +2,8 @@ import { Router } from 'express';
 import {
     getRequestList,
     getRequestDetail,
-    updateRequestStatus
+    updateRequestStatus,
+    getSubmittedRequestForm
 } from "./controller/request.controller.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
 import reviewController from '../review/controller/review.controller.js';
@@ -15,6 +16,8 @@ router.get('/', authenticate, getRequestList);
 router.get('/:requestId', authenticate, getRequestDetail);
 // 신청 상태 변경 API
 router.patch('/:requestId/status', authenticate, updateRequestStatus);
+// 제출된 신청서 조회 API
+router.get('/:requestId/forms', authenticate, getSubmittedRequestForm);
 
 /**
  * 리뷰 작성 API

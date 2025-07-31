@@ -314,5 +314,95 @@ export const RequestService = {
       timeline: timeline,
       formData: formData
     };
+  },
+  
+/**
+ * 제출된 신청서 조회
+ */
+ async getSubmittedRequestForm(userId, dto) {
+   const { requestId } = dto;
+
+   // Request 존재 여부 및 권한 확인
+   const request = await RequestRepository.findSubmittedRequestById(requestId);
+   if (!request) {
+   	throw new RequestNotFoundError({ requestId });
+   }
+
+   // 본인 신청서인지 확인
+   if (request.userId !== BigInt(userId)) {
+   	throw new UnauthorizedRequestStatusChangeError({ userId, requestId });
+   }
+
+   // 참고 이미지 조회
+   const images = await RequestRepository.findImagesByRequestId(requestId);
+
+   // formSchema와 formAnswer 처리
+   const customFields = request.commission.formSchema?.fields || [];
+   const defaultFields = [
+   	{
+   		id: (customFields.length + 1).toString(),
+   		type: "textarea",
+   		label: "신청 내용"
+   	},
+   	{
+   		id: (customFields.length + 2).toString(),
+   		type: "file", 
+   		label: "참고 이미지"
+   	}
+   ];
+   const allFields = [...customFields, ...defaultFields];
+
+   // formResponses 구성 (커스텀 필드만)
+   const formResponses = [];
+   for (const field of customFields) {
+   	const answer = request.formAnswer[field.id];
+   	let answerLabel = null;
+
+   	if (field.type === 'radio' && field.options) {
+   		const selectedOption = field.options.find(option => option.value === answer);
+   		answerLabel = selectedOption ? selectedOption.label : null;
+   	}
+
+   	formResponses.push({
+   		questionId: field.id,
+   		questionLabel: field.label,
+   		answer: answerLabel
+   	});
+   }
+
+   // requestContent 구성 (기본 필드들)
+   const textFieldId = (customFields.length + 1).toString();
+   const fileFieldId = (customFields.length + 2).toString();
+   
+   const requestContent = {
+   	text: request.formAnswer[textFieldId] || null,
+   	images: images.map(img => ({
+   		id: img.id,
+   		imageUrl: img.imageUrl,
+   		orderIndex: img.orderIndex
+   	}))
+   };
+
+   // displayTime 계산
+   const displayTime = request.status === 'CANCELED' 
+   	? request.updatedAt.toISOString()
+   	: request.createdAt.toISOString();
+
+   return {
+   	requestId: request.id,
+   	status: request.status,
+   	displayTime: displayTime,
+   	commission: {
+   		id: request.commission.id,
+   		title: request.commission.title
+   	},
+   	artist: {
+   		id: request.commission.artist.id,
+   		nickname: request.commission.artist.nickname,
+   		profileImageUrl: request.commission.artist.profileImage
+   	},
+   	formResponses: formResponses,
+   	requestContent: requestContent
+   };
   }
 };

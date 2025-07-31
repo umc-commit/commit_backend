@@ -22,3 +22,10 @@ export class GetRequestDetailDto {
     this.requestId = BigInt(requestId);
   }
 }
+
+// 제출된 신청서 조회 dto
+export class GetRequestFormDto {
+  constructor({ requestId }) {
+    this.requestId = requestId;
+  }
+}
