@@ -34,8 +34,12 @@ const swaggerDefinition = {
   },
   servers: [
     {
-      url: 'http://localhost:3000',
-      description: 'Development server',
+      url: process.env.NODE_ENV === 'production' 
+        ? 'http://3.35.0.31:3000' 
+        : 'http://localhost:3000',
+      description: process.env.NODE_ENV === 'production' 
+       ? 'Production server' 
+       : 'Development server',
     },
   ],
    components: {
