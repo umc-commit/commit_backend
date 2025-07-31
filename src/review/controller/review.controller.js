@@ -53,7 +53,7 @@ class ReviewController {
             const requestId = BigInt(req.params.requestId);
 
             // 현재 로그인한 사용자 ID (BigInt 변환)
-            const userId = BigInt(req.user.id); // Authentication middleware ensures req.user.id exists
+            const userId = BigInt(req.user.userId);
 
             // 요청 본문 데이터를 DTO 클래스로 구조화
             const reviewDto = new ReviewCreateDto(req.body);
@@ -91,7 +91,7 @@ class ReviewController {
             const reviewId = BigInt(req.params.reviewId);
 
             // 현재 로그인한 사용자 ID (BigInt 변환)
-            const userId = BigInt(req.user.id);
+            const userId = BigInt(req.user.userId);
 
             // 요청 본문 데이터를 DTO 클래스로 구조화
             const reviewDto = new ReviewUpdateDto(req.body);
@@ -129,7 +129,7 @@ class ReviewController {
             const reviewId = BigInt(req.params.reviewId);
 
             // 현재 로그인한 사용자 ID (BigInt 변환)
-            const userId = BigInt(req.user.id);
+            const userId = BigInt(req.user.userId);
 
             // 리뷰 삭제 서비스 호출
             const result = await reviewService.deleteReview(reviewId, userId);
