@@ -464,6 +464,112 @@
           }
         }
       }
+     },
+    "/api/requests/record": {
+      "get": {
+      "tags": ["Request"],
+      "summary": "완료된 신청내역 조회",
+      "description": "사용자가 신청한 커미션 중 완료된(COMPLETED) 내역을 조회합니다. 정렬 기능과 페이지네이션을 지원합니다.",
+      "security": [
+       {
+          "bearerAuth": []
+       }
+     ],
+      "parameters": [
+        {
+          "name": "sort",
+          "in": "query",
+         "required": false,
+          "schema": {
+            "type": "string",
+            "default": "latest",
+            "enum": ["latest", "oldest", "price_low", "price_high"]
+         },
+          "description": "정렬 방식 (latest: 최신순, oldest: 오래된순, price_low: 저가순, price_high: 고가순)"
+        },
+        {
+         "name": "page",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "default": 1
+          },
+          "description": "페이지 번호"
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "default": 10
+          },
+          "description": "페이지당 항목 수"
+        }
+      ],
+     "responses": {
+        "200": {
+          "description": "완료된 신청내역 조회 성공",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                 "resultType": { "type": "string", "example": "SUCCESS" },
+                  "error": { "type": "null", "example": null },
+                  "success": {
+                    "type": "object",
+                    "properties": {
+                      "requests": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "requestId": { "type": "integer", "example": 1 },
+                            "status": { "type": "string", "example": "COMPLETED" },
+                            "title": { "type": "string", "example": "낙서 타입 커미션" },
+                            "totalPrice": { "type": "integer", "example": 50000 },
+                            "completedAt": { "type": "string", "format": "date-time", "example": "2025-06-04T15:30:00.000Z" },
+                            "thumbnailImageUrl": { 
+                              "type": "string", 
+                              "nullable": true, 
+                              "example": "https://example.com/commission-thumbnail.jpg" 
+                            },
+                            "artist": {
+                              "type": "object",
+                              "properties": {
+                                "id": { "type": "integer", "example": 1 },
+                                "nickname": { "type": "string", "example": "키르" }
+                                }
+                            },
+                            "commission": {
+                              "type": "object",
+                              "properties": {
+                                "id": { "type": "integer", "example": 12 }
+                              }
+                            }
+                          }
+                        }
+                     },
+                      "pagination": {
+                        "type": "object",
+                        "properties": {
+                          "page": { "type": "integer", "example": 1 },
+                          "limit": { "type": "integer", "example": 10 },
+                          "totalCount": { "type": "integer", "example": 25 },
+                          "totalPages": { "type": "integer", "example": 3 }
+                        }
+                       }
+                      }
+                   }
+                  }
+                }
+             }
+           }
+         }
+       }
+      }
     }
   },
   "components": {

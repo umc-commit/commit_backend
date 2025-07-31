@@ -29,3 +29,12 @@ export class GetRequestFormDto {
     this.requestId = requestId;
   }
 }
+
+// 완료된 신청내역 조회 dto
+export class GetCompletedRequestsDto {
+  constructor({ sort = 'latest', page = 1, limit = 10 }) {
+    this.sort = sort;
+    this.page = parseInt(page);
+    this.limit = parseInt(limit);
+  }
+}
