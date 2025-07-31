@@ -54,3 +54,14 @@ export class StatusAlreadyChangedError extends BaseError {
     });
   }
 }
+
+export class RequestNotSubmittedError extends BaseError {
+  constructor(data = null) {
+    super({
+      errorCode: "R006",
+      reason: "제출 상태가 아닌 리퀘스트입니다.",
+      statusCode: 400,
+      data,
+    });
+  }
+}

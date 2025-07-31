@@ -4,7 +4,8 @@ import {
   RequestNotFoundError,
   UnauthorizedRequestStatusChangeError,
   InvalidStatusTransitionError,
-  StatusAlreadyChangedError
+  StatusAlreadyChangedError,
+  RequestNotSubmittedError
 } from "../../common/errors/request.errors.js";
 
 export const RequestService = {
@@ -465,5 +466,50 @@ async getCompletedRequests(userId, dto) {
    		totalPages
    	}
    };
+ },
+
+ /**
+ * 작업물 조회
+ */
+async getRequestResult(userId, dto) {
+  const { requestId } = dto;
+
+  // Request 존재 여부 확인
+  const request = await RequestRepository.findRequestResultById(requestId);
+  if (!request) {
+    throw new RequestNotFoundError({ requestId });
+  }
+
+  // 권한 확인 (요청한 사용자가 해당 Request의 소유자인지)
+  if (request.userId !== BigInt(userId)) {
+    throw new UnauthorizedRequestStatusChangeError({ userId, requestId });
+  }
+
+  // 상태 확인 (SUBMITTED 또는 COMPLETED만 허용)
+  if (!['SUBMITTED', 'COMPLETED'].includes(request.status)) {
+    throw new RequestNotSubmittedError({ requestId, currentStatus: request.status });
+  }
+
+  // 작업물 이미지들 조회
+  const resultImages = await RequestRepository.findResultImagesByRequestId(requestId);
+  const imageUrls = resultImages.map(image => image.imageUrl);
+
+  // 커미션 썸네일 이미지 조회
+  const thumbnailImages = await RequestRepository.findThumbnailImagesByCommissionIds([request.commission.id]);
+  const thumbnailImageUrl = thumbnailImages.length > 0 ? thumbnailImages[0].imageUrl : null;
+
+  return {
+    request: {
+      requestId: request.id,
+      status: request.status,
+      title: request.commission.title,
+      submittedAt: request.submittedAt.toISOString(),
+      thumbnailImageUrl: thumbnailImageUrl,
+      commission: {
+        id: request.commission.id
+      }
+    },
+    images: imageUrls
+  };
  }
 };

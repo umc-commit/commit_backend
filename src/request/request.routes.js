@@ -4,7 +4,8 @@ import {
     getRequestDetail,
     updateRequestStatus,
     getSubmittedRequestForm,
-    getCompletedRequests
+    getCompletedRequests,
+    getRequestResult
 } from "./controller/request.controller.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
 import reviewController from '../review/controller/review.controller.js';
@@ -21,6 +22,8 @@ router.get('/:requestId', authenticate, getRequestDetail);
 router.patch('/:requestId/status', authenticate, updateRequestStatus);
 // 제출된 신청서 조회 API
 router.get('/:requestId/forms', authenticate, getSubmittedRequestForm);
+// 작업물 조회 API
+router.get('/:requestId/result', authenticate, getRequestResult);
 
 /**
  * 리뷰 작성 API

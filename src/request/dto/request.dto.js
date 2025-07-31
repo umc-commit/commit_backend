@@ -38,3 +38,10 @@ export class GetCompletedRequestsDto {
     this.limit = parseInt(limit);
   }
 }
+
+// 작업물 조회 DTO
+export class GetRequestResultDto {
+  constructor({ requestId }) {
+    this.requestId = BigInt(requestId);
+  }
+}
