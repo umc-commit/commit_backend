@@ -10,6 +10,7 @@ import paymentRouter from "./payment/payment.routes.js"
 import pointRouter from "./point/point.routes.js"
 import requestRouter from "./request/request.routes.js"
 import homeRouter from "./home/home.routes.js"
+import tokenRouter from "./token.routes.js"
 
 const router = express.Router();
 
@@ -24,6 +25,7 @@ router.use("/payments", paymentRouter);
 router.use("/points", pointRouter);
 router.use("/requests", requestRouter);
 router.use("/home", homeRouter);
+router.use("/", tokenRouter);
 
 
 export default router;
