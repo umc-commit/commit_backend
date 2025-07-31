@@ -136,7 +136,7 @@ export class NotificationIdRequiredError extends BaseError {
 export class TargetUserIdRequiredError extends BaseError {
     constructor(data = null) {
         super({
-            errorCode: "N014",
+            errorCode: "N013",
             reason: "target_user_id가 필요합니다",
             statusCode: 400,
             data
