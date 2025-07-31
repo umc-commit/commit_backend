@@ -121,3 +121,25 @@ export class PushTokenAlreadyExistsError extends BaseError {
         });
     }
 }
+
+export class NotificationIdRequiredError extends BaseError {
+    constructor(data = null) {
+        super({
+            errorCode: "N012",
+            reason: "notificationId가 필요합니다",
+            statusCode: 400,
+            data
+        });
+    }
+}
+
+export class TargetUserIdRequiredError extends BaseError {
+    constructor(data = null) {
+        super({
+            errorCode: "N013",
+            reason: "target_user_id가 필요합니다",
+            statusCode: 400,
+            data
+        });
+    }
+}

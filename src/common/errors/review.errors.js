@@ -33,17 +33,6 @@ export class ReviewContentTooShortError extends BaseError {
   }
 }
 
-export class ReviewContentTooLongError extends BaseError {
-  constructor(data = null) {
-    super({
-      errorCode: "R011",
-      reason: "리뷰 내용이 1000자를 초과합니다",
-      statusCode: 400, // Bad Request
-      data,
-    });
-  }
-}
-
 export class RequestNotFoundError extends BaseError {
   constructor(data = null) {
     super({
@@ -115,6 +104,50 @@ export class ReviewRatingInvalidError extends BaseError {
     super({
       errorCode: "R010",
       reason: "별점은 1-5 사이의 값이어야 합니다",
+      statusCode: 400, // Bad Request
+      data,
+    });
+  }
+}
+
+export class ReviewContentTooLongError extends BaseError {
+  constructor(data = null) {
+    super({
+      errorCode: "R011",
+      reason: "리뷰 내용이 1000자를 초과합니다",
+      statusCode: 400, // Bad Request
+      data,
+    });
+  }
+}
+
+export class RequestIdRequiredError extends BaseError {
+  constructor(data = null) {
+    super({
+      errorCode: "R012",
+      reason: "requestId가 필요합니다",
+      statusCode: 400, // Bad Request
+      data,
+    });
+  }
+}
+
+export class ReviewIdRequiredError extends BaseError {
+  constructor(data = null) {
+    super({
+      errorCode: "R013",
+      reason: "reviewId가 필요합니다",
+      statusCode: 400, // Bad Request
+      data,
+    });
+  }
+}
+
+export class UserIdRequiredError extends BaseError {
+  constructor(data = null) {
+    super({
+      errorCode: "R014",
+      reason: "userId가 필요합니다",
       statusCode: 400, // Bad Request
       data,
     });
