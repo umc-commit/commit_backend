@@ -669,6 +669,90 @@
           }
         }
       }
-    }
+    },
+    	"/api/commissions/reports": {
+		"get": {
+			"tags": ["Commission"],
+			"summary": "커미션 리포트 조회",
+			"description": "사용자의 월별 커미션 활동 리포트를 조회합니다. 이전 달 기준으로 승인받은 커미션들에 대한 통계와 획득 가능한 타입들을 랜덤으로 제공합니다.",
+			"security": [
+				{
+					"bearerAuth": []
+				}
+			],
+			"responses": {
+				"200": {
+					"description": "커미션 리포트 조회 성공",
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"resultType": { "type": "string", "example": "SUCCESS" },
+									"error": { "type": "null", "example": null },
+									"success": {
+										"type": "object",
+										"properties": {
+											"reportInfo": {
+												"type": "object",
+												"properties": {
+													"userNickname": { "type": "string", "example": "위시" },
+													"month": { "type": "integer", "example": 7 }
+												}
+											},
+											"characterImage": { 
+												"type": "string", 
+												"example": "https://example.com/characterimage" 
+											},
+											"quote": {
+												"type": "object",
+												"properties": {
+													"title": { "type": "string", "example": "호기심 대장 신청자" },
+													"description": { 
+														"type": "string", 
+														"example": "다양한 스타일을 사랑하는 탐험가! 호기심이 가득해서, 언제나 새로운 작가를 탐색해요." 
+													}
+												}
+											},
+											"condition": { 
+												"type": "string", 
+												"example": "서로 다른 작가 5명 이상에게 커미션을 신청" 
+											},
+											"statistics": {
+												"type": "object",
+												"properties": {
+													"mainCategory": {
+														"type": "object",
+														"properties": {
+															"name": { "type": "string", "example": "그림" },
+															"count": { "type": "integer", "example": 32 }
+														}
+													},
+													"favoriteArtist": {
+														"type": "object",
+														"properties": {
+															"id": { "type": "integer", "nullable": true, "example": 1 },
+															"nickname": { "type": "string", "example": "키르" },
+															"profileImage": { 
+																"type": "string", 
+																"nullable": true,
+																"example": "https://example.com/artist-profile" 
+															}
+														}
+													},
+													"pointsUsed": { "type": "integer", "example": 56000 },
+													"reviewRate": { "type": "number", "example": 80.0 }
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	 }
   }
 }
