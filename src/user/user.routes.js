@@ -30,6 +30,7 @@ router.get(
   passport.authenticate("google", {
     failureRedirect: "/oauth2/login/google",
     failureMessage: true,
+    session:false,
   }),
   (req, res) => {
     console.log("req.user", req.user); // BigInt 의심 필드 확인

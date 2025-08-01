@@ -24,12 +24,14 @@ export const googleStrategy = new GoogleStrategy(
 
 const googleVerify = async (profile) => {
 
+  console.log(profile);
+
   const user = await prisma.account.findFirst({ 
     where: {oauthId : profile.id, provider:profile.provider},
     include:{users:true},
   });
 
-  if (user !== null) {
+  if (user && user.users.length>0) {
     return { id: user.users[0].id, nickname: user.users[0].nickname, account_id : user.id.toString() };
   }
 
