@@ -1,4 +1,3 @@
-// /src/commission/repository/commission.repository.js
 import { prisma } from "../../db.config.js"
 
 export const CommissionRepository = {
@@ -275,5 +274,64 @@ export const CommissionRepository = {
       },
       orderBy: { orderIndex: 'asc' }
     });
-  }
+  },
+
+  /**
+	 * 특정 월에 승인받은 사용자의 리퀘스트 조회 (커미션 리포트용)
+	 */
+	async findApprovedRequestsByUserAndMonth(userId, year, month) {
+		const startDate = new Date(year, month - 1, 1);
+		const endDate = new Date(year, month, 1);
+
+		return await prisma.request.findMany({
+			where: {
+				userId: BigInt(userId),
+				approvedAt: {
+					gte: startDate,
+					lt: endDate
+				}
+			},
+			include: {
+				commission: {
+					select: {
+						id: true,
+						categoryId: true,
+						artist: {
+							select: {
+								id: true,
+								nickname: true,
+								profileImage: true
+							}
+						},
+						category: {
+							select: {
+								name: true
+							}
+						}
+					}
+				},
+				reviews: {
+					select: {
+						id: true
+					}
+				}
+			}
+		});
+	},
+
+	/**
+	 * 사용자 닉네임 조회
+	 */
+	async findUserNicknameById(userId) {
+		const user = await prisma.user.findUnique({
+			where: {
+				id: BigInt(userId)
+			},
+			select: {
+				nickname: true
+			}
+		});
+		
+		return user?.nickname || null;
+	}
 }
