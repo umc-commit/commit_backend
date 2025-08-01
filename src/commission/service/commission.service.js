@@ -725,11 +725,18 @@ export const CommissionService = {
 
 		// 카테고리별 집계 (횟수 → 포인트 순)
 		const categoryStats = this.aggregateByCategory(requests);
-		const mainCategory = categoryStats[0] || { name: "없음", count: 0 };
+		const mainCategory = categoryStats[0] ? { 
+			name: categoryStats[0].name, 
+			count: categoryStats[0].count 
+		} : { name: "없음", count: 0 };
 
 		// 작가별 집계 (횟수 → 포인트 순) 
 		const artistStats = this.aggregateByArtist(requests);
-		const favoriteArtist = artistStats[0] || { 
+		const favoriteArtist = artistStats[0] ? {
+			id: artistStats[0].id,
+			nickname: artistStats[0].nickname,
+			profileImage: artistStats[0].profileImage
+		} : { 
 			id: null, 
 			nickname: "없음", 
 			profileImage: null 
