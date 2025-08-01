@@ -15,7 +15,7 @@ class NotificationRepository {
 
         // 알림 목록 조회 (최신순)
         const notifications = await prisma.notification.findMany({
-            where: { userId: BigInt(userId) },
+            where: { userId: userId },
             orderBy: { createdAt: 'desc' },  // 최신순 정렬
             skip: offset,
             take: limit
@@ -23,7 +23,7 @@ class NotificationRepository {
 
         // 전체 개수 조회 (페이지네이션 정보 계산용)
         const total = await prisma.notification.count({
-            where: { userId: BigInt(userId) }
+            where: { userId: userId }
         });
 
         return { items: notifications, total };
@@ -71,7 +71,7 @@ class NotificationRepository {
     async markAllNotificationsAsRead(userId) {
         return await prisma.notification.updateMany({
             where: {
-                userId: BigInt(userId),
+                userId: userId,
                 isRead: false
             },
             data: {
@@ -93,7 +93,7 @@ class NotificationRepository {
         return await prisma.notification.deleteMany({
             where: {
                 id: { in: bigIntIds },
-                userId: BigInt(userId)  // 본인의 알림만 삭제 가능
+                userId: userId  // 본인의 알림만 삭제 가능
             }
         });
     }
@@ -105,7 +105,7 @@ class NotificationRepository {
      */
     async deleteAllNotificationsByUserId(userId) {
         return await prisma.notification.deleteMany({
-            where: { userId: BigInt(userId) }
+            where: { userId: userId }
         });
     }
 
@@ -116,7 +116,7 @@ class NotificationRepository {
      */
     async findUserById(userId) {
         return await prisma.user.findUnique({
-            where: { id: BigInt(userId) },
+            where: { id: userId },
             select: {
                 id: true,
                 nickname: true
