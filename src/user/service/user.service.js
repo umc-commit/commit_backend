@@ -105,16 +105,37 @@ export const UserService = {
         }   
     },
     // 사용자 프로필 조회 
-    async getUserProfile(userId) {
-        const user = await UserRepository.findUserById(userId);
-        if(!user) return null;
-        return {
-            message:"나의 프로필 조회에 성공하였습니다.",
-            user:{
-                userId: user.id.toString(),
-                nickname: user.nickname,
-                profileImage:user.profileImage,
-                description: user.description
+    async getUserProfile(accountId, role) {
+
+        let result;
+
+        if(role === 'client') {
+            result = await UserRepository.findUserById(accountId);
+            console.log(result);
+            const user = result.users[0];
+            return {
+                message:"나의 프로필 조회에 성공하였습니다.",
+                user:{
+                    userId: user.id,
+                    nickname: user.nickname,
+                    profileImage:user.profileImage,
+                    description: user.description
+                }
+            }
+        }
+
+        if(role === 'artist') {
+            result = await UserRepository.findArtistById(accountId);
+            console.log(result);
+            const artist = result.artists[0];
+            return {
+                message:"나의 프로필 조회에 성공하였습니다.",
+                user:{
+                    artistId: artist.id,
+                    nickname: artist.nickname,
+                    profileImage:artist.profileImage,
+                    description: artist.description
+                }
             }
         }
     },

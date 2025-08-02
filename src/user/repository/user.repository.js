@@ -4,13 +4,13 @@ export const UserRepository = {
   /**
    * 사용자 ID로 사용자 조회 
    */
-  async findUserById(userId) {
-    return await prisma.user.findUnique({
+  async findUserById(accountId) {
+    return await prisma.account.findUnique({
       where: {
-        id: userId,
+        id: accountId
       },
-      include : {
-        account:true,
+      select:{
+        users:  { select: { id: true, nickname: true, description: true, profileImage: true } }
       }
     });
   },
@@ -18,13 +18,13 @@ export const UserRepository = {
   /**
    * 작가 ID로 작가 조회 
    */
-  async findArtistById(artistId) {
-    return await prisma.artist.findUnique({
+  async findArtistById(accountId) {
+    return await prisma.account.findUnique({
       where: {
-        id: artistId,
+        id: accountId,
       },
-      include : {
-        account:true,
+      select:{
+        artists:{ select: { id: true, nickname: true, description: true, profileImage: true } }
       }
     });
   },
@@ -113,7 +113,7 @@ export const UserRepository = {
   async getMyProfile(accountId) {
     return await prisma.account.findUnique({
       where:{
-        id
+        id:accountId
       },
       select:{
         users:  { select: { id: true, nickname: true, description: true, profileImage: true } },

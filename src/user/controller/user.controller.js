@@ -45,10 +45,13 @@ export const getUserProfile = async(req, res, next) => {
     try{
         console.log("Decoded JWT from req.user:", req.user);
 
-        const userId = req.user.userId.toString();
-        console.log(userId);
+        const accountId = req.user.accountId.toString();
+        console.log("controller accountId -> ", accountId);
 
-        const result = await UserService.getUserProfile(userId);
+        const role = req.user.role;
+        console.log(role);
+
+        const result = await UserService.getUserProfile(accountId, role);
 
         res.status(StatusCodes.OK).success(result);
     } catch(err){
