@@ -61,6 +61,7 @@ router.get(
   passport.authenticate("kakao", {
     failureRedirect: "/oauth2/login/kakao",
     failureMessage: true,
+    session:false,
   }),
   (req, res) => {
     console.log("req.user", req.user); // BigInt 의심 필드 확인
