@@ -39,10 +39,10 @@ export const UserService = {
             console.log("user profile -> ", profile);
 
             // 4. 사용자 약관 동의 처리 (agreements -> 사용자가 동의한 agreement id 배열)
-            await UserRepository.createUserAgreements(profile.id, agreements);
+            await UserRepository.createUserAgreements(profile.accountId, agreements);
 
             // 5. 사용자가 선한 카테고리 처리 (categories -> 사용자가 선택한 category id 배열 )
-            await UserRepository.createUserCategories(profile.id, categories);
+            await UserRepository.createUserCategories(profile.accountId, categories);
         } 
         else if (role === "artist") {
             // 3. 사용자 프로필 생성 
