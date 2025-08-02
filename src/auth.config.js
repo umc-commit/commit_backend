@@ -61,13 +61,21 @@ export const kakaoStrategy = new KakaoStrategy(
 
 const kakaoVerify = async (profile) => {
 
+  console.log(profile);
+
   const user = await prisma.account.findFirst({ 
     where: {oauthId : profile.id.toString(), provider:profile.provider},
-    include:{users:true},
+    include:{users:true, artists:true},
   });
 
-  if (user !== null) {
+  console.log(user);
+
+  if (user && user.users.length>0) {
     return { id: user.users[0].id, nickname: user.users[0].nickname, account_id : user.id.toString() };
+  }
+
+  if(user && user.artists.length>0){
+    return{id:user.artists[0].id, nickname:user.artists[0].nickname, account_id:user.id.toString()};
   }
 
   // 사용자가 없으면 회원가입 페이지로 이동하도록 응답
