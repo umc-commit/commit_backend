@@ -81,10 +81,10 @@ export const AccessUserCategories = async(req, res, next) => {
     try{
         console.log("Decoded JWT from req.user:", req.user);
 
-        const userId = req.user.userId.toString();
-        console.log("userId : ", userId);
+        const accountId = req.user.accountId.toString();
+        console.log("사용자가 선택한 카테고리 조회 accountId -> ", accountId);
 
-        const result = await UserService.accessUserCategories(userId);
+        const result = await UserService.accessUserCategories(accountId);
         res.status(StatusCodes.OK).success(result);
     } catch(err) {
         next(err);

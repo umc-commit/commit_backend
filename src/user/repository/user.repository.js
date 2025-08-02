@@ -132,13 +132,15 @@ export const UserRepository = {
     })
   },
   // 사용자가 선택한 카테고리 조회 
-  async AccessUserCategories(userId){
-    return await prisma.user.findUnique({
-      where :{id:userId}, 
-      include:{
-        userCategories:{
-          include:{
-            category:true,
+  async AccessUserCategories(accountId){
+    return await prisma.userCategory.findMany({
+      where :{
+        accountId
+      },
+      select:{
+        category:{
+          select:{
+            name:true
           }
         }
       }

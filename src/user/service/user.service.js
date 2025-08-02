@@ -36,6 +36,8 @@ export const UserService = {
             // 3. 사용자 프로필 생성 
             profile = await UserRepository.createUserProfile(account.id, nickname, ".");
 
+            console.log("user profile -> ", profile);
+
             // 4. 사용자 약관 동의 처리 (agreements -> 사용자가 동의한 agreement id 배열)
             await UserRepository.createUserAgreements(profile.id, agreements);
 
@@ -46,11 +48,13 @@ export const UserService = {
             // 3. 사용자 프로필 생성 
             profile = await UserRepository.createArtistProfile(account.id, nickname, ".");
 
+            console.log("artist profile -> ", profile);
+
             // 4. 사용자 약관 동의 처리 (agreements -> 사용자가 동의한 agreement id 배열)
-            await UserRepository.createUserAgreements(profile.id, agreements);
+            await UserRepository.createUserAgreements(profile.accountId, agreements);
 
             // 5. 사용자가 선한 카테고리 처리 (categories -> 사용자가 선택한 category id 배열 )
-            await UserRepository.createUserCategories(profile.id, categories);
+            await UserRepository.createUserCategories(profile.accountId, categories);
         }
         else {
             throw new UserRoleError();
@@ -176,11 +180,12 @@ export const UserService = {
     },
 
     // 사용자가 선택한 카테고리 조회 
-    async accessUserCategories(userId) {
-        const user = await UserRepository.AccessUserCategories(userId);
+    async accessUserCategories(accountId) {
+        const user = await UserRepository.AccessUserCategories(accountId);
+        console.log(user);
         if(!user) return null;
 
-        const categoryName = user.userCategories.map(uc => uc.category.name);
+        const categoryName = user.map(item => item.category.name);
 
         return {
             message:"사용자가 선택한 카테고리 조회에 성공했습니다.",
