@@ -163,10 +163,10 @@ export const UserRepository = {
   },
 
   // 작가 팔로우하기 
-  async FollowArtist(userId, artistId) {
+  async FollowArtist(accountId, artistId) {
     return await prisma.follow.create({
       data:{
-        userId,
+        accountId,
         artistId
       }
     })

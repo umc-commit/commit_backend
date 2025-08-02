@@ -247,7 +247,7 @@ export const UserService = {
         if(alreadyFollowing) 
             throw new UserAlreadyFollowArtist();
         
-        const result = await UserRepository.FollowArtist(userId, artistId);
+        const result = await UserRepository.FollowArtist(accountId, artistId);
 
         return {
             message:"해당 작가 팔로우를 성공했습니다.",
