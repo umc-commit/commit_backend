@@ -137,6 +137,7 @@ async function main() {
     summary: "이것은 테스트용 커미션 글입니다.",
     content: "테스트 커미션의 상세 설명입니다. 이 부분에는 커미션의 자세한 내용이 들어갑니다.",
     minPrice: 1000, 
+    
     formSchema: {},
     },
   });

@@ -86,9 +86,9 @@ export const UserRepository = {
   /**
    * 사용자 카테고리 연결 생성 
    */
-  async createUserCategories (userId, categoryIds) {
+  async createUserCategories (accountId, categoryIds) {
     const data = categoryIds.map(categoryId => ({
-      userId, 
+      accountId, 
       categoryId,
     }));
     return await prisma.userCategory.createMany({
@@ -98,9 +98,9 @@ export const UserRepository = {
   /**
    * 사용자 약관 동의 생성 
    */
-  async createUserAgreements (userId, agreementIds) {
+  async createUserAgreements (accountId, agreementIds) {
     const data = agreementIds.map(agreementId => ({
-      userId,
+      accountId,
       agreementId,
     }));
     return await prisma.userAgreement.createMany({
@@ -110,17 +110,16 @@ export const UserRepository = {
   /**
    * 나의 프로필 조회 
    */
-  async getMyProfile(userId) {
-    return await prisma.user.findUnique({
+  async getMyProfile(accountId) {
+    return await prisma.account.findUnique({
       where:{
-        id:userId
+        id
       },
       select:{
-        nickname:true,
-        description:true,
-        profileImage: true,
+        users:  { select: { id: true, nickname: true, description: true, profileImage: true } },
+        artists:{ select: { id: true, nickname: true, description: true, profileImage: true } },
       }
-    })
+    });
   },
 
   /**
