@@ -94,6 +94,7 @@ router.get(
   passport.authenticate("naver", {
     failureRedirect: "/oauth2/login/naver",
     failureMessage: true,
+    session:false,
   }),
   (req, res) => {
     console.log("req.user", req.user); // BigInt 의심 필드 확인
@@ -109,7 +110,8 @@ router.get(
     }
 
     token = signJwt({
-      userId: req.user.id?.toString(),
+      accountId: req.user.accountId,
+      role:req.user.role,
     });
 
     res.redirect(`/?token=${token}`)
