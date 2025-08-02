@@ -256,18 +256,18 @@ export const UserService = {
     },
 
     // 작가 팔로우 취소하기 
-    async CancelArtistFollow(userId, artistId) {
+    async CancelArtistFollow(accountId, artistId) {
         const artist = await UserRepository.findArtistById(artistId);
 
         if(!artist)
             throw new ArtistNotFound();
 
-        const FollowState = await UserRepository.AlreadyFollow(userId, artistId);
+        const FollowState = await UserRepository.AlreadyFollow(accountId, artistId);
 
         if(!FollowState)
             throw new NotFollowingArtist();
 
-        const result = await UserRepository.CancelArtistFollow(userId, artistId);
+        const result = await UserRepository.CancelArtistFollow(accountId, artistId);
 
         return {
             message: "해당 작가 팔로우를 취소했습니다.",
@@ -276,8 +276,8 @@ export const UserService = {
     },
     
     // 사용자가 팔로우한 작가 조회하기 
-    async LookUserFollow(userId) {
-        const artistList = await UserRepository.LookUserFollow(userId);
+    async LookUserFollow(accountId) {
+        const artistList = await UserRepository.LookUserFollow(accountId);
 
         if(artistList.length === 0) return {
             message:"팔로우하는 작가가 없습니다.",

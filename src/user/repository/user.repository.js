@@ -180,11 +180,11 @@ export const UserRepository = {
   },
 
   // 작가 팔로우 취소하기 
-  async CancelArtistFollow(userId, artistId) {
+  async CancelArtistFollow(accountId, artistId) {
     return await prisma.follow.delete({
       where:{
-        userId_artistId:{
-          userId,
+        accountId_artistId:{
+          accountId,
           artistId
         }
       }
@@ -192,10 +192,10 @@ export const UserRepository = {
   },
 
   // 사용자가 팔로우한 작가 조회하기 
-  async LookUserFollow(userId){
+  async LookUserFollow(accountId){
     return await prisma.follow.findMany({
       where:{
-        userId:userId
+        accountId:accountId
       },
       select:{
         artist:{
