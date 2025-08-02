@@ -71,13 +71,14 @@ router.get(
 
     if(req.user.signupRequired){
       token = signJwt({
-        provider: req.user.provider.toString(),
-        oauth_id : req.user.oauth_id.toString(),
+        provider: req.user.provider,
+        oauth_id : req.user.oauth_id,
       });
       return res.redirect(`/signup?token=${token}`);
     }
     token = signJwt({
-      userId: req.user.id?.toString(),
+      accountId: req.user.accountId,
+      role:req.user.role,
     });
 
     res.redirect(`/?token=${token}`)

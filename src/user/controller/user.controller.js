@@ -43,9 +43,9 @@ export const addUser = async(req, res, next) => {
 // 사용자 프로필 조회 
 export const getUserProfile = async(req, res, next) => {
     try{
-        console.log("Decoded JWT from req.user:", req.user);
+        console.log("👊Decoded JWT from req.user:", req.user);
 
-        const accountId = req.user.accountId.toString();
+        const accountId = req.user.accountId;
         console.log("controller accountId -> ", accountId);
 
         const role = req.user.role;
