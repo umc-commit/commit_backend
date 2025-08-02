@@ -144,8 +144,16 @@ export const UserService = {
         }
     },
     // 나의 프로필 수정 
-    async updateMyprofile(userId, dto) {
-        const user = await UserRepository.findUserById(userId);
+    async updateMyprofile(accountId, dto, role) {
+        let user;
+        if(role === "client") {
+            user = await UserRepository.findUserById(accountId);
+        }
+
+        if(role === "artist") {
+            user = await UserRepository.findArtistById(accountId);
+        }
+
         if(!user) return null;
 
         const updates = {};
@@ -166,17 +174,35 @@ export const UserService = {
             };
         }
 
-        const updatedUser = await UserRepository.updateMyprofile(userId, updates);
+        let updatedUser;
 
-        return {
+        if(role === "client"){
+            updatedUser = await UserRepository.updateMyprofile(accountId, updates);
+
+            return {
             message:"프로필 수정이 완료되었습니다.",
             user:{
                 userId: updatedUser.id.toString(),
                 nickname: updatedUser.nickname,
                 profileImage: updatedUser.profileImage,
                 description: updatedUser.description,
-            }
-        };
+                }
+            };
+        }
+
+        if(role === "artist"){
+            updatedUser = await UserRepository.updateArtistProfile(accountId, updates);
+
+            return {
+            message:"프로필 수정이 완료되었습니다.",
+            user:{
+                userId: updatedUser.id.toString(),
+                nickname: updatedUser.nickname,
+                profileImage: updatedUser.profileImage,
+                description: updatedUser.description,
+                }
+            };
+        }
     },
 
     // 사용자가 선택한 카테고리 조회 

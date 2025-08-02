@@ -125,9 +125,18 @@ export const UserRepository = {
   /**
    * 나의 프로필 수정
    */
-  async updateMyprofile(userId, updates) {
+  async updateMyprofile(accountId, updates) {
     return await prisma.user.update({
-      where:{id: userId},
+      where:{accountId},
+      data:updates,
+    })
+  },
+  /**
+   * 작가 프로필 수정
+   */
+  async updateArtistProfile(accountId, updates) {
+    return await prisma.artist.update({
+      where:{accountId},
       data:updates,
     })
   },

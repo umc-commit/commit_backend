@@ -64,12 +64,15 @@ export const UpdateMyprofile = async(req, res, next) => {
     try{
         console.log("Decoded JWT from req.user:", req.user);
 
-        const userId = req.user.userId.toString();
-        console.log("userId : ", userId);
+        const accountId = req.user.accountId;
+        console.log("accountId -> : ", accountId);
+
+        const role = req.user.role;
 
         const dto = new UpdateMyprofileDto(req.body);
 
-        const result = await UserService.updateMyprofile(userId, dto);
+        const result = await UserService.updateMyprofile(accountId, dto, role);
+
         res.status(StatusCodes.OK).success(result);
     } catch(err){
         next(err);
