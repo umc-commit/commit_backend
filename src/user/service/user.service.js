@@ -236,13 +236,13 @@ export const UserService = {
     },
 
     // 작가 팔로우하기 
-    async FollowArtist(userId, artistId) {
+    async FollowArtist(accountId, artistId) {
         const artist = await UserRepository.findArtistById(artistId);
 
         if(!artist) 
             throw new ArtistNotFound();
 
-        const alreadyFollowing = await UserRepository.AlreadyFollow(userId, artistId);
+        const alreadyFollowing = await UserRepository.AlreadyFollow(accountId, artistId);
 
         if(alreadyFollowing) 
             throw new UserAlreadyFollowArtist();

@@ -173,9 +173,9 @@ export const UserRepository = {
   },
 
   // 사용자가 팔로우중인지 확인
-  async AlreadyFollow(userId, artistId) {
+  async AlreadyFollow(accountId, artistId) {
     return await prisma.follow.findFirst({
-      where:{userId, artistId}
+      where:{accountId, artistId}
     })
   },
 

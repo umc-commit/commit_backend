@@ -23,6 +23,7 @@ model Account {
   artists        Artist[]
   userAgreements UserAgreement[]
   userCategories UserCategory[]
+  follows          Follow[]
 
   @@unique([provider, oauthId])
   @@map("accounts")
@@ -46,7 +47,6 @@ model User {
   chatMessages     ChatMessage[]
   reviews          Review[]
   bookmarks        Bookmark[]
-  follows          Follow[]
   notifications    Notification[]
   searchHistories  SearchHistory[]
   pushToken        PushToken?
@@ -241,13 +241,13 @@ model ChatMessage {
 model Follow {
   id        BigInt   @id @default(autoincrement())
   artistId  BigInt   @map("artist_id")
-  userId    BigInt   @map("user_id")
+  accountId BigInt   @map("account_id")
   createdAt DateTime @default(now()) @map("created_at")
 
-  artist Artist @relation(fields: [artistId], references: [id])
-  user   User   @relation(fields: [userId], references: [id])
+  artist   Artist    @relation(fields: [artistId], references: [id])
+  account  Account   @relation(fields: [accountId], references: [id])
 
-  @@unique([userId, artistId])
+  @@unique([accountId, artistId])
   @@map("follows")
 }
 
