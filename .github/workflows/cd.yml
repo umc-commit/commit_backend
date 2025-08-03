@@ -59,6 +59,7 @@ jobs:
           After=network.target
 
           [Service]
+          Environment=NODE_ENV=production
           User=ubuntu
           ExecStart=/usr/bin/npm run start --prefix /opt/app/
           Restart=always

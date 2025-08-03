@@ -22,3 +22,26 @@ export class GetRequestDetailDto {
     this.requestId = BigInt(requestId);
   }
 }
+
+// 제출된 신청서 조회 dto
+export class GetRequestFormDto {
+  constructor({ requestId }) {
+    this.requestId = requestId;
+  }
+}
+
+// 완료된 신청내역 조회 dto
+export class GetCompletedRequestsDto {
+  constructor({ sort = 'latest', page = 1, limit = 10 }) {
+    this.sort = sort;
+    this.page = parseInt(page);
+    this.limit = parseInt(limit);
+  }
+}
+
+// 작업물 조회 DTO
+export class GetRequestResultDto {
+  constructor({ requestId }) {
+    this.requestId = BigInt(requestId);
+  }
+}

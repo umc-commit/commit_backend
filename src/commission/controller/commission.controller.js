@@ -1,4 +1,3 @@
-// /src/commission/controller/commission.controller.js
 import { StatusCodes } from "http-status-codes";
 import { CommissionService } from '../service/commission.service.js';
 import 
@@ -100,4 +99,18 @@ export const submitCommissionRequest = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+
+// 커미션 리포트 조회
+export const getCommissionReport = async (req, res, next) => {
+	try {
+		const userId = BigInt(req.user.userId);
+		
+		const result = await CommissionService.getReport(userId);
+		const responseData = parseWithBigInt(stringifyWithBigInt(result));
+
+		res.status(StatusCodes.OK).success(responseData);
+	} catch (err) {
+		next(err);
+	}
 };

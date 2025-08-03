@@ -22,10 +22,10 @@ export class DeleteSelectedBookmarksDto {
 
 // 사용자 북마크 조회 dto
 export class GetBookmarksDto {
-  constructor({ sort, limit, cursor, excludeFullSlots }) {
+  constructor({ sort, page, limit, excludeFullSlots }) {
     this.sort = sort || 'latest';
+    this.page = page || 1;
     this.limit = limit || 12;
-    this.cursor = cursor || null;
     this.excludeFullSlots = excludeFullSlots || false;
   }
 }

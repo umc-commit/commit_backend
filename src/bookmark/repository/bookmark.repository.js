@@ -70,59 +70,35 @@ export const BookmarkRepository = {
   },
 
   /**
-   * 사용자의 북마크 목록 조회 (커서 기반 페이징)
+   * 사용자의 북마크 목록 조회
    */
   async findBookmarksByUserId(userId, dto) {
-    const { sort, limit, cursor, excludeFullSlots = false } = dto;
+    const { sort, page, limit, excludeFullSlots = false } = dto;
 
     const baseCondition = {
-    userId: BigInt(userId)
+      userId: BigInt(userId)
     };
 
     let whereCondition = { ...baseCondition };
     let orderBy = [];
     
-    if (cursor) {
-      const decodedCursor = JSON.parse(Buffer.from(cursor, 'base64').toString());
-      switch (sort) {
-        case 'latest': // 최신순 정렬
-          whereCondition.createdAt = { lt: new Date(decodedCursor.created_at) };
-          orderBy = [{ createdAt: 'desc' }, { id: 'desc' }];
-          break;
-        case 'price_low': // 저가순 정렬
-          whereCondition.OR = [
-            { commission: { minPrice: { gt: decodedCursor.min_price } } },
-            { 
-              commission: { minPrice: decodedCursor.min_price },
-              createdAt: { lt: new Date(decodedCursor.created_at) }
-            }
-          ];
-          orderBy = [{ commission: { minPrice: 'asc' } }, { createdAt: 'desc' }];
-          break;
-        case 'price_high': // 고가순 정렬
-          whereCondition.OR = [
-            { commission: { minPrice: { lt: decodedCursor.min_price } } },
-            { 
-              commission: { minPrice: decodedCursor.min_price },
-              createdAt: { lt: new Date(decodedCursor.created_at) }
-            }
-          ];
-          orderBy = [{ commission: { minPrice: 'desc' } }, { createdAt: 'desc' }];
-          break;
-      }
-    } else {
-      switch (sort) {
-        case 'latest':
-          orderBy = [{ createdAt: 'desc' }, { id: 'desc' }];
-          break;
-        case 'price_low':
-          orderBy = [{ commission: { minPrice: 'asc' } }, { createdAt: 'desc' }];
-          break;
-        case 'price_high':
-          orderBy = [{ commission: { minPrice: 'desc' } }, { createdAt: 'desc' }];
-          break;
-      }
+    // 정렬 조건 설정
+    switch (sort) {
+      case 'latest':
+        orderBy = [{ createdAt: 'desc' }, { id: 'desc' }];
+        break;
+      case 'price_low':
+        orderBy = [{ commission: { minPrice: 'asc' } }, { createdAt: 'desc' }];
+        break;
+      case 'price_high':
+        orderBy = [{ commission: { minPrice: 'desc' } }, { createdAt: 'desc' }];
+        break;
+      default:
+        orderBy = [{ createdAt: 'desc' }, { id: 'desc' }];
     }
+
+    // 페이지네이션 계산
+    const skip = (page - 1) * limit;
 
     return await prisma.bookmark.findMany({
       where: whereCondition,
@@ -165,7 +141,8 @@ export const BookmarkRepository = {
         }
       },
       orderBy,
-      take: excludeFullSlots ? 100 : limit + 1, // hasNext 확인용
+      skip,
+      take: limit
     });
   },
 

@@ -1,13 +1,18 @@
 import { StatusCodes } from "http-status-codes";
-import reviewService from '../service/review.service.js';
 import { stringifyWithBigInt } from "../../bigintJson.js";
 import {
-    ReviewCreateDto,
-    ReviewUpdateDto,
-    ReviewResponseDto,
+    RequestIdRequiredError,
+    ReviewIdRequiredError,
+    UserIdRequiredError
+} from '../../common/errors/review.errors.js';
+import {
     ImageUploadResponseDto,
-    ReviewListResponseDto
+    ReviewCreateDto,
+    ReviewListResponseDto,
+    ReviewResponseDto,
+    ReviewUpdateDto
 } from '../dto/review.dto.js'; // DTO 클래스 import
+import reviewService from '../service/review.service.js';
 
 class ReviewController {
 
@@ -42,10 +47,13 @@ class ReviewController {
     async createReview(req, res, next) {
         try {
             // URL 파라미터에서 커미션 신청 ID(requestId)를 추출하고 BigInt로 변환
+            if (!req.params.requestId) {
+                throw new RequestIdRequiredError(); // requestId가 누락된 경우 RequestIdRequiredError 반환
+            }
             const requestId = BigInt(req.params.requestId);
 
             // 현재 로그인한 사용자 ID (BigInt 변환)
-            const userId = BigInt(req.user.id);
+            const userId = BigInt(req.user.userId);
 
             // 요청 본문 데이터를 DTO 클래스로 구조화
             const reviewDto = new ReviewCreateDto(req.body);
@@ -77,10 +85,13 @@ class ReviewController {
     async updateReview(req, res, next) {
         try {
             // URL 파라미터에서 리뷰 ID를 추출하고 BigInt로 변환
+            if (!req.params.reviewId) {
+                throw new ReviewIdRequiredError(); // reviewId가 누락된 경우 ReviewIdRequiredError 반환
+            }
             const reviewId = BigInt(req.params.reviewId);
 
             // 현재 로그인한 사용자 ID (BigInt 변환)
-            const userId = BigInt(req.user.id);
+            const userId = BigInt(req.user.userId);
 
             // 요청 본문 데이터를 DTO 클래스로 구조화
             const reviewDto = new ReviewUpdateDto(req.body);
@@ -112,10 +123,13 @@ class ReviewController {
     async deleteReview(req, res, next) {
         try {
             // URL 파라미터에서 리뷰 ID를 추출하고 BigInt로 변환
+            if (!req.params.reviewId) {
+                throw new ReviewIdRequiredError(); // reviewId가 누락된 경우 ReviewIdRequiredError 반환
+            }
             const reviewId = BigInt(req.params.reviewId);
 
             // 현재 로그인한 사용자 ID (BigInt 변환)
-            const userId = BigInt(req.user.id);
+            const userId = BigInt(req.user.userId);
 
             // 리뷰 삭제 서비스 호출
             const result = await reviewService.deleteReview(reviewId, userId);
@@ -138,7 +152,10 @@ class ReviewController {
      */
     async getReviewsByUserId(req, res, next) {
         try {
-            // URL 파라미터에서 사용자 ID 추출
+            // URL 파라미터에서 사용자 ID를 추출하고 BigInt로 변환
+            if (!req.params.userId) {
+                throw new UserIdRequiredError(); // userId가 누락된 경우 UserIdRequiredError 반환
+            }
             const userId = BigInt(req.params.userId);
 
             // 쿼리 파라미터에서 페이지네이션 정보 추출

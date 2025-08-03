@@ -1,11 +1,14 @@
 import { StatusCodes } from "http-status-codes";
 import { stringifyWithBigInt } from "../../../bigintJson.js";
 import {
+    TargetUserIdRequiredError
+} from '../../../common/errors/notification.errors.js';
+import {
+    PushSendResponseDto,
     PushTokenDeleteResponseDto,
     PushTokenRegisterDto,
     PushTokenResponseDto,
-    TestPushRequestDto,
-    PushSendResponseDto
+    TestPushRequestDto
 } from '../dto/push.dto.js';
 import pushService from '../service/push.service.js';
 
@@ -17,7 +20,7 @@ class PushController {
     async registerPushToken(req, res, next) {
         try {
             // 현재 로그인한 사용자 ID
-            const userId = BigInt(req.user.id);
+            const userId = BigInt(req.user.userId);
 
             // 요청 본문 데이터를 DTO로 구조화
             const tokenDto = new PushTokenRegisterDto(req.body);
@@ -49,7 +52,7 @@ class PushController {
     async deletePushToken(req, res, next) {
         try {
             // 현재 로그인한 사용자 ID
-            const userId = BigInt(req.user.id);
+            const userId = BigInt(req.user.userId);
 
             // FCM 토큰 삭제 서비스 호출
             const result = await pushService.deletePushToken(userId);
@@ -79,6 +82,9 @@ class PushController {
             const testPushDto = new TestPushRequestDto(req.body);
 
             // 대상 사용자 ID 추출
+            if (!testPushDto.target_user_id) {
+                throw new TargetUserIdRequiredError(); // target_user_id가 누락된 경우 TargetUserIdRequiredError 반환
+            }
             const targetUserId = BigInt(testPushDto.target_user_id);
 
             // 테스트 Push 발송 서비스 호출

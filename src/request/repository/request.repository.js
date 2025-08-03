@@ -188,5 +188,156 @@ async findLatestPointTransactionByRequestId(requestId) {
       createdAt: 'desc'
     }
   });
+ },
+
+ /**
+ * 제출된 신청서 조회용 - Request 상세 정보
+ */
+async findSubmittedRequestById(requestId) {
+  return await prisma.request.findUnique({
+    where: {
+      id: BigInt(requestId)
+    },
+    include: {
+      commission: {
+        select: {
+          id: true,
+          title: true,
+          formSchema: true,
+          artist: {
+            select: {
+              id: true,
+              nickname: true,
+              profileImage: true
+            }
+          }
+        }
+      }
+    }
+  });
+},
+
+/**
+ * Request 참고 이미지 조회
+ */
+async findImagesByRequestId(requestId) {
+  return await prisma.image.findMany({
+    where: {
+      target: 'request',
+      targetId: BigInt(requestId)
+    },
+    orderBy: { orderIndex: 'asc' }
+  });
+ },
+
+ /**
+ * Request 이미지 생성
+ */
+async createRequestImage(imageData) {
+	return await prisma.image.create({
+		data: {
+			target: imageData.target,
+			targetId: imageData.targetId,
+			imageUrl: imageData.imageUrl,
+			orderIndex: imageData.orderIndex
+		}
+	});
+ },
+
+/**
+* 완료된 신청내역 조회
+*/
+async findCompletedRequestsByUserId(userId, sort, offset, limit) {
+   // 정렬 조건 설정
+   let orderBy = {};
+   
+   switch (sort) {
+   	case 'latest':
+   		orderBy = { completedAt: 'desc' };
+   		break;
+   	case 'oldest':
+   		orderBy = { completedAt: 'asc' };
+   		break;
+   	case 'price_low':
+   		orderBy = { totalPrice: 'asc' };
+   		break;
+   	case 'price_high':
+   		orderBy = { totalPrice: 'desc' };
+   		break;
+   	default:
+   		orderBy = { completedAt: 'desc' };
+   }
+
+   return await prisma.request.findMany({
+   	where: {
+   		userId: BigInt(userId),
+   		status: 'COMPLETED'
+   	},
+   	include: {
+   		commission: {
+   			select: {
+   				id: true,
+   				title: true,
+   				artist: {
+   					select: {
+   						id: true,
+   						nickname: true
+   					}
+   				}
+   			}
+   		}
+   	},
+   	orderBy: orderBy,
+   	skip: offset,
+   	take: limit
+   });
+},
+
+/**
+* 완료된 신청내역 총 개수 조회
+*/
+async countCompletedRequestsByUserId(userId) {
+   return await prisma.request.count({
+   	where: {
+   		userId: BigInt(userId),
+   		status: 'COMPLETED'
+   	}
+   });
+ },
+
+ /**
+ * Request 작업물 조회
+ */
+async findRequestResultById(requestId) {
+  return await prisma.request.findUnique({
+    where: {
+      id: BigInt(requestId)
+    },
+    select: {
+      id: true,
+      userId: true,
+      status: true,
+      submittedAt: true,
+      commission: {
+        select: {
+          id: true,
+          title: true
+        }
+      }
+    }
+  });
+},
+
+/**
+ * Request 작업물 이미지들 조회
+ */
+async findResultImagesByRequestId(requestId) {
+  return await prisma.image.findMany({
+    where: {
+      target: 'request-result',
+      targetId: BigInt(requestId)
+    },
+    orderBy: { orderIndex: 'asc' }
+  });
  }
 };

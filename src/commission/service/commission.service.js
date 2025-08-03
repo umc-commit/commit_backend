@@ -2,6 +2,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { CommissionRepository } from "../repository/commission.repository.js";
+import { RequestRepository } from "../../request/repository/request.repository.js";
 import {
  CommissionNotFoundError,
   FileSizeExceededError,
@@ -285,6 +286,21 @@ export const CommissionService = {
       totalPrice: totalPrice,
       waitlist: waitlist
     });
+
+    // 참고 이미지들을 Image 테이블에 저장
+    const fileFieldId = (customFields.length + 2).toString();
+    const imageUrls = formAnswer[fileFieldId] || [];
+
+    if (imageUrls.length > 0) {
+      for (let i = 0; i < imageUrls.length; i++) {
+        await RequestRepository.createRequestImage({
+          target: 'request',
+          targetId: newRequest.id,
+          imageUrl: imageUrls[i],
+          orderIndex: i
+        });
+      }
+    }
 
     // 응답 데이터 구성
     return {
@@ -606,5 +622,191 @@ export const CommissionService = {
     } else {
       return `${diffMinutes}분 전`;
     }
-  }
+  },
+
+  // 캐릭터 데이터
+	CHARACTER_DATA: [
+		{
+			image: "https://example.com/character1.png",
+			quote: {
+				title: "커미션계의 VIP",
+				description: "\"커미션계의 큰 손 등장!\" 덕분에 작가님들의 창작 활동이 풍요로워졌어요."
+			},
+			condition: "월 사용 포인트 15만포인트 이상"
+		},
+		{
+			image: "https://example.com/character2.png",
+			quote: {
+				title: "작가 덕후 신청자",
+				description: "\"이 작가님만큼은 믿고 맡긴다!\" 단골의 미덕을 지닌 당신, 작가님도 감동했을 거예요."
+			},
+			condition: "같은 작가에게 3회 이상 신청"
+		},
+		{
+			image: "https://example.com/character3.png",
+			quote: {
+				title: "호기심 대장 신청자",
+				description: "호기심이 가득해서, 언제나 새로운 작가를 탐색해요."
+			},
+			condition: "서로 다른 작가 5명 이상에게 커미션을 신청"
+		},
+		{
+			image: "https://example.com/character4.png",
+			quote: {
+				title: "숨겨진 보석 발굴가",
+				description: "\"빛나는 원석을 내가 발견했다!\" 성장하는 작가님들의 첫걸음을 함께한 당신, 멋져요."
+			},
+			condition: "팔로워 수가 0명인 작가에게 신청 2회 이상"
+		},
+		{
+			image: "https://example.com/character5.png",
+			quote: {
+				title: "빠른 피드백러",
+				description: "\"작가님, 이번 커미션 최고였어요!\" 정성 가득한 피드백으로 건강한 커미션 문화를 만들어가요."
+			},
+			condition: "커미션 완료 후 후기 작성률 100% 달성"
+		}
+	],
+
+	/**
+	 * 커미션 리포트 조회
+	 */
+	async getReport(userId) {
+		// 현재 날짜 기준으로 이전 달 계산
+		const now = new Date();
+		const currentMonth = now.getMonth() + 1; // getMonth()는 0부터 시작
+		const currentYear = now.getFullYear();
+		
+		// 이전 달 계산 (1월이면 작년 12월)
+		const reportYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+		const reportMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+
+		// 사용자 닉네임 조회
+		const userNickname = await CommissionRepository.findUserNicknameById(userId);
+
+		// 해당 월 승인받은 리퀘스트들 조회
+		const requests = await CommissionRepository.findApprovedRequestsByUserAndMonth(
+			userId, 
+			reportYear, 
+			reportMonth
+		);
+
+		// 통계 계산
+		const statistics = this.calculateReportStatistics(requests);
+
+		// 랜덤 캐릭터 선택
+    const randomCharacter = this.CHARACTER_DATA[Math.floor(Math.random() * this.CHARACTER_DATA.length)];
+
+		return {
+			reportInfo: {
+				userNickname: userNickname,
+				month: reportMonth
+			},
+			characterImage: randomCharacter.image,
+			quote: randomCharacter.quote,
+			condition: randomCharacter.condition,
+			statistics: statistics
+		};
+	},
+
+	/**
+	 * 리포트 통계 계산
+	 */
+	calculateReportStatistics(requests) {
+		if (requests.length === 0) {
+			// 데이터가 없어도 랜덤 캐릭터는 나오게
+			return {
+				mainCategory: { name: "없음", count: 0 },
+				favoriteArtist: { id: null, nickname: "없음", profileImage: null },
+				pointsUsed: 0,
+				reviewRate: 0.0
+			};
+		}
+
+		// 카테고리별 집계 (횟수 → 포인트 순)
+		const categoryStats = this.aggregateByCategory(requests);
+		const mainCategory = categoryStats[0] ? { 
+			name: categoryStats[0].name, 
+			count: categoryStats[0].count 
+		} : { name: "없음", count: 0 };
+
+		// 작가별 집계 (횟수 → 포인트 순) 
+		const artistStats = this.aggregateByArtist(requests);
+		const favoriteArtist = artistStats[0] ? {
+			id: artistStats[0].id,
+			nickname: artistStats[0].nickname,
+			profileImage: artistStats[0].profileImage
+		} : { 
+			id: null, 
+			nickname: "없음", 
+			profileImage: null 
+		};
+
+		// 총 사용 포인트
+		const pointsUsed = requests.reduce((sum, req) => sum + req.totalPrice, 0);
+
+		// 리뷰 작성률 (COMPLETED 중에서)
+		const completedRequests = requests.filter(req => req.status === 'COMPLETED');
+		const reviewedRequests = completedRequests.filter(req => req.reviews.length > 0);
+		const reviewRate = completedRequests.length > 0 
+			? Math.round((reviewedRequests.length / completedRequests.length) * 1000) / 10  // 소수점 1자리
+			: 0.0;
+
+		return {
+			mainCategory,
+			favoriteArtist,
+			pointsUsed,
+			reviewRate
+		};
+	},
+
+	/**
+	 * 카테고리별 집계
+	 */
+	aggregateByCategory(requests) {
+		const categoryMap = new Map();
+
+		requests.forEach(req => {
+			const categoryName = req.commission.category.name;
+			const existing = categoryMap.get(categoryName) || { name: categoryName, count: 0, points: 0 };
+			existing.count += 1;
+			existing.points += req.totalPrice;
+			categoryMap.set(categoryName, existing);
+		});
+
+		// 1순위: 횟수, 2순위: 포인트로 정렬
+		return Array.from(categoryMap.values())
+			.sort((a, b) => {
+				if (a.count !== b.count) return b.count - a.count;  // 횟수 많은 순
+				return b.points - a.points;  // 포인트 많은 순
+			});
+	},
+
+	/**
+	 * 작가별 집계
+	 */
+	aggregateByArtist(requests) {
+		const artistMap = new Map();
+
+		requests.forEach(req => {
+			const artistId = req.commission.artist.id;
+			const existing = artistMap.get(artistId) || { 
+				id: artistId,
+				nickname: req.commission.artist.nickname,
+				profileImage: req.commission.artist.profileImage,
+				count: 0, 
+				points: 0 
+			};
+			existing.count += 1;
+			existing.points += req.totalPrice;
+			artistMap.set(artistId, existing);
+		});
+
+		// 1순위: 횟수, 2순위: 포인트로 정렬
+		return Array.from(artistMap.values())
+			.sort((a, b) => {
+				if (a.count !== b.count) return b.count - a.count;  // 횟수 많은 순
+				return b.points - a.points;  // 포인트 많은 순
+			});
+	}
 };

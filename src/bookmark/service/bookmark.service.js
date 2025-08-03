@@ -94,9 +94,9 @@ export const BookmarkService = {
     };
   },
 
-    // 북마크 목록 조회
+  // 북마크 목록 조회
   async getBookmarks(userId, dto) {
-    const { sort, limit, cursor, excludeFullSlots = false } = dto;
+    const { sort, page, limit, excludeFullSlots = false } = dto;
 
     const bookmarks = await BookmarkRepository.findBookmarksByUserId(userId, dto);
     
@@ -104,7 +104,7 @@ export const BookmarkService = {
     ? await BookmarkRepository.countAvailableBookmarksByUserId(userId)
     : await BookmarkRepository.countBookmarksByUserId(userId);
 
-    // 응답 데이터 가공 (모든 데이터 포맷팅)
+    // 응답 데이터 가공
     const formattedItems = await Promise.all(
       bookmarks.map(async (bookmark) => {
       // 썸네일 이미지 조회
@@ -134,33 +134,17 @@ export const BookmarkService = {
     ? formattedItems.filter(item => item.remainingSlots > 0)
     : formattedItems;
 
-    const hasNext = filteredItems.length > limit;
-    const finalItems = hasNext ? filteredItems.slice(0, -1) : filteredItems;
-
-  // nextCursor 생성
-  let nextCursor = null;
-  if (hasNext && finalItems.length > 0) {
-    const lastFormattedItem = finalItems[finalItems.length - 1];
-    const originalBookmark = bookmarks.find(b => Number(b.commission.id) === lastFormattedItem.id);
-    
-    const cursorData = {
-     id: lastFormattedItem.id,
-     created_at: originalBookmark.createdAt.toISOString()
-    };
-  
-    if (sort === 'price_low' || sort === 'price_high') {
-      cursorData.min_price = lastFormattedItem.minPrice;
-    }
-  
-    nextCursor = Buffer.from(JSON.stringify(cursorData)).toString('base64');
-  }
-
+    // 페이지네이션 계산
+    const totalPages = Math.ceil(totalCount / limit);
 
     return {
-      totalCount,
-      hasNext,
-      nextCursor,
-      items: finalItems
+      items: filteredItems,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages
+      }
     };
   },
 };
