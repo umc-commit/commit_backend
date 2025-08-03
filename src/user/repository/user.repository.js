@@ -209,5 +209,19 @@ export const UserRepository = {
     })
   },
 
+  // 사용자의 커미션 신청 횟수 조회 
+  async countClientCommissionApplication(userId){
+    return await prisma.request.count({
+      where:{userId, status:"PENDING"}
+    })
+  },
+
+  // 사용자의 리뷰작성 횟수 조회 
+  async countClientReview(userId) {
+    return await prisma.review.count({
+      where:{userId}
+    })
+  }
+
 };
 
