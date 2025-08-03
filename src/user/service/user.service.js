@@ -341,5 +341,64 @@ export const UserService = {
     // 사용자의 뱃지 조회하기 
     async ViewUserBadge(accountId){
         return await BadgeRepository.ViewUserBadges(accountId);
+    },
+    // 작가 프로필 조회하기 
+    async AccessArtistProfile(artistId, accountId) {
+        const profile = await UserRepository.AccessArtistProfile(artistId);
+        const rawReviews = await UserRepository.ArtistReviews(artistId);
+
+        const reviews = rawReviews.map((r) => {
+        const start = r.request.inProgressAt ? new Date(r.request.inProgressAt) : null;
+        const end = r.request.completedAt ? new Date(r.request.completedAt) : null;
+
+        let workingTime = null;
+        if (start && end) {
+            const diffMs = end - start;
+            const hours = Math.floor(diffMs / (1000 * 60 * 60));
+            workingTime = hours < 24 ? `${hours}시간` : `${Math.floor(hours / 24)}일`;
+        }
+        
+        return {
+            id: r.id,
+            rate: r.rate,
+            content: r.content,
+            createdAt: r.createdAt,
+            commissionTitle: r.request.commission.title,
+            workingTime: workingTime,
+            writer: {
+                nickname: r.user.nickname
+            }
+        }});
+
+        // 작가가 등록한 커미션 목록
+        const commissions = await UserRepository.FetchArtistCommissions(artistId);
+        const commissionList = commissions.map(c=> ({
+            id: c.id,
+            title: c.title,
+            summary: c.summary,
+            minPrice: c.minPrice,
+            category: c.category.name,
+            tags: c.commissionTags.map(t => t.tag.name),
+            thumbnail: c.thumbnailImage // 컬럼 존재 시
+        }));
+
+
+        const result = await UserRepository.getMyProfile(accountId);
+
+        const badges = result.userBadges.map(userBadge => ({
+            id: userBadge.id,
+            earnedAt: userBadge.earnedAt,
+            badge: userBadge.badge
+        }));
+
+
+        return {
+            ...profile,
+            reviews,
+            commissions:commissionList,
+            badges
+        }
+
     }
+    
 }

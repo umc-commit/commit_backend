@@ -43,6 +43,20 @@ export const BadgeRepository = {
             earnedAt:'desc',
         }
     });
+  },
+  // 작가 뱃지 조회하기 
+  async ViewArtistBadges(accountId){
+    return await prisma.userBadge.findMany({
+        where:{
+            accountId,
+        },
+        include:{
+            badge:true,
+        },
+        orderBy:{
+            earnedAt:'desc',
+        }
+    });
   }
 
 };

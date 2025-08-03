@@ -153,6 +153,7 @@ router.get(
 // 사용자 프로필 조회 
 router.get("/me", authenticate, getUserProfile);
 
+
 /**
  * 사용자별 리뷰 목록 조회 API
  * GET /api/users/:userId/reviews

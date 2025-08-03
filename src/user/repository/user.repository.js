@@ -232,6 +232,78 @@ export const UserRepository = {
     return await prisma.review.count({
       where:{userId}
     })
-  }
+  },
+  // 작가 프로필 조회하기 
+  async AccessArtistProfile(artistId) {
+    return await prisma.artist.findUnique({
+      where:{
+        id: artistId
+      },
+      select:{
+        nickname: true,
+        description: true,
+        profileImage: true,
+        slot:true
+      }
+    });
+  },
+
+  // 작가에게 달린 리뷰 조회하기 
+  async ArtistReviews(artistId) {
+    return await prisma.review.findMany({
+      where:{
+        request:{
+          commission:{
+            artistId:artistId
+          }
+        }
+      },
+      orderBy:{createdAt:'desc'},
+      take:4,
+      select:{
+        id:true, 
+        rate:true,
+        content:true,
+        createdAt:true,
+        user:{
+          select:{
+            nickname:true,
+          }
+        },
+        request:{
+          select:{
+            inProgressAt:true,
+            completedAt:true,
+            commission:{
+              select:{
+                title:true
+              }
+            }
+          }
+        }
+      }
+    })
+  },
+  // 작가가 등록한 커미션 목록 불러오기
+  async FetchArtistCommissions(artistId) {
+      return await prisma.commission.findMany({
+          where: { artistId: artistId },
+          select: {
+              id: true,
+              title: true,
+              summary: true,
+              minPrice: true,
+              category: {
+                  select: { name: true }
+              },
+              commissionTags: {
+                  select: {
+                      tag: { select: { name: true } }
+                  }
+              }
+          }
+      });
+  },
+
 };
 
