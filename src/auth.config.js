@@ -89,7 +89,7 @@ const kakaoVerify = async (profile) => {
   return {
     signupRequired : true, 
     provider : profile.provider, 
-    oauth_id : profile.id,
+    oauth_id : profile.id.toString(),
   };
 };
 
