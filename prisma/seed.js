@@ -55,9 +55,76 @@ async function main() {
   });
 
   // Category 생성
-  const category = await prisma.category.create({
+  const category1 = await prisma.category.create({
     data: {
-      name: "캐릭터 일러스트",
+      name: "글",
+    },
+  });
+  // Category 생성
+  const category2 = await prisma.category.create({
+    data: {
+      name: "그림",
+    },
+  });
+    // Category 생성
+  const category3 = await prisma.category.create({
+    data: {
+      name: "영상",
+    },
+  });
+  // Category 생성
+  const category4 = await prisma.category.create({
+    data: {
+      name: "디자인",
+    },
+  });
+    // Category 생성
+  const category5 = await prisma.category.create({
+    data: {
+      name: "굿즈",
+    },
+  });
+  // Category 생성
+  const category6 = await prisma.category.create({
+    data: {
+      name: "점술",
+    },
+  });
+    // Category 생성
+  const category7 = await prisma.category.create({
+    data: {
+      name: "사운드",
+    },
+  });
+  // Category 생성
+  const category8 = await prisma.category.create({
+    data: {
+      name: "모션",
+    },
+  });
+  // Category 생성
+  const category9 = await prisma.category.create({
+    data: {
+      name: "외주",
+    },
+  });
+
+  // Agreements 생성
+  const agreement1 = await prisma.agreement.create({
+    data: {
+      agreeType:"(필수) 서비스 이용약관"
+    },
+  });
+  // Agreements 생성
+  const agreement2 = await prisma.agreement.create({
+    data: {
+      agreeType:"(필수) 개인정보 수집/이용 동의"
+    },
+  });
+  // Agreements 생성
+  const agreement3 = await prisma.agreement.create({
+    data: {
+      agreeType:"(선택) 마케팅 수신 동의"
     },
   });
 
@@ -65,11 +132,12 @@ async function main() {
   const commission = await prisma.commission.create({
   data: {
     artistId: artist.id,
-    categoryId: category.id,
+    categoryId: 1,
     title: "테스트 커미션 글",
     summary: "이것은 테스트용 커미션 글입니다.",
     content: "테스트 커미션의 상세 설명입니다. 이 부분에는 커미션의 자세한 내용이 들어갑니다.",
     minPrice: 1000, 
+    
     formSchema: {},
     },
   });

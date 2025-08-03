@@ -4,13 +4,13 @@ export const UserRepository = {
   /**
    * 사용자 ID로 사용자 조회 
    */
-  async findUserById(userId) {
-    return await prisma.user.findUnique({
+  async findUserById(accountId) {
+    return await prisma.account.findUnique({
       where: {
-        id: userId,
+        id: accountId
       },
-      include : {
-        account:true,
+      select:{
+        users:  { select: { id: true, nickname: true, description: true, profileImage: true } }
       }
     });
   },
@@ -18,13 +18,13 @@ export const UserRepository = {
   /**
    * 작가 ID로 작가 조회 
    */
-  async findArtistById(artistId) {
-    return await prisma.artist.findUnique({
+  async findArtistById(accountId) {
+    return await prisma.account.findUnique({
       where: {
-        id: artistId,
+        id: accountId,
       },
-      include : {
-        account:true,
+      select:{
+        artists:{ select: { id: true, nickname: true, description: true, profileImage: true } }
       }
     });
   },
@@ -86,9 +86,9 @@ export const UserRepository = {
   /**
    * 사용자 카테고리 연결 생성 
    */
-  async createUserCategories (userId, categoryIds) {
+  async createUserCategories (accountId, categoryIds) {
     const data = categoryIds.map(categoryId => ({
-      userId, 
+      accountId, 
       categoryId,
     }));
     return await prisma.userCategory.createMany({
@@ -98,9 +98,9 @@ export const UserRepository = {
   /**
    * 사용자 약관 동의 생성 
    */
-  async createUserAgreements (userId, agreementIds) {
+  async createUserAgreements (accountId, agreementIds) {
     const data = agreementIds.map(agreementId => ({
-      userId,
+      accountId,
       agreementId,
     }));
     return await prisma.userAgreement.createMany({
@@ -110,36 +110,46 @@ export const UserRepository = {
   /**
    * 나의 프로필 조회 
    */
-  async getMyProfile(userId) {
-    return await prisma.user.findUnique({
+  async getMyProfile(accountId) {
+    return await prisma.account.findUnique({
       where:{
-        id:userId
+        id:accountId
       },
       select:{
-        nickname:true,
-        description:true,
-        profileImage: true,
+        users:  { select: { id: true, nickname: true, description: true, profileImage: true } },
+        artists:{ select: { id: true, nickname: true, description: true, profileImage: true } },
       }
-    })
+    });
   },
 
   /**
    * 나의 프로필 수정
    */
-  async updateMyprofile(userId, updates) {
+  async updateMyprofile(accountId, updates) {
     return await prisma.user.update({
-      where:{id: userId},
+      where:{accountId},
+      data:updates,
+    })
+  },
+  /**
+   * 작가 프로필 수정
+   */
+  async updateArtistProfile(accountId, updates) {
+    return await prisma.artist.update({
+      where:{accountId},
       data:updates,
     })
   },
   // 사용자가 선택한 카테고리 조회 
-  async AccessUserCategories(userId){
-    return await prisma.user.findUnique({
-      where :{id:userId}, 
-      include:{
-        userCategories:{
-          include:{
-            category:true,
+  async AccessUserCategories(accountId){
+    return await prisma.userCategory.findMany({
+      where :{
+        accountId
+      },
+      select:{
+        category:{
+          select:{
+            name:true
           }
         }
       }
@@ -153,28 +163,28 @@ export const UserRepository = {
   },
 
   // 작가 팔로우하기 
-  async FollowArtist(userId, artistId) {
+  async FollowArtist(accountId, artistId) {
     return await prisma.follow.create({
       data:{
-        userId,
+        accountId,
         artistId
       }
     })
   },
 
   // 사용자가 팔로우중인지 확인
-  async AlreadyFollow(userId, artistId) {
+  async AlreadyFollow(accountId, artistId) {
     return await prisma.follow.findFirst({
-      where:{userId, artistId}
+      where:{accountId, artistId}
     })
   },
 
   // 작가 팔로우 취소하기 
-  async CancelArtistFollow(userId, artistId) {
+  async CancelArtistFollow(accountId, artistId) {
     return await prisma.follow.delete({
       where:{
-        userId_artistId:{
-          userId,
+        accountId_artistId:{
+          accountId,
           artistId
         }
       }
@@ -182,10 +192,10 @@ export const UserRepository = {
   },
 
   // 사용자가 팔로우한 작가 조회하기 
-  async LookUserFollow(userId){
+  async LookUserFollow(accountId){
     return await prisma.follow.findMany({
       where:{
-        userId:userId
+        accountId:accountId
       },
       select:{
         artist:{

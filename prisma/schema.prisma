@@ -19,8 +19,11 @@ model Account {
   oauthId   String   @map("oauth_id") @db.VarChar(255)
   createdAt DateTime @default(now()) @map("created_at")
 
-  users   User[]
-  artists Artist[]
+  users          User[]
+  artists        Artist[]
+  userAgreements UserAgreement[]
+  userCategories UserCategory[]
+  follows          Follow[]
 
   @@unique([provider, oauthId])
   @@map("accounts")
@@ -29,7 +32,7 @@ model Account {
 model User {
   id           BigInt   @id @default(autoincrement())
   nickname     String   @db.VarChar(50)
-  accountId    BigInt   @map("account_id")
+  accountId    BigInt   @map("account_id") @unique
   description  String?  @db.VarChar(1000)
   profileImage String?  @map("profile_image") @db.VarChar(255)
   createdAt    DateTime @default(now()) @map("created_at")
@@ -44,10 +47,7 @@ model User {
   chatMessages     ChatMessage[]
   reviews          Review[]
   bookmarks        Bookmark[]
-  follows          Follow[]
   notifications    Notification[]
-  userAgreements   UserAgreement[]
-  userCategories   UserCategory[]
   searchHistories  SearchHistory[]
   pushToken        PushToken?
 
@@ -56,7 +56,7 @@ model User {
 
 model Artist {
   id           BigInt   @id @default(autoincrement())
-  accountId    BigInt   @map("account_id")
+  accountId    BigInt   @map("account_id") @unique
   nickname     String   @db.VarChar(50)
   profileImage String?  @map("profile_image") @db.VarChar(255)
   description  String?  @db.VarChar(1000)
@@ -83,13 +83,13 @@ model Category {
 }
 
 model UserCategory {
-  userId     BigInt @map("user_id")
+  accountId  BigInt @map("account_id")
   categoryId BigInt @map("category_id")
 
-  user     User     @relation(fields: [userId], references: [id])
+  account  Account  @relation(fields: [accountId], references: [id])
   category Category @relation(fields: [categoryId], references: [id])
 
-  @@id([userId, categoryId])
+  @@id([accountId, categoryId])
   @@map("user_categories")
 }
 
@@ -241,13 +241,13 @@ model ChatMessage {
 model Follow {
   id        BigInt   @id @default(autoincrement())
   artistId  BigInt   @map("artist_id")
-  userId    BigInt   @map("user_id")
+  accountId BigInt   @map("account_id")
   createdAt DateTime @default(now()) @map("created_at")
 
-  artist Artist @relation(fields: [artistId], references: [id])
-  user   User   @relation(fields: [userId], references: [id])
+  artist   Artist    @relation(fields: [artistId], references: [id])
+  account  Account   @relation(fields: [accountId], references: [id])
 
-  @@unique([userId, artistId])
+  @@unique([accountId, artistId])
   @@map("follows")
 }
 
@@ -337,13 +337,13 @@ model Agreement {
 
 model UserAgreement {
   id          BigInt @id @default(autoincrement())
-  userId      BigInt @map("user_id")
+  accountId   BigInt @map("account_id")
   agreementId BigInt @map("agreement_id")
 
-  user      User      @relation(fields: [userId], references: [id])
+  account   Account   @relation(fields: [accountId], references: [id])
   agreement Agreement @relation(fields: [agreementId], references: [id])
 
-  @@unique([userId, agreementId])
+  @@unique([accountId, agreementId])
   @@map("user_agreement")
 }
 

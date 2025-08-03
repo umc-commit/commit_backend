@@ -36,21 +36,25 @@ export const UserService = {
             // 3. 사용자 프로필 생성 
             profile = await UserRepository.createUserProfile(account.id, nickname, ".");
 
+            console.log("user profile -> ", profile);
+
             // 4. 사용자 약관 동의 처리 (agreements -> 사용자가 동의한 agreement id 배열)
-            await UserRepository.createUserAgreements(profile.id, agreements);
+            await UserRepository.createUserAgreements(profile.accountId, agreements);
 
             // 5. 사용자가 선한 카테고리 처리 (categories -> 사용자가 선택한 category id 배열 )
-            await UserRepository.createUserCategories(profile.id, categories);
+            await UserRepository.createUserCategories(profile.accountId, categories);
         } 
         else if (role === "artist") {
             // 3. 사용자 프로필 생성 
             profile = await UserRepository.createArtistProfile(account.id, nickname, ".");
 
+            console.log("artist profile -> ", profile);
+
             // 4. 사용자 약관 동의 처리 (agreements -> 사용자가 동의한 agreement id 배열)
-            await UserRepository.createUserAgreements(profile.id, agreements);
+            await UserRepository.createUserAgreements(profile.accountId, agreements);
 
             // 5. 사용자가 선한 카테고리 처리 (categories -> 사용자가 선택한 category id 배열 )
-            await UserRepository.createUserCategories(profile.id, categories);
+            await UserRepository.createUserCategories(profile.accountId, categories);
         }
         else {
             throw new UserRoleError();
@@ -105,22 +109,51 @@ export const UserService = {
         }   
     },
     // 사용자 프로필 조회 
-    async getUserProfile(userId) {
-        const user = await UserRepository.findUserById(userId);
-        if(!user) return null;
-        return {
-            message:"나의 프로필 조회에 성공하였습니다.",
-            user:{
-                userId: user.id.toString(),
-                nickname: user.nickname,
-                profileImage:user.profileImage,
-                description: user.description
+    async getUserProfile(accountId, role) {
+
+        let result;
+
+        if(role === 'client') {
+            result = await UserRepository.findUserById(accountId);
+            console.log(result);
+            const user = result.users[0];
+            return {
+                message:"나의 프로필 조회에 성공하였습니다.",
+                user:{
+                    userId: user.id,
+                    nickname: user.nickname,
+                    profileImage:user.profileImage,
+                    description: user.description
+                }
+            }
+        }
+
+        if(role === 'artist') {
+            result = await UserRepository.findArtistById(accountId);
+            console.log(result);
+            const artist = result.artists[0];
+            return {
+                message:"나의 프로필 조회에 성공하였습니다.",
+                user:{
+                    artistId: artist.id,
+                    nickname: artist.nickname,
+                    profileImage:artist.profileImage,
+                    description: artist.description
+                }
             }
         }
     },
     // 나의 프로필 수정 
-    async updateMyprofile(userId, dto) {
-        const user = await UserRepository.findUserById(userId);
+    async updateMyprofile(accountId, dto, role) {
+        let user;
+        if(role === "client") {
+            user = await UserRepository.findUserById(accountId);
+        }
+
+        if(role === "artist") {
+            user = await UserRepository.findArtistById(accountId);
+        }
+
         if(!user) return null;
 
         const updates = {};
@@ -141,25 +174,44 @@ export const UserService = {
             };
         }
 
-        const updatedUser = await UserRepository.updateMyprofile(userId, updates);
+        let updatedUser;
 
-        return {
+        if(role === "client"){
+            updatedUser = await UserRepository.updateMyprofile(accountId, updates);
+
+            return {
             message:"프로필 수정이 완료되었습니다.",
             user:{
                 userId: updatedUser.id.toString(),
                 nickname: updatedUser.nickname,
                 profileImage: updatedUser.profileImage,
                 description: updatedUser.description,
-            }
-        };
+                }
+            };
+        }
+
+        if(role === "artist"){
+            updatedUser = await UserRepository.updateArtistProfile(accountId, updates);
+
+            return {
+            message:"프로필 수정이 완료되었습니다.",
+            user:{
+                userId: updatedUser.id.toString(),
+                nickname: updatedUser.nickname,
+                profileImage: updatedUser.profileImage,
+                description: updatedUser.description,
+                }
+            };
+        }
     },
 
     // 사용자가 선택한 카테고리 조회 
-    async accessUserCategories(userId) {
-        const user = await UserRepository.AccessUserCategories(userId);
+    async accessUserCategories(accountId) {
+        const user = await UserRepository.AccessUserCategories(accountId);
+        console.log(user);
         if(!user) return null;
 
-        const categoryName = user.userCategories.map(uc => uc.category.name);
+        const categoryName = user.map(item => item.category.name);
 
         return {
             message:"사용자가 선택한 카테고리 조회에 성공했습니다.",
@@ -184,18 +236,18 @@ export const UserService = {
     },
 
     // 작가 팔로우하기 
-    async FollowArtist(userId, artistId) {
+    async FollowArtist(accountId, artistId) {
         const artist = await UserRepository.findArtistById(artistId);
 
         if(!artist) 
             throw new ArtistNotFound();
 
-        const alreadyFollowing = await UserRepository.AlreadyFollow(userId, artistId);
+        const alreadyFollowing = await UserRepository.AlreadyFollow(accountId, artistId);
 
         if(alreadyFollowing) 
             throw new UserAlreadyFollowArtist();
         
-        const result = await UserRepository.FollowArtist(userId, artistId);
+        const result = await UserRepository.FollowArtist(accountId, artistId);
 
         return {
             message:"해당 작가 팔로우를 성공했습니다.",
@@ -204,18 +256,18 @@ export const UserService = {
     },
 
     // 작가 팔로우 취소하기 
-    async CancelArtistFollow(userId, artistId) {
+    async CancelArtistFollow(accountId, artistId) {
         const artist = await UserRepository.findArtistById(artistId);
 
         if(!artist)
             throw new ArtistNotFound();
 
-        const FollowState = await UserRepository.AlreadyFollow(userId, artistId);
+        const FollowState = await UserRepository.AlreadyFollow(accountId, artistId);
 
         if(!FollowState)
             throw new NotFollowingArtist();
 
-        const result = await UserRepository.CancelArtistFollow(userId, artistId);
+        const result = await UserRepository.CancelArtistFollow(accountId, artistId);
 
         return {
             message: "해당 작가 팔로우를 취소했습니다.",
@@ -224,8 +276,8 @@ export const UserService = {
     },
     
     // 사용자가 팔로우한 작가 조회하기 
-    async LookUserFollow(userId) {
-        const artistList = await UserRepository.LookUserFollow(userId);
+    async LookUserFollow(accountId) {
+        const artistList = await UserRepository.LookUserFollow(accountId);
 
         if(artistList.length === 0) return {
             message:"팔로우하는 작가가 없습니다.",

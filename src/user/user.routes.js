@@ -30,6 +30,7 @@ router.get(
   passport.authenticate("google", {
     failureRedirect: "/oauth2/login/google",
     failureMessage: true,
+    session:false,
   }),
   (req, res) => {
     console.log("req.user", req.user); // BigInt 의심 필드 확인
@@ -38,13 +39,14 @@ router.get(
 
     if(req.user.signupRequired){
       token = signJwt({
-        provider: req.user.provider.toString(),
-        oauth_id : req.user.oauth_id.toString(),
+        provider: req.user.provider,
+        oauth_id : req.user.oauth_id,
       });
       return res.redirect(`/signup?token=${token}`);
     }
     token = signJwt({
-      userId: req.user.id?.toString(),
+      accountId: req.user.accountId,
+      role:req.user.role,
     });
 
     res.redirect(`/?token=${token}`)
@@ -60,6 +62,7 @@ router.get(
   passport.authenticate("kakao", {
     failureRedirect: "/oauth2/login/kakao",
     failureMessage: true,
+    session:false,
   }),
   (req, res) => {
     console.log("req.user", req.user); // BigInt 의심 필드 확인
@@ -68,13 +71,14 @@ router.get(
 
     if(req.user.signupRequired){
       token = signJwt({
-        provider: req.user.provider.toString(),
-        oauth_id : req.user.oauth_id.toString(),
+        provider: req.user.provider,
+        oauth_id : req.user.oauth_id,
       });
       return res.redirect(`/signup?token=${token}`);
     }
     token = signJwt({
-      userId: req.user.id?.toString(),
+      accountId: req.user.accountId,
+      role:req.user.role,
     });
 
     res.redirect(`/?token=${token}`)
@@ -90,6 +94,7 @@ router.get(
   passport.authenticate("naver", {
     failureRedirect: "/oauth2/login/naver",
     failureMessage: true,
+    session:false,
   }),
   (req, res) => {
     console.log("req.user", req.user); // BigInt 의심 필드 확인
@@ -105,7 +110,8 @@ router.get(
     }
 
     token = signJwt({
-      userId: req.user.id?.toString(),
+      accountId: req.user.accountId,
+      role:req.user.role,
     });
 
     res.redirect(`/?token=${token}`)
