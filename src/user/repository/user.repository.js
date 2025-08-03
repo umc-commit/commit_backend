@@ -1,4 +1,5 @@
 import { prisma } from "../../db.config.js"
+import { RequestStatus } from "@prisma/client";
 
 export const UserRepository = {
   /**
@@ -212,7 +213,7 @@ export const UserRepository = {
   // 사용자의 커미션 신청 횟수 조회 
   async countClientCommissionApplication(userId){
     return await prisma.request.count({
-      where:{userId, status:"PENDING"}
+      where:{userId, status:RequestStatus.PENDING}
     })
   },
 
@@ -222,6 +223,5 @@ export const UserRepository = {
       where:{userId}
     })
   }
-
 };
 

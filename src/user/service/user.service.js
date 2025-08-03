@@ -2,6 +2,7 @@ import { UserRepository } from "../repository/user.repository.js";
 import { OauthIdAlreadyExistError, MissingCategoryError, MissingRequiredAgreementError, UserRoleError, UserAlreadyFollowArtist, ArtistNotFound, NotFollowingArtist } from "../../common/errors/user.errors.js";
 import axios from "axios";
 import { signJwt } from "../../jwt.config.js";
+import { BadgeRepository } from "../repository/badge.repository.js";
 
 
 
@@ -288,5 +289,29 @@ export const UserService = {
             message:"사용자가 팔로우하는 작가 목록입니다.",
             artistList
         };
+    },
+
+    // 사용자가 작성한 리뷰 횟수 조회하기 
+    async CountUserReview(userId){
+        return await UserRepository.CountUserReview(userId);
+    },
+
+    // 사용자가 신청한 커미션 횟수 조회하기 
+    async CountUserCommissionRequest(userId){
+        return await UserRepository.countClientCommissionApplication(userId);
+    },
+
+    // 특정 progress에 도달했을 때 발급 가능한 뱃지 조회 
+    async FindBadgesByProgress(type, progress){
+        return await BadgeRepository.findEligibleBadgesByProgress(type, progress);
+    },
+
+    // 뱃지 발급 처리 로직 통합
+    async GrantBadgesByProgress(accountId, type, progress){
+        const eligibleBadges = await BadgeRepository.findEligibleBadgesByProgress(type, progress);
+        const badgeIds = eligibleBadges.map((badge)=> badge.id);
+        if(!badgeIds.length) return;
+
+        await BadgeRepository.createManyUserBadges(accountId, badgeIds);
     }
 }
