@@ -115,32 +115,55 @@ export const UserService = {
         let result;
 
         if(role === 'client') {
-            result = await UserRepository.findUserById(accountId);
+            result = await UserRepository.getMyProfile(accountId);
             console.log(result);
             const user = result.users[0];
+
+            console.log("userBadges 확인:", result.userBadges);
+
+
+            const badges = result.userBadges.map(userBadge => ({
+                id: userBadge.id,
+                earnedAt: userBadge.earnedAt,
+                badge: userBadge.badge
+            }));
+
+
             return {
                 message:"나의 프로필 조회에 성공하였습니다.",
                 user:{
                     userId: user.id,
                     nickname: user.nickname,
                     profileImage:user.profileImage,
-                    description: user.description
+                    description: user.description,
+                    badges
                 }
             }
         }
 
         if(role === 'artist') {
-            result = await UserRepository.findArtistById(accountId);
+            result = await UserRepository.getMyProfile(accountId);
             console.log(result);
             const artist = result.artists[0];
+
+            console.log("userBadges 확인:", result.userBadges);
+
+
+            const badges = result.userBadges.map(userBadge => ({
+                id: userBadge.id,
+                earnedAt: userBadge.earnedAt,
+                badge: userBadge.badge
+            }));
+
             return {
                 message:"나의 프로필 조회에 성공하였습니다.",
                 user:{
                     artistId: artist.id,
                     nickname: artist.nickname,
                     profileImage:artist.profileImage,
-                    description: artist.description
-                }
+                    description: artist.description,
+                    badges
+                },
             }
         }
     },

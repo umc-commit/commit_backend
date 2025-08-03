@@ -119,6 +119,16 @@ export const UserRepository = {
       select:{
         users:  { select: { id: true, nickname: true, description: true, profileImage: true } },
         artists:{ select: { id: true, nickname: true, description: true, profileImage: true } },
+        userBadges:{
+          select: {
+            id:true, earnedAt:true, 
+            badge:{
+              select:{
+                id:true, type:true, threshold:true, name:true, badgeImage:true
+              }
+            }
+          }
+        }
       }
     });
   },
