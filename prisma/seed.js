@@ -191,6 +191,113 @@ async function main() {
     },
   });
 
+  const badges = await prisma.badge.createMany({
+    data:[
+      {
+      name: "첫 커미션 완료!",
+      type: "comm_finish",
+      threshold: 1,
+      badgeImage: "https://example.com/badge_comm1.png",
+      },
+      {
+        name: "5회 커미션 완료!",
+        type: "comm_finish",
+        threshold: 5,
+        badgeImage: "https://example.com/badge_comm5.png",
+      },
+      {
+        name: "15회 커미션 완료!",
+        type: "comm_finish",
+        threshold: 15,
+        badgeImage: "https://example.com/badge_comm15.png",
+      },
+      {
+        name: "50회 커미션 완료!",
+        type: "comm_finish",
+        threshold: 50,
+        badgeImage: "https://example.com/badge_com50.png",
+      },
+      {
+      name: "첫 팔로우 완료!",
+      type: "follow",
+      threshold: 1,
+      badgeImage: "https://example.com/badge_follow1.png",
+      },
+      {
+        name: "팔로우 5회!",
+        type: "follow",
+        threshold: 5,
+        badgeImage: "https://example.com/badge_follow5.png",
+      },
+      {
+        name: "팔로우 15회!",
+        type: "follow",
+        threshold: 15,
+        badgeImage: "https://example.com/badge_follow15.png",
+      },
+      {
+        name: "팔로우 50회!",
+        type: "follow",
+        threshold: 50,
+        badgeImage: "https://example.com/badge_follow50.png",
+      },
+      {
+      name: "첫 후기 작성 완료!",
+      type: "review",
+      threshold: 1,
+      badgeImage: "https://example.com/badge_review1.png",
+      },
+      {
+        name: "5회 후기 작성!",
+        type: "review",
+        threshold: 5,
+        badgeImage: "https://example.com/badge_review5.png",
+      },
+      {
+        name: "15회 후기 작성!",
+        type: "review",
+        threshold: 15,
+        badgeImage: "https://example.com/badge_review15.png",
+      },
+      {
+        name: "50회 후기 작성!",
+        type: "review",
+        threshold: 50,
+        badgeImage: "https://example.com/badge_review50.png",
+      },
+      {
+      name: "첫 커미션 신청 완료!",
+      type: "comm_request",
+      threshold: 1,
+      badgeImage: "https://example.com/badge_request1.png",
+      },
+      {
+        name: "5회 커미션 신청 완료!",
+        type: "comm_request",
+        threshold: 5,
+        badgeImage: "https://example.com/badge_request5.png",
+      },
+      {
+        name: "15회 커미션 신청 완료!",
+        type: "comm_request",
+        threshold: 15,
+        badgeImage: "https://example.com/badge_request15.png",
+      },
+      {
+        name: "50회 커미션 신청 완료!",
+        type: "comm_request",
+        threshold: 50,
+        badgeImage: "https://example.com/badge_request50.png",
+      },
+      {
+        name: "가입 1주년!",
+        type: "signup_1year",
+        threshold: 50,
+        badgeImage: "https://example.com/badge_signup_1year.png",
+      },
+    ]
+  })
+
   console.log("✅ Seed completed successfully.");
 }
 
