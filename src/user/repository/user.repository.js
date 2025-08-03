@@ -207,5 +207,7 @@ export const UserRepository = {
         }
       }
     })
-  }
+  },
+
 };
+

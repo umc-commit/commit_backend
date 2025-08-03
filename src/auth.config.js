@@ -34,11 +34,11 @@ const googleVerify = async (profile) => {
   console.log("user -> ", user);
 
   if (user && user.users.length>0) {
-    return { id: user.users[0].id, nickname: user.users[0].nickname, accountId : user.id.toString(), role:'client', provider: user.provider, oauthId:user.oauthId };
+    return { id: user.users[0].id, nickname: user.users[0].nickname, accountId : user.id.toString(), userId: user.users[0].id.toString(), role:'client', provider: user.provider, oauthId:user.oauthId };
   }
 
   if(user && user.artists.length>0){
-    return{id:user.artists[0].id, nickname:user.artists[0].nickname, accountId:user.id.toString(), role:'artist', provider:user.provider, oauthId: user.oauthId};
+    return{id:user.artists[0].id, nickname:user.artists[0].nickname, accountId:user.id.toString(), artistId: user.artists[0].id.toString(), role:'artist', provider:user.provider, oauthId: user.oauthId};
   }
 
   // 사용자가 없으면 회원가입 페이지로 이동하도록 응답
@@ -77,11 +77,11 @@ const kakaoVerify = async (profile) => {
   console.log(user);
 
   if (user && user.users.length>0) {
-    return { id: user.users[0].id, nickname: user.users[0].nickname, accountId : user.id.toString(), role:'client', provider: user.provider, oauthId:user.oauthId };
+    return { id: user.users[0].id, nickname: user.users[0].nickname, accountId : user.id.toString(), userId: user.users[0].id.toString(), role:'client', provider: user.provider, oauthId:user.oauthId };
   }
 
   if(user && user.artists.length>0){
-    return{id:user.artists[0].id, nickname:user.artists[0].nickname, accountId:user.id.toString(), role:'artist', provider: user.provider, oauthId:user.oauthId};
+    return{id:user.artists[0].id, nickname:user.artists[0].nickname, accountId:user.id.toString(), artistId: user.artists[0].id.toString(), role:'artist', provider:user.provider, oauthId: user.oauthId};
   }
 
   // 사용자가 없으면 회원가입 페이지로 이동하도록 응답
@@ -119,11 +119,11 @@ const naverVerify = async (profile) => {
   console.log(user);
 
   if (user && user.users.length>0) {
-    return { id: user.users[0].id, nickname: user.users[0].nickname, accountId : user.id.toString(), role:'client', provider: user.provider, oauthId:user.oauthId };
+    return { id: user.users[0].id, nickname: user.users[0].nickname, accountId : user.id.toString(), userId: user.users[0].id.toString(), role:'client', provider: user.provider, oauthId:user.oauthId };
   }
 
   if(user && user.artists.length>0){
-    return{id:user.artists[0].id, nickname:user.artists[0].nickname, accountId:user.id.toString(), role:'artist', provider: user.provider, oauthId:user.oauthId};
+    return{id:user.artists[0].id, nickname:user.artists[0].nickname, accountId:user.id.toString(), artistId: user.artists[0].id.toString(), role:'artist', provider:user.provider, oauthId: user.oauthId};
   }
 
   // 사용자가 없으면 회원가입 페이지로 이동하도록 응답
