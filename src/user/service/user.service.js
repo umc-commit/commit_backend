@@ -313,5 +313,10 @@ export const UserService = {
         if(!badgeIds.length) return;
 
         await BadgeRepository.createManyUserBadges(accountId, badgeIds);
+    },
+
+    // 사용자의 뱃지 조회하기 
+    async ViewUserBadge(accountId){
+        return await BadgeRepository.ViewUserBadges(accountId);
     }
 }

@@ -29,6 +29,20 @@ export const BadgeRepository = {
         data, 
         skipDuplicates:true, // 같은 뱃지 중복 발급 방지
     })
+  },
+  // 사용자의 뱃지 조회하기 
+  async ViewUserBadges(accountId){
+    return await prisma.userBadge.findMany({
+        where:{
+            accountId,
+        },
+        include:{
+            badge:true,
+        },
+        orderBy:{
+            earnedAt:'desc',
+        }
+    });
   }
 
 };
