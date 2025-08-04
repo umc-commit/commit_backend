@@ -1,5 +1,7 @@
 import { prisma } from "../../db.config.js"
-import { RequestStatus } from "@prisma/client";
+import * as PrismaClient from "@prisma/client";
+
+const { RequestStatus } = PrismaClient;
 
 export const UserRepository = {
   /**
