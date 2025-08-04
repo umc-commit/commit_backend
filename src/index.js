@@ -113,6 +113,10 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
+app.get('/health', (_, res) => {
+  res.send('ok');
+});
+
 /**
  * 전역 오류를 처리하기 위한 미들웨어
  */

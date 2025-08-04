@@ -11,64 +11,77 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
           echo "$EC2_SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
-
-          cat >>~/.ssh/config <<END
+          cat >> ~/.ssh/config <<EOF
           Host ec2
             HostName $EC2_HOST
             User ubuntu
             IdentityFile ~/.ssh/id_rsa
             StrictHostKeyChecking no
-          END
+          EOF
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
 
-      - name: Copy code to EC2 (using rsync)
-        run: |
-          ssh ec2 "sudo mkdir -p /opt/app && sudo chown ubuntu:ubuntu /opt/app"
-          rsync -avz --delete -e "ssh" ./ ec2:/opt/app
-
-      - name: Create .env file
-        run: |
-          ssh ec2 "echo '$ENV_FILE' > /opt/app/.env"
+      - name: Create .env on EC2
+        run: ssh ec2 "echo '$ENV_FILE' > /opt/app/.env"
         env:
           ENV_FILE: ${{ secrets.ENV_FILE }}
-      
-      - name: Restore Firebase service account key
+
+      - name: Deploy with Blue-Green
         run: |
-          ssh ec2 "mkdir -p /opt/app/config && echo $FIREBASE_SERVICE_ACCOUNT_BASE64 | base64 -d > /opt/app/config/service-account-key.json"
-        env:
-          FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
+          ssh ec2 <<'EOF'
+          echo "📦 Pulling latest image..."
+          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest
 
-      - name: Install dependencies
-        run: ssh ec2 "cd /opt/app && npm install"
+          echo "🔍 Checking current active environment..."
+          CURRENT=$(readlink -f /opt/app/nginx/default.conf)
+          if echo "$CURRENT" | grep -q "default-blue.conf"; then
+            TARGET_COLOR=green
+            TARGET_PORT=3001
+            TARGET_CONF=/opt/app/nginx/default-green.conf
+          else
+            TARGET_COLOR=blue
+            TARGET_PORT=3000
+            TARGET_CONF=/opt/app/nginx/default-blue.conf
+          fi
 
-      - name: Create systemd service
-        run: |
-          ssh ec2 "echo '[Unit]
-          Description=Node.js App
-          After=network.target
+          echo "🚀 Deploying to $TARGET_COLOR container on port $TARGET_PORT..."
+          docker run -d \
+            --name node-app-$TARGET_COLOR \
+            --env-file /opt/app/.env \
+            -p $TARGET_PORT:3000 \
+            --network=commit-networks \
+            ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest
 
-          [Service]
-          Environment=NODE_ENV=production
-          User=ubuntu
-          ExecStart=/usr/bin/npm run start --prefix /opt/app/
-          Restart=always
+          echo "⏳ Health check for $TARGET_COLOR..."
+          for i in {1..10}; do
+            sleep 2
+            if curl -s http://localhost:$TARGET_PORT/health | grep "ok" > /dev/null; then
+              echo "✅ Health check passed. Switching traffic..."
 
-          [Install]
-          WantedBy=multi-user.target' | sudo tee /etc/systemd/system/app.service"
+              # Nginx 심볼릭 링크 교체
+              ln -sf $TARGET_CONF /opt/app/nginx/default.conf
+              docker exec nginx-proxy nginx -s reload
 
-      - name: Enable & Restart systemd service
-        run: |
-          ssh ec2 "sudo systemctl daemon-reload"
-          ssh ec2 "sudo systemctl enable app"
-          ssh ec2 "sudo systemctl restart app"
+              # 이전 컨테이너 제거
+              if [ "$TARGET_COLOR" = "blue" ]; then
+                docker rm -f node-app-green || true
+              else
+                docker rm -f node-app-blue || true
+              fi
+
+              docker rename node-app-$TARGET_COLOR node-app
+              exit 0
+            fi
+          done
+
+          echo "❌ Health check failed. Rolling back..."
+          docker rm -f node-app-$TARGET_COLOR || true
+          exit 1
+          EOF
