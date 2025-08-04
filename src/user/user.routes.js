@@ -42,14 +42,14 @@ router.get(
         provider: req.user.provider,
         oauth_id : req.user.oauth_id,
       });
-      return res.redirect(`commit://signup?token=${token}`);
+      return res.redirect(`commit://oauth2/callback/google?token=${token}&signupRequired=true`);
     }
     token = signJwt({
       accountId: req.user.accountId,
       role:req.user.role,
     });
 
-    res.redirect(`commit://oauth2/callback/google?token=${token}`);
+    res.redirect(`commit://oauth2/callback/google?token=${token}&signupRequired=false`);
   }
 );
 
