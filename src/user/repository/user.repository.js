@@ -1,4 +1,5 @@
 import { prisma } from "../../db.config.js"
+import { RequestStatus } from "@prisma/client";
 
 export const UserRepository = {
   /**
@@ -118,6 +119,16 @@ export const UserRepository = {
       select:{
         users:  { select: { id: true, nickname: true, description: true, profileImage: true } },
         artists:{ select: { id: true, nickname: true, description: true, profileImage: true } },
+        userBadges:{
+          select: {
+            id:true, earnedAt:true, 
+            badge:{
+              select:{
+                id:true, type:true, threshold:true, name:true, badgeImage:true
+              }
+            }
+          }
+        }
       }
     });
   },
@@ -207,5 +218,92 @@ export const UserRepository = {
         }
       }
     })
-  }
+  },
+
+  // 사용자의 커미션 신청 횟수 조회 
+  async countClientCommissionApplication(userId){
+    return await prisma.request.count({
+      where:{userId, status:RequestStatus.PENDING}
+    })
+  },
+
+  // 사용자의 리뷰작성 횟수 조회 
+  async countClientReview(userId) {
+    return await prisma.review.count({
+      where:{userId}
+    })
+  },
+  // 작가 프로필 조회하기 
+  async AccessArtistProfile(artistId) {
+    return await prisma.artist.findUnique({
+      where:{
+        id: artistId
+      },
+      select:{
+        nickname: true,
+        description: true,
+        profileImage: true,
+        slot:true
+      }
+    });
+  },
+
+  // 작가에게 달린 리뷰 조회하기 
+  async ArtistReviews(artistId) {
+    return await prisma.review.findMany({
+      where:{
+        request:{
+          commission:{
+            artistId:artistId
+          }
+        }
+      },
+      orderBy:{createdAt:'desc'},
+      take:4,
+      select:{
+        id:true, 
+        rate:true,
+        content:true,
+        createdAt:true,
+        user:{
+          select:{
+            nickname:true,
+          }
+        },
+        request:{
+          select:{
+            inProgressAt:true,
+            completedAt:true,
+            commission:{
+              select:{
+                title:true
+              }
+            }
+          }
+        }
+      }
+    })
+  },
+  // 작가가 등록한 커미션 목록 불러오기
+  async FetchArtistCommissions(artistId) {
+      return await prisma.commission.findMany({
+          where: { artistId: artistId },
+          select: {
+              id: true,
+              title: true,
+              summary: true,
+              minPrice: true,
+              category: {
+                  select: { name: true }
+              },
+              commissionTags: {
+                  select: {
+                      tag: { select: { name: true } }
+                  }
+              }
+          }
+      });
+  },
+
 };
+

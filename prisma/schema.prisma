@@ -24,6 +24,7 @@ model Account {
   userAgreements UserAgreement[]
   userCategories UserCategory[]
   follows          Follow[]
+  userBadges UserBadge[]
 
   @@unique([provider, oauthId])
   @@map("accounts")
@@ -348,10 +349,29 @@ model UserAgreement {
 }
 
 model Badge {
-  id   BigInt @id @default(autoincrement())
-  name String @db.VarChar(100)
+  id         BigInt @id @default(autoincrement())
+  type       String @db.VarChar(100)
+  threshold  Int 
+  name       String @db.VarChar(100) 
+  badgeImage String?  @map("badge_image") @db.VarChar(255)
 
+  userBadges UserBadge[]
+
+  @@unique([type, threshold])
   @@map("badges")
+}
+
+model UserBadge {
+  id         BigInt @id @default(autoincrement())
+  accountId  BigInt @map("account_id")
+  badgeId    BigInt @map("badge_id")
+  earnedAt   DateTime @default(now()) @map("earned_at")
+
+  account   Account @relation(fields: [accountId], references: [id])
+  badge  Badge  @relation(fields:[badgeId], references:[id])
+
+  @@unique([accountId, badgeId])
+  @@map("user_badges")
 }
 
 model Session {

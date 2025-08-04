@@ -2,6 +2,7 @@ import { UserRepository } from "../repository/user.repository.js";
 import { OauthIdAlreadyExistError, MissingCategoryError, MissingRequiredAgreementError, UserRoleError, UserAlreadyFollowArtist, ArtistNotFound, NotFollowingArtist } from "../../common/errors/user.errors.js";
 import axios from "axios";
 import { signJwt } from "../../jwt.config.js";
+import { BadgeRepository } from "../repository/badge.repository.js";
 
 
 
@@ -114,32 +115,55 @@ export const UserService = {
         let result;
 
         if(role === 'client') {
-            result = await UserRepository.findUserById(accountId);
+            result = await UserRepository.getMyProfile(accountId);
             console.log(result);
             const user = result.users[0];
+
+            console.log("userBadges 확인:", result.userBadges);
+
+
+            const badges = result.userBadges.map(userBadge => ({
+                id: userBadge.id,
+                earnedAt: userBadge.earnedAt,
+                badge: userBadge.badge
+            }));
+
+
             return {
                 message:"나의 프로필 조회에 성공하였습니다.",
                 user:{
                     userId: user.id,
                     nickname: user.nickname,
                     profileImage:user.profileImage,
-                    description: user.description
+                    description: user.description,
+                    badges
                 }
             }
         }
 
         if(role === 'artist') {
-            result = await UserRepository.findArtistById(accountId);
+            result = await UserRepository.getMyProfile(accountId);
             console.log(result);
             const artist = result.artists[0];
+
+            console.log("userBadges 확인:", result.userBadges);
+
+
+            const badges = result.userBadges.map(userBadge => ({
+                id: userBadge.id,
+                earnedAt: userBadge.earnedAt,
+                badge: userBadge.badge
+            }));
+
             return {
                 message:"나의 프로필 조회에 성공하였습니다.",
                 user:{
                     artistId: artist.id,
                     nickname: artist.nickname,
                     profileImage:artist.profileImage,
-                    description: artist.description
-                }
+                    description: artist.description,
+                    badges
+                },
             }
         }
     },
@@ -288,5 +312,93 @@ export const UserService = {
             message:"사용자가 팔로우하는 작가 목록입니다.",
             artistList
         };
+    },
+
+    // 사용자가 작성한 리뷰 횟수 조회하기 
+    async CountUserReview(userId){
+        return await UserRepository.CountUserReview(userId);
+    },
+
+    // 사용자가 신청한 커미션 횟수 조회하기 
+    async CountUserCommissionRequest(userId){
+        return await UserRepository.countClientCommissionApplication(userId);
+    },
+
+    // 특정 progress에 도달했을 때 발급 가능한 뱃지 조회 
+    async FindBadgesByProgress(type, progress){
+        return await BadgeRepository.findEligibleBadgesByProgress(type, progress);
+    },
+
+    // 뱃지 발급 처리 로직 통합
+    async GrantBadgesByProgress(accountId, type, progress){
+        const eligibleBadges = await BadgeRepository.findEligibleBadgesByProgress(type, progress);
+        const badgeIds = eligibleBadges.map((badge)=> badge.id);
+        if(!badgeIds.length) return;
+
+        await BadgeRepository.createManyUserBadges(accountId, badgeIds);
+    },
+
+    // 사용자의 뱃지 조회하기 
+    async ViewUserBadge(accountId){
+        return await BadgeRepository.ViewUserBadges(accountId);
+    },
+    // 작가 프로필 조회하기 
+    async AccessArtistProfile(artistId, accountId) {
+        const profile = await UserRepository.AccessArtistProfile(artistId);
+        const rawReviews = await UserRepository.ArtistReviews(artistId);
+
+        const reviews = rawReviews.map((r) => {
+        const start = r.request.inProgressAt ? new Date(r.request.inProgressAt) : null;
+        const end = r.request.completedAt ? new Date(r.request.completedAt) : null;
+
+        let workingTime = null;
+        if (start && end) {
+            const diffMs = end - start;
+            const hours = Math.floor(diffMs / (1000 * 60 * 60));
+            workingTime = hours < 24 ? `${hours}시간` : `${Math.floor(hours / 24)}일`;
+        }
+        
+        return {
+            id: r.id,
+            rate: r.rate,
+            content: r.content,
+            createdAt: r.createdAt,
+            commissionTitle: r.request.commission.title,
+            workingTime: workingTime,
+            writer: {
+                nickname: r.user.nickname
+            }
+        }});
+
+        // 작가가 등록한 커미션 목록
+        const commissions = await UserRepository.FetchArtistCommissions(artistId);
+        const commissionList = commissions.map(c=> ({
+            id: c.id,
+            title: c.title,
+            summary: c.summary,
+            minPrice: c.minPrice,
+            category: c.category.name,
+            tags: c.commissionTags.map(t => t.tag.name),
+            thumbnail: c.thumbnailImage // 컬럼 존재 시
+        }));
+
+
+        const result = await UserRepository.getMyProfile(accountId);
+
+        const badges = result.userBadges.map(userBadge => ({
+            id: userBadge.id,
+            earnedAt: userBadge.earnedAt,
+            badge: userBadge.badge
+        }));
+
+
+        return {
+            ...profile,
+            reviews,
+            commissions:commissionList,
+            badges
+        }
+
     }
+    
 }

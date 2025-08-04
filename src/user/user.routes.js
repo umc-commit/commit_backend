@@ -1,5 +1,5 @@
 import express from "express";
-import { addUser, userLogin, getUserProfile, UpdateMyprofile, AccessUserCategories, CheckUserNickname, FollowArtist, CancelArtistFollow, LookUserFollow } from "./controller/user.controller.js";
+import { addUser, userLogin, getUserProfile, UpdateMyprofile, AccessUserCategories, CheckUserNickname, FollowArtist, CancelArtistFollow, LookUserFollow, LookUserBadge } from "./controller/user.controller.js";
 import { signJwt } from "../jwt.config.js";
 import passport from "passport";
 import { authenticate } from "../middlewares/auth.middleware.js";
@@ -153,6 +153,7 @@ router.get(
 // 사용자 프로필 조회 
 router.get("/me", authenticate, getUserProfile);
 
+
 /**
  * 사용자별 리뷰 목록 조회 API
  * GET /api/users/:userId/reviews
@@ -180,6 +181,9 @@ router.delete("/follows/:artistId", authenticate, CancelArtistFollow);
 
 // 사용자가 팔로우하는 작가 조회하기 
 router.get("/follows", authenticate, LookUserFollow);
+
+// 사용자의 뱃지 조회하기 
+router.get("/badges", authenticate, LookUserBadge);
 
 
 export default router;

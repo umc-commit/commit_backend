@@ -159,3 +159,34 @@ export const LookUserFollow = async(req, res, next) => {
         next(err);
     }
 }
+
+// 사용자의 뱃지 조회하기 
+export const LookUserBadge = async(req, res, next) => {
+    try{
+        console.log("🎖️Decoded JWT from req.user:", req.user);
+
+        const accountId = req.user.accountId.toString();
+        console.log("사용자의 뱃지 조회 accountId -> ", accountId);
+
+        const result = await UserService.ViewUserBadge(accountId);
+
+        res.status(StatusCodes.OK).success(result);
+    }catch(err) {
+        next(err);
+    }
+}
+
+// 작가 프로필 조회하기 
+export const AccessArtistProfile = async(req, res, next) => {
+    try{
+        const artistId = req.params.artistId;
+        const accountId = req.user.accountId;
+
+        const result = await UserService.AccessArtistProfile(artistId, accountId);
+
+        res.status(StatusCodes.OK).success(result);
+    } catch(err) {
+        next(err);
+    }
+}
+

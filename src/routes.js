@@ -10,6 +10,7 @@ import paymentRouter from "./payment/payment.routes.js"
 import pointRouter from "./point/point.routes.js"
 import requestRouter from "./request/request.routes.js"
 import homeRouter from "./home/home.routes.js"
+import artistRouter from "./user/artist.routes.js"
 import tokenRouter from "./token.routes.js"
 
 const router = express.Router();
@@ -19,6 +20,7 @@ router.use("/", bookmarkRouter);
 router.use("/search", searchRouter)
 router.use("/commissions", commissionRouter);
 router.use("/users", userRouter);
+router.use("/artists", artistRouter);
 router.use("/reviews", reviewRouter);
 router.use("/notifications", notificationRouter);
 router.use("/payments", paymentRouter);
