@@ -69,7 +69,7 @@ jobs:
               echo "✅ Health check passed. Switching traffic..."
 
               # Nginx 심볼릭 링크 교체
-              ln -sf $TARGET_CONF /opt/app/nginx/default.conf
+              cp $TARGET_CONF /opt/app/nginx/default.conf
               docker exec nginx-proxy nginx -s reload
 
               # 이전 컨테이너 제거
