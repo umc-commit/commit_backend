@@ -79,7 +79,6 @@ jobs:
                 docker rm -f node-app-blue || true
               fi
 
-              docker rename node-app-$TARGET_COLOR node-app
               exit 0
             fi
           done
