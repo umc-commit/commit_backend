@@ -52,11 +52,14 @@ jobs:
           fi
 
           echo "🚀 Deploying to $TARGET_COLOR container on port $TARGET_PORT..."
+          docker rm -f node-app-$TARGET_COLOR 2>/dev/null || true
+
           docker run -d \
             --name node-app-$TARGET_COLOR \
             --env-file /opt/app/.env \
             -p $TARGET_PORT:3000 \
             --network=commit-networks \
+            -v /opt/app/config/service-account-key.json:/app/config/service-account-key.json:ro \
             ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest
 
           echo "⏳ Health check for $TARGET_COLOR..."
