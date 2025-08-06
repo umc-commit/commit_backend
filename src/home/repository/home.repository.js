@@ -6,10 +6,18 @@ export const HomeRepository = {
    * 사용자 선호 카테고리 조회
    */
   async findUserCategories(userId) {
+    // user.id로 account_id를 먼저 조회
+    const user = await prisma.user.findUnique({
+      where: { id: BigInt(userId) },
+      select: { accountId: true }
+    });
+
+    if (!user) return [];
+
     const result = await prisma.userCategory.findMany({
-      where: { userId: BigInt(userId) },
+      where: { accountId: BigInt(user.accountId) },
       select: { categoryId: true }
-  });
+    });
     return result.map(item => item.categoryId);
   },
 
@@ -17,7 +25,6 @@ export const HomeRepository = {
    * 섹션1: 추천 커미션
    */
   async findRecommendedCommissions(userId, categoryIds, limit) {
-
     const commissions = await prisma.commission.findMany({
       where: {
         id: {
@@ -45,7 +52,7 @@ export const HomeRepository = {
           }
         },
         bookmarks: {
-          where: { userId: BigInt(userId) }
+          where: { userId: BigInt(userId) } 
         }
       }
     });
@@ -85,7 +92,7 @@ export const HomeRepository = {
           }
         },
         bookmarks: {
-          where: { userId: BigInt(userId) }
+          where: { userId: BigInt(userId) } 
         }
       }
     });
@@ -98,7 +105,6 @@ export const HomeRepository = {
    * 섹션3: 신청폭주
    */
   async findPopularCommissions(userId, categoryIds, limit) {
-
     const commissions = await prisma.commission.findMany({
       where: {
         id: {
@@ -139,7 +145,6 @@ export const HomeRepository = {
    * 섹션4: 마감임박
    */
   async findDeadlineCommissions(userId, categoryIds, limit) {
-
     const commissions = await prisma.commission.findMany({
       where: {
         categoryId: { in: categoryIds.map(id => BigInt(id)) }
@@ -267,12 +272,20 @@ export const HomeRepository = {
    * 사용자가 팔로우한 작가들의 커미션 목록 조회
    */
   async findFollowingCommissions(userId, offset, limit) {
+    // user.id로 account_id를 먼저 조회
+    const user = await prisma.user.findUnique({
+      where: { id: BigInt(userId) },
+      select: { accountId: true }
+    });
+
+    if (!user) return [];
+
     return await prisma.commission.findMany({
       where: {
         artist: {
           follows: {
             some: {
-              userId: BigInt(userId)
+              accountId: BigInt(user.accountId)
             }
           }
         }
@@ -306,12 +319,20 @@ export const HomeRepository = {
    * 사용자가 팔로우한 작가들의 커미션 총 개수 조회
    */
   async countFollowingCommissions(userId) {
+    // user.id로 account_id를 먼저 조회
+    const user = await prisma.user.findUnique({
+      where: { id: BigInt(userId) },
+      select: { accountId: true }
+    });
+
+    if (!user) return 0;
+
     return await prisma.commission.count({
       where: {
         artist: {
           follows: {
             some: {
-              userId: BigInt(userId)
+              accountId: BigInt(user.accountId)
             }
           }
         }
