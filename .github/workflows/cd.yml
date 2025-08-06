@@ -72,9 +72,9 @@ jobs:
               ln -sf $TARGET_CONF /opt/app/nginx/default.conf
               echo "🔁 Linked $TARGET_CONF to default.conf"
 
-              # 컨테이너 내부로 설정 파일 복사
-              docker cp /opt/app/nginx/default.conf nginx-proxy:/etc/nginx/conf.d/default.conf
-              echo "📄 Copied default.conf to nginx container"
+              # 현재 심볼릭 링크가 실제로 가리키는 파일 확인
+              ACTUAL_LINK=$(readlink -f /opt/app/nginx/default.conf)
+              echo "📌 Current nginx config link points to: $ACTUAL_LINK"
 
               # Nginx reload
               docker exec nginx-proxy nginx -s reload
@@ -88,6 +88,8 @@ jobs:
               fi
 
               exit 0
+            else
+              echo "⚠️ Health check attempt $i failed."
             fi
           done
 
