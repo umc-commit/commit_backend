@@ -181,6 +181,7 @@ export const AccessArtistProfile = async(req, res, next) => {
     try{
         const artistId = req.params.artistId;
         const accountId = req.user.accountId;
+        const userId = req.user.userId;
 
         const result = await UserService.AccessArtistProfile(artistId, accountId);
 
