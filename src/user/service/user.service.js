@@ -343,7 +343,7 @@ export const UserService = {
         return await BadgeRepository.ViewUserBadges(accountId);
     },
     // 작가 프로필 조회하기 
-    async AccessArtistProfile(artistId, accountId) {
+    async AccessArtistProfile(artistId, accountId, userId) {
         const profile = await UserRepository.AccessArtistProfile(artistId);
         const rawReviews = await UserRepository.ArtistReviews(artistId);
 
@@ -371,7 +371,7 @@ export const UserService = {
         }});
 
         // 작가가 등록한 커미션 목록
-        const commissions = await UserRepository.FetchArtistCommissions(artistId);
+        const commissions = await UserRepository.FetchArtistCommissions(artistId, userId);
         const commissionList = commissions.map(c=> ({
             id: c.id,
             title: c.title,
@@ -379,7 +379,8 @@ export const UserService = {
             minPrice: c.minPrice,
             category: c.category.name,
             tags: c.commissionTags.map(t => t.tag.name),
-            thumbnail: c.thumbnailImage // 컬럼 존재 시
+            thumbnail: c.thumbnailImage, // 컬럼 존재 시
+            bookmark: c.bookmarks.length > 0
         }));
 
 

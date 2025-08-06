@@ -287,7 +287,7 @@ export const UserRepository = {
     })
   },
   // 작가가 등록한 커미션 목록 불러오기
-  async FetchArtistCommissions(artistId) {
+  async FetchArtistCommissions(artistId, userId) {
       return await prisma.commission.findMany({
           where: { artistId: artistId },
           select: {
@@ -302,6 +302,10 @@ export const UserRepository = {
                   select: {
                       tag: { select: { name: true } }
                   }
+              },
+              bookmarks:{
+                where:{userId}, 
+                select:{id:true}
               }
           }
       });
