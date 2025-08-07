@@ -44,10 +44,22 @@ router.get(
       });
       return res.redirect(`commit://oauth2/callback/google?token=${token}&signupRequired=true`);
     }
-    token = signJwt({
-      accountId: req.user.accountId,
-      role:req.user.role,
-    });
+
+    if(req.user.role === 'artist') {
+      token = signJwt({
+        accountId: req.user.accountId,
+        artistId:req.user.artistId,
+        userId: req.user.artistId,
+        role:req.user.role,
+      });
+    }
+    if(req.user.role === 'client'){
+      token = signJwt({
+        accountId: req.user.accountId,
+        userId:req.user.userId,
+        role:req.user.role,
+      });
+    }
 
     res.redirect(`commit://oauth2/callback/google?token=${token}&signupRequired=false`);
   }
