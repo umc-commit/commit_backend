@@ -72,37 +72,45 @@ export class SearchRepository {
       where.deadline = { lte: deadlineValue };
     }
 
-    // 팔로잉 필터 - AND 조건이 있으면 배열에 추가, 없으면 바로 설정
+    // 팔로잉 필터 - userId를 accountId로 변환
     if (followingOnly && userId) {
-      const followCondition = {
-        artist: {
-          follows: {
-            some: {
-              userId: userId
-            }
-          }
-        }
-      };
+      // user.id로 account_id 조회
+      const user = await prisma.user.findUnique({
+        where: { id: BigInt(userId) },
+        select: { accountId: true }
+      });
 
-      if (where.AND) {
-        // 태그 검색 + 팔로잉 필터
-        where.AND.push(followCondition);
-      } else if (where.artist) {
-        // 작가 검색 + 팔로잉 필터
-        where.artist.follows = {
-          some: {
-            userId: userId
-          }
-        };
-      } else {
-        // 팔로잉 필터만
-        where.artist = {
-          follows: {
-            some: {
-              userId: userId
+      if (user) {
+        const followCondition = {
+          artist: {
+            follows: {
+              some: {
+                accountId: BigInt(user.accountId)
+              }
             }
           }
         };
+
+        if (where.AND) {
+          // 태그 검색 + 팔로잉 필터
+          where.AND.push(followCondition);
+        } else if (where.artist) {
+          // 작가 검색 + 팔로잉 필터
+          where.artist.follows = {
+            some: {
+              accountId: BigInt(user.accountId)
+            }
+          };
+        } else {
+          // 팔로잉 필터만
+          where.artist = {
+            follows: {
+              some: {
+                accountId: BigInt(user.accountId)
+              }
+            }
+          };
+        }
       }
     }
 
@@ -121,6 +129,16 @@ export class SearchRepository {
         break;
     }
 
+    // userId를 accountId로 변환 (팔로우 상태 확인용)
+    let userAccountId = null;
+    if (userId) {
+      const user = await prisma.user.findUnique({
+        where: { id: BigInt(userId) },
+        select: { accountId: true }
+      });
+      userAccountId = user?.accountId;
+    }
+
     // 데이터 조회
     const [commissions, totalCount] = await Promise.all([
       prisma.commission.findMany({
@@ -137,9 +155,9 @@ export class SearchRepository {
               id: true,
               nickname: true,
               profileImage: true,
-              ...(userId && {
+              ...(userAccountId && {
                 follows: {
-                  where: { userId },
+                  where: { accountId: BigInt(userAccountId) },
                   select: { id: true }
                 }
               })
@@ -174,7 +192,7 @@ export class SearchRepository {
 
     const bookmarks = await prisma.bookmark.findMany({
       where: {
-        userId: userId,
+        userId: BigInt(userId),
         commissionId: { in: commissionIds }
       },
       select: { commissionId: true }
@@ -192,7 +210,7 @@ export class SearchRepository {
    */
   static async categoryExists(categoryId) {
     const category = await prisma.category.findUnique({
-      where: { id: categoryId }
+      where: { id: BigInt(categoryId) }
     });
     return !!category;
   }
@@ -235,7 +253,7 @@ export class SearchRepository {
     // 동일한 검색어가 이미 있으면 삭제 후 새로 추가 (최신 순 유지)
     await prisma.searchHistory.deleteMany({
       where: {
-        userId: userId,
+        userId: BigInt(userId),
         keyword: keyword
       }
     });
@@ -243,14 +261,14 @@ export class SearchRepository {
     // 새 검색어 저장
     await prisma.searchHistory.create({
       data: {
-        userId: userId,
+        userId: BigInt(userId),
         keyword: keyword
       }
     });
 
     // 최대 10개까지만 유지 (오래된 검색어 삭제)
     const searchHistories = await prisma.searchHistory.findMany({
-      where: { userId: userId },
+      where: { userId: BigInt(userId) },
       orderBy: { createdAt: 'desc' },
       skip: 10 // 최신 10개를 제외한 나머지
     });
@@ -270,7 +288,7 @@ export class SearchRepository {
    */
   static async getRecentSearches(userId, limit = 10) {
     return await prisma.searchHistory.findMany({
-      where: { userId: userId },
+      where: { userId: BigInt(userId) },
       orderBy: { createdAt: 'desc' },
       take: limit,
       select: {
@@ -287,7 +305,7 @@ export class SearchRepository {
   static async deleteRecentSearch(userId, keyword) {
     await prisma.searchHistory.deleteMany({
       where: {
-        userId: userId,
+        userId: BigInt(userId),
         keyword: keyword
       }
     });
@@ -298,7 +316,7 @@ export class SearchRepository {
    */
   static async deleteAllRecentSearches(userId) {
     await prisma.searchHistory.deleteMany({
-      where: { userId: userId }
+      where: { userId: BigInt(userId) }
     });
   }
 }
