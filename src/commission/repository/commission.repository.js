@@ -128,7 +128,7 @@ export const CommissionRepository = {
         userId: BigInt(userId),
         commissionId: BigInt(commissionId),
         status: {
-          notIn: ['CANCELED', 'REJECTED', 'COMPLETED']  // 취소/거절/완료된 것은 제외 (재신청 가능)
+          notIn: ['CANCELED', 'REJECTED', 'COMPLETED']
         }
       }
     });
@@ -149,6 +149,15 @@ export const CommissionRepository = {
    * 커미션 ID로 작가 정보 조회 (팔로우 여부 포함)
    */
   async findArtistInfoByCommissionId(commissionId, userId) {
+    let userAccountId = null;
+    if (userId) {
+      const user = await prisma.user.findUnique({
+        where: { id: BigInt(userId) },
+        select: { accountId: true }
+      });
+      userAccountId = user?.accountId;
+    }
+
     return await prisma.commission.findUnique({
       where: {
         id: BigInt(commissionId)
@@ -156,8 +165,8 @@ export const CommissionRepository = {
       include: {
         artist: {
           include: {
-            follows: userId ? {
-              where: { userId: BigInt(userId) }
+            follows: userAccountId ? {
+              where: { accountId: BigInt(userAccountId) }
             } : false
           }
         }
@@ -277,61 +286,61 @@ export const CommissionRepository = {
   },
 
   /**
-	 * 특정 월에 승인받은 사용자의 리퀘스트 조회 (커미션 리포트용)
-	 */
-	async findApprovedRequestsByUserAndMonth(userId, year, month) {
-		const startDate = new Date(year, month - 1, 1);
-		const endDate = new Date(year, month, 1);
+   * 특정 월에 승인받은 사용자의 리퀘스트 조회 (커미션 리포트용)
+   */
+  async findApprovedRequestsByUserAndMonth(userId, year, month) {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 1);
 
-		return await prisma.request.findMany({
-			where: {
-				userId: BigInt(userId),
-				approvedAt: {
-					gte: startDate,
-					lt: endDate
-				}
-			},
-			include: {
-				commission: {
-					select: {
-						id: true,
-						categoryId: true,
-						artist: {
-							select: {
-								id: true,
-								nickname: true,
-								profileImage: true
-							}
-						},
-						category: {
-							select: {
-								name: true
-							}
-						}
-					}
-				},
-				reviews: {
-					select: {
-						id: true
-					}
-				}
-			}
-		});
-	},
+    return await prisma.request.findMany({
+      where: {
+        userId: BigInt(userId),
+        approvedAt: {
+          gte: startDate,
+          lt: endDate
+        }
+      },
+      include: {
+        commission: {
+          select: {
+            id: true,
+            categoryId: true,
+            artist: {
+              select: {
+                id: true,
+                nickname: true,
+                profileImage: true
+              }
+            },
+            category: {
+              select: {
+                name: true
+              }
+            }
+          }
+        },
+        reviews: {
+          select: {
+            id: true
+          }
+        }
+      }
+    });
+  },
 
-	/**
-	 * 사용자 닉네임 조회
-	 */
-	async findUserNicknameById(userId) {
-		const user = await prisma.user.findUnique({
-			where: {
-				id: BigInt(userId)
-			},
-			select: {
-				nickname: true
-			}
-		});
-		
-		return user?.nickname || null;
-	}
+  /**
+   * 사용자 닉네임 조회
+   */
+  async findUserNicknameById(userId) {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: BigInt(userId)
+      },
+      select: {
+        nickname: true
+      }
+    });
+    
+    return user?.nickname || null;
+  }
 }
