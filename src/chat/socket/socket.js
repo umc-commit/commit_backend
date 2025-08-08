@@ -1,12 +1,9 @@
-import path from 'path';
-import fs from 'fs';
+import { uploadToS3 } from "../../s3.upload.js";
 import { Server } from "socket.io";
 import { stringifyWithBigInt } from "../../bigintJson.js";
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
-const BASE_URL = process.env.BASE_URL;
-const uploadDir = path.join(process.cwd(), 'uploads', 'messages');
 
 export default function setupSocket(server) {
   const io = new Server(server, {
@@ -30,7 +27,19 @@ export default function setupSocket(server) {
           return;
         }
 
-        // 1. ChatMessage 저장
+        let imageUrl = null;
+
+        // 이미지 처리
+        if (imageBase64) {
+          const buffer = Buffer.from(imageBase64, 'base64');
+          imageUrl = await uploadToS3({
+            buffer,
+            folderName: "messages",
+            extension: "png"
+          });
+        }
+
+        // 메시지 저장
         const savedMessage = await prisma.chatMessage.create({
           data: {
             chatroomId: BigInt(chatroomId),
@@ -39,22 +48,8 @@ export default function setupSocket(server) {
           },
         });
 
-        let imageUrl = null;
-
-        // 2. 이미지 처리
-        if (imageBase64) {
-          if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-          }
-
-          const buffer = Buffer.from(imageBase64, 'base64');
-          const filename = `message_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.png`;
-          const filepath = path.join(uploadDir, filename);
-          fs.writeFileSync(filepath, buffer);
-
-          imageUrl = `${BASE_URL}/uploads/messages/${filename}`;
-
-          // 3. Image 테이블에 저장
+        // 이미지 테이블 저장
+        if (imageUrl) {
           await prisma.image.create({
             data: {
               target: 'chat_messages',
@@ -64,7 +59,7 @@ export default function setupSocket(server) {
           });
         }
 
-        // 4. 클라이언트에 emit (BigInt 직렬화 대응)
+        // 클라이언트에 전송
         const safeMessage = JSON.parse(stringifyWithBigInt({
           id: savedMessage.id,
           chatroomId: savedMessage.chatroomId,
@@ -78,12 +73,15 @@ export default function setupSocket(server) {
 
       } catch (err) {
         console.error("Socket message error:", err);
-        socket.emit("error", { message: "메시지 처리 중 오류가 발생했습니다." });
+        socket.emit("error", {
+          message: "메시지 처리 중 오류가 발생했습니다.",
+          details: err.message,
+        });
       }
     });
 
-    socket.on("disconnect", () => {
-      console.log("User disconnected:", socket.id);
+    socket.on("disconnect", (reason) => {
+      console.log("User disconnected:", socket.id, reason);
     });
   });
 
