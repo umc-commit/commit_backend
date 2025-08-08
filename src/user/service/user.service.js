@@ -3,6 +3,7 @@ import { OauthIdAlreadyExistError, MissingCategoryError, MissingRequiredAgreemen
 import axios from "axios";
 import { signJwt } from "../../jwt.config.js";
 import { BadgeRepository } from "../repository/badge.repository.js";
+import { CommissionRepository } from "../../commission/repository/commission.repository.js";
 
 
 
@@ -372,16 +373,24 @@ export const UserService = {
 
         // 작가가 등록한 커미션 목록
         const commissions = await UserRepository.FetchArtistCommissions(artistId, userId);
-        const commissionList = commissions.map(c=> ({
+        const commissionList = await Promise.all(
+        commissions.map(async (c) => {
+            const images = await CommissionRepository.findImagesByCommissionId(c.id); // c.id == targetId
+
+            return {
             id: c.id,
             title: c.title,
             summary: c.summary,
             minPrice: c.minPrice,
             category: c.category.name,
             tags: c.commissionTags.map(t => t.tag.name),
-            thumbnail: c.thumbnailImage, // 컬럼 존재 시
-            bookmark: c.bookmarks.length > 0
-        }));
+            thumbnail: c.thumbnailImage,
+            bookmark: c.bookmarks.length > 0,
+            commission_img: images.length > 0 ? images[0].url : null // 첫 번째 이미지를 대표로
+            };
+        })
+);
+
 
 
         const result = await UserRepository.getMyProfile(accountId);
