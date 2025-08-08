@@ -346,6 +346,10 @@ export const UserService = {
     // 작가 프로필 조회하기 
     async AccessArtistProfile(artistId, accountId, userId) {
         const profile = await UserRepository.AccessArtistProfile(artistId);
+
+        if(!profile)
+            throw new ArtistNotFound();
+        
         const rawReviews = await UserRepository.ArtistReviews(artistId);
 
         const reviews = rawReviews.map((r) => {
