@@ -183,7 +183,7 @@ export const AccessArtistProfile = async(req, res, next) => {
         const accountId = req.user.accountId;
         const userId = req.user.userId;
 
-        const result = await UserService.AccessArtistProfile(artistId, accountId);
+        const result = await UserService.AccessArtistProfile(artistId, accountId, userId);
 
         res.status(StatusCodes.OK).success(result);
     } catch(err) {
