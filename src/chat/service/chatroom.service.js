@@ -1,10 +1,12 @@
 import { ChatroomRepository } from "../repository/chatroom.repository.js";
+import { ChatRepository } from "../repository/chat.repository.js";
 import { UserRepository } from "../../user/repository/user.repository.js";
 import { RequestRepository } from "../../request/repository/request.repository.js";
 import { UserNotFoundError } from "../../common/errors/user.errors.js";
 import { ArtistNotFoundError } from "../../common/errors/artist.errors.js";
 import { RequestNotFoundError } from "../../common/errors/request.errors.js";
 import { ChatroomNotFoundError } from "../../common/errors/chat.errors.js";
+import { ChatroomListResponseDto } from "../dto/chatroom.dto.js";
 
 export const ChatroomService = {
   async createChatroom(dto) {
@@ -52,8 +54,15 @@ export const ChatroomService = {
     }
 
     const chatrooms = await ChatroomRepository.findChatroomsByUser(dto.consumerId);
-    
-    return chatrooms;
+    console.log(dto.accountId)
+
+    const result = [];
+    for (const room of chatrooms) {
+      const unreadCount = await ChatRepository.countUnreadMessages(room.id, dto.accountId);
+      result.push(new ChatroomListResponseDto(room, unreadCount));
+    }
+
+    return result;
   },
 
   async softDeleteChatroomsByUser(dto) {

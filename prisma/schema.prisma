@@ -25,6 +25,7 @@ model Account {
   userCategories UserCategory[]
   follows          Follow[]
   userBadges UserBadge[]
+  chatMessageReads ChatMessageRead[]
 
   @@unique([provider, oauthId])
   @@map("accounts")
@@ -235,8 +236,21 @@ model ChatMessage {
 
   chatroom Chatroom @relation(fields: [chatroomId], references: [id])
   sender   User     @relation(fields: [senderId], references: [id])
+  chatMessageReads ChatMessageRead[]
 
   @@map("chat_messages")
+}
+
+model ChatMessageRead {
+  id         BigInt   @id @default(autoincrement())
+  messageId  BigInt
+  accountId  BigInt
+  read       Boolean  @default(false)
+
+  message    ChatMessage @relation(fields: [messageId], references: [id])
+  account    Account     @relation(fields: [accountId], references: [id])
+
+  @@map("chat_message_reads")
 }
 
 model Follow {
