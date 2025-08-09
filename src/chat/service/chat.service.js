@@ -25,4 +25,12 @@ export const ChatService = {
     const messages =  await ChatRepository.searchByKeyword(dto.keyword, chatroomIds);
     return messages;
   },
+
+  async markMessageAsRead(accountId, messageId) {
+    return await ChatRepository.markAsRead(accountId, messageId);
+  },
+
+  async getUnreadCount(chatroomId, accountId) {
+    return await ChatRepository.countUnreadMessages(chatroomId, accountId);
+  }
 };

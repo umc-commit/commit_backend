@@ -23,11 +23,35 @@ export const ChatroomRepository = {
   },
 
   async findChatroomsByUser(consumerId) {
-    return await prisma.chatroom.findMany({
-        where: {
-            consumerId: consumerId,
-            hiddenConsumer: false,
+    return prisma.chatroom.findMany({
+      where: { consumerId },
+      include: {
+        artist: {
+          select: {
+            id: true,
+            nickname: true,
+            profileImage: true,
+          }
+        },
+        request: {
+          select: {
+            id: true,
+            commission: {
+              select: {
+                title: true
+              }
+            }
+          }
+        },
+        chatMessages: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: {
+            content: true,
+            createdAt: true
+          }
         }
+      }
     });
   },
 

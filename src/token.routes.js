@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 router.get('/token', async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: 1 },
+      where: { id: 2 },
       include: {
         account: true
       }

@@ -46,4 +46,50 @@ export const ChatRepository = {
       }
     });
   },
+
+  async markAsRead(accountId, messageId) {
+    return await prisma.chatMessageRead.upsert({
+      where: {
+        messageId_accountId: {
+          messageId: BigInt(messageId),
+          accountId: BigInt(accountId),
+        },
+      },
+      update: { read: true },
+      create: {
+        messageId: BigInt(messageId),
+        accountId: BigInt(accountId),
+        read: true,
+      },
+    });
+  },
+
+  async isMessageRead(accountId, messageId) {
+    const record = await prisma.chatMessageRead.findUnique({
+      where: {
+        messageId_accountId: {
+          messageId: BigInt(messageId),
+          accountId: BigInt(accountId),
+        },
+      },
+    });
+    return record?.read || false;
+  },
+
+  async countUnreadMessages(chatroomId, accountId) {
+    const count = await prisma.chatMessage.count({
+      where: {
+        chatroomId: BigInt(chatroomId),
+        NOT: {
+          chatMessageReads: {
+            some: {
+              accountId: BigInt(accountId),
+              read: true,
+            },
+          },
+        },
+      },
+    });
+    return count;
+  },
 };
