@@ -3,7 +3,8 @@ import { stringifyWithBigInt } from "../../bigintJson.js";
 import {
     RequestIdRequiredError,
     ReviewIdRequiredError,
-    UserIdRequiredError
+    UserIdRequiredError,
+    ImageUploadFailedError
 } from '../../common/errors/review.errors.js';
 import {
     ImageUploadResponseDto,
@@ -21,6 +22,10 @@ class ReviewController {
      */
     async uploadImage(req, res, next) {
         try {
+            if (!req.file) {
+                throw new ImageUploadFailedError({ reason: '파일이 업로드되지 않았습니다' });
+            }
+
             const result = await reviewService.uploadImage(req.file);
 
             // 응답 데이터를 DTO로 구조화
