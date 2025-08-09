@@ -1,6 +1,6 @@
 import path from 'path';
-import fs from 'fs';
 import multer from 'multer';
+import { uploadToS3, deleteFromS3 } from '../../s3.upload.js';
 
 // 관련 에러 클래스 import
 import {
@@ -22,30 +22,14 @@ import { UserNotFoundError } from '../../common/errors/user.errors.js';
 // Repository import
 import reviewRepository from '../repository/review.repository.js';
 
-// TODO: 추후 프로젝트 완성 시 AWS S3 연동으로 변경 예정
 class ReviewService {
 
     /**
-     * 파일 업로드를 위한 multer 설정
+     * 파일 업로드를 위한 multer 설정 초기화
      */
     constructor() {
-        // 업로드 디렉토리 설정 (프로젝트 루트/uploads/reviews)
-        this.uploadDir = path.join(process.cwd(), 'uploads', 'reviews');
-        this.ensureUploadDir();
-
-        // multer 저장소 설정
-        this.storage = multer.diskStorage({
-            destination: (req, file, cb) => {
-                cb(null, this.uploadDir);
-            },
-            filename: (req, file, cb) => {
-                // 파일명 생성: review_현재시간_랜덤값.확장자
-                const timestamp = Date.now();
-                const random = Math.round(Math.random() * 1E9);
-                const ext = path.extname(file.originalname);
-                cb(null, `review_${timestamp}_${random}${ext}`);
-            }
-        });
+        // 업로드 파일 메모리에 적재
+        this.storage = multer.memoryStorage();
 
         // 파일 필터 (이미지만 허용)
         this.fileFilter = (req, file, cb) => {
@@ -69,17 +53,6 @@ class ReviewService {
     }
 
     /**
-     * 업로드 디렉토리가 없으면 생성
-     * TODO: S3 연동 시 이 메서드는 불필요하므로 삭제 예정
-     */
-    ensureUploadDir() {
-        if (!fs.existsSync(this.uploadDir)) {
-            fs.mkdirSync(this.uploadDir, { recursive: true });
-            console.log(`업로드 디렉토리 생성: ${this.uploadDir}`);
-        }
-    }
-
-    /**
      * 이미지 업로드 처리
      * 
      * @param {Object} file - multer로 업로드된 파일 객체
@@ -87,7 +60,6 @@ class ReviewService {
      * 
      * @example 
      * const result = await reviewService.uploadImage(req.file);
-     * // result: { image_url: "http://localhost:3000/uploads/reviews/review_123_456.jpg", file_size: 1024, file_type: "image/jpeg" }
      */
     async uploadImage(file) {
         try {
@@ -98,17 +70,22 @@ class ReviewService {
 
             // 2. 파일 크기 추가 검증
             if (file.size > 5 * 1024 * 1024) {
-                // 업로드된 파일 삭제
-                this.deleteFile(file.path);
                 throw new FileSizeExceededError({ fileSize: file.size });
             }
 
-            // 3. 파일 URL 생성 (현재: 로컬 환경용)
-            // TODO: S3 연동 시 S3 URL 생성 로직으로 변경 필요
-            const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-            const imageUrl = `${baseUrl}/uploads/reviews/${file.filename}`;
+            // 3. 파일 확장자 기준 추가 검증
+            const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
+            if (!['jpeg', 'jpg', 'png'].includes(ext)) {
+                throw new UnsupportedImageFormatError({ fileType: file.mimetype });
+            }
 
-            // 4. 성공 응답 반환
+            // 4. S3 업로드 (리뷰 이미지 전용으로 reviews/ 폴더에 저장)
+            const imageUrl = await uploadToS3(
+                file.buffer,
+                'reviews',
+                ext
+            );
+
             return {
                 image_url: imageUrl,
                 file_size: file.size,
@@ -116,34 +93,31 @@ class ReviewService {
             };
 
         } catch (error) {
-            // 오류 발생 시 업로드된 파일 삭제
-            if (file && file.path) {
-                this.deleteFile(file.path);
-            }
             throw error;
         }
     }
 
     /**
-     * 파일 삭제 헬퍼 메서드
-     * TODO: S3 연동 시 S3 객체 삭제 로직으로 변경 필요
-     * @param {string} filePath - 삭제할 파일 경로
+     * S3 객체 삭제
+     *
+     * @param {string} imageUrl - 삭제할 이미지의 퍼블릭 URL
+     * @returns {Promise<void>}
      */
-    deleteFile(filePath) {
+    async deleteS3File(imageUrl) {
         try {
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-                console.log(`파일 삭제: ${filePath}`);
+            if (imageUrl && imageUrl.includes('s3.amazonaws.com')) {
+                await deleteFromS3(imageUrl);
+                console.log(`S3 파일 삭제 완료: ${imageUrl}`);
             }
         } catch (error) {
-            console.error('파일 삭제 실패:', error);
+            console.error('S3 파일 삭제 실패:', error);
         }
     }
 
 
     /**
      * 리뷰 작성
-     * 
+     *
      * @param {BigInt} requestId - 커미션 신청 ID
      * @param {BigInt} userId - 사용자 ID
      * @param {ReviewCreateDto} reviewDto - 검증된 DTO 객체
@@ -265,18 +239,24 @@ class ReviewService {
         // 5. 이미지 업데이트 (프론트에서 보낸 최종 이미지 목록으로 교체)
         // 프론트 로직: 기존 이미지 로드 > 사용자가 추가/삭제 > 최종 결과만 백으로 전송
         // 백엔드 로직: 기존 이미지 목록 전체 삭제 > 새로 받은 이미지들로 교체
-        if (image_urls && image_urls.length > 0) {
-            // 기존 이미지들 전체 삭제
-            await reviewRepository.deleteAllReviewImages(reviewId);
+        
+        // 5-1. 기존 이미지들 조회 후 S3에서 삭제
+        const existingImages = await reviewRepository.getImagesByTarget('review', reviewId);
+        for (const image of existingImages) {
+            if (image.imageUrl) {
+                await this.deleteS3File(image.imageUrl);
+            }
+        }
+        
+        // 5-2. DB에서 기존 이미지 정보 삭제
+        await reviewRepository.deleteAllReviewImages(reviewId);
 
-            // 새로운 이미지들 추가 (최대 5개)
+        // 5-3. 새로운 이미지들 추가 (최대 5개)
+        if (image_urls && image_urls.length > 0) {
             const imagesToSave = image_urls.slice(0, 5);
             for (const imageUrl of imagesToSave) {
                 await reviewRepository.createImage('review', reviewId, imageUrl);
             }
-        } else {
-            // 이미지 배열이 비어있으면 모든 이미지 삭제 (사용자가 모든 이미지 제거)
-            await reviewRepository.deleteAllReviewImages(reviewId);
         }
 
         // 6. Controller로 반환할 데이터 구성
@@ -311,13 +291,21 @@ class ReviewService {
             throw new ReviewPermissionDeniedError({ userId, reviewId });
         }
 
-        // 3. 관련 이미지들 먼저 삭제
+        // 3. 관련 이미지들 조회 후 S3에서 삭제
+        const reviewImages = await reviewRepository.getImagesByTarget('review', reviewId);
+        for (const image of reviewImages) {
+            if (image.imageUrl) {
+                await this.deleteS3File(image.imageUrl);
+            }
+        }
+
+        // 4. DB에서 이미지 정보 삭제
         await reviewRepository.deleteAllReviewImages(reviewId);
 
-        // 4. 리뷰 삭제
+        // 5. 리뷰 삭제
         await reviewRepository.deleteReview(reviewId);
 
-        // 5. 성공 메시지 반환
+        // 6. 성공 메시지 반환
         return {
             message: "리뷰가 성공적으로 삭제되었습니다."
         };
