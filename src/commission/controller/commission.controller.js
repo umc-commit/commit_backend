@@ -7,6 +7,7 @@ import
   SubmitCommissionRequestDto
  } from "../dto/commission.dto.js";
 import { parseWithBigInt, stringifyWithBigInt } from "../../bigintJson.js";
+import { BadgeRepository } from "../../user/repository/badge.repository.js";
 
 // 커미션 게시글 상세글 조회
 export const getCommissionDetail = async (req, res, next) => {
@@ -87,6 +88,8 @@ export const uploadRequestImage = async (req, res, next) => {
 export const submitCommissionRequest = async (req, res, next) => {
   try {
     const userId = req.user.userId;
+    const accountId = req.user.accountId;
+
     const dto = new SubmitCommissionRequestDto({
       commissionId: BigInt(req.params.commissionId),
       formAnswer: req.body.formAnswer
@@ -94,6 +97,8 @@ export const submitCommissionRequest = async (req, res, next) => {
 
     const result = await CommissionService.submitCommissionRequest(userId, dto);
     const responseData = parseWithBigInt(stringifyWithBigInt(result));
+
+    await BadgeRepository.GiveCommissionApplyBadges(userId, accountId);
 
     res.status(StatusCodes.OK).success(responseData);
   } catch (err) {

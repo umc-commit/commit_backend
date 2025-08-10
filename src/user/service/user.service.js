@@ -128,7 +128,7 @@ export const UserService = {
                 earnedAt: userBadge.earnedAt,
                 badge: userBadge.badge
             }));
-            
+
             const reviews = (await UserRepository.UserReviewList(userId)) ?? [];
 
 
@@ -276,6 +276,8 @@ export const UserService = {
             throw new UserAlreadyFollowArtist();
         
         const result = await UserRepository.FollowArtist(accountId, artistId);
+        
+        await BadgeRepository.GiveFollowerBadges(artistId, accountId);
 
         return {
             message:"해당 작가 팔로우를 성공했습니다.",
