@@ -310,6 +310,21 @@ export const UserRepository = {
           }
       });
   },
+  // 사용자가 작성한 리뷰 조회 
+  async UserReviewList(userId) {
+    return await prisma.review.findMany({
+      wehre : {useraId: userId},
+      select:{
+        id:true,
+        requestId:true,
+        rate: true,
+        content:true,
+        createddAt: true,
+        updatedAt: true,
+      },
+      orderBy: {createdAt:"desc"}, 
+    });
+  }
 
 };
 

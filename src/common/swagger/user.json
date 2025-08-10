@@ -177,7 +177,41 @@
                         "userId":{"type":"string", "example":"7"},
                         "nickname":{"type":"string", "example":"탱"},
                         "profileImage":{"type": ["string", null], "example":null},
-                        "description":{"type":"string", "example":"."}
+                        "description":{"type":"string", "example":"."},
+                        "badges":{
+                          "type":"array",
+                          "items":{
+                            "properties":{
+                              "id":{"type":"string", "example":"1"},
+                              "earnedAt":{"type":"string", "example":"2025-08-10T05:16:02.000Z"},
+                              "badge":{
+                                "type":"array",
+                                "items":{
+                                  "properties":{
+                                    "id":{"type":"string", "example":"1"},
+                                    "type":{"type":"string", "example":"follow"},
+                                    "threshold":{"type":"integer", "example":5},
+                                    "name":{"type":"string", "example":"팔로워 5명 달성"},
+                                    "badgeImage":{"type":"string", "example":"null"}
+                                  }
+                                }
+                              },
+                              "reviews":{
+                                "type":"array",
+                                "items":{
+                                  "properties":{
+                                    "id":{"type":"integer", "example":101},
+                                    "requestId":{"type":"integer", "example":77},
+                                    "rate":{"type":"integer", "example":5},
+                                    "content":{"type":"string", "example":"좋았습니다"},
+                                    "createdAt":{"type":"string", "example":"2025-08-09T12:30:00.000Z"},
+                                    "updatedAt":{"type":"string", "example":"2025-08-09T12:30:00.000Z"}
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
                       }
                     }
                   }
