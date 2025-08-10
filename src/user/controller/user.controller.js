@@ -48,10 +48,12 @@ export const getUserProfile = async(req, res, next) => {
         const accountId = req.user.accountId;
         console.log("controller accountId -> ", accountId);
 
+        const userId = req.user.userId;
+
         const role = req.user.role;
         console.log(role);
 
-        const result = await UserService.getUserProfile(accountId, role);
+        const result = await UserService.getUserProfile(accountId, userId, role);
 
         res.status(StatusCodes.OK).success(result);
     } catch(err){

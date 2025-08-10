@@ -111,7 +111,7 @@ export const UserService = {
         }   
     },
     // 사용자 프로필 조회 
-    async getUserProfile(accountId, role) {
+    async getUserProfile(accountId, userId, role) {
 
         let result;
 
@@ -128,6 +128,9 @@ export const UserService = {
                 earnedAt: userBadge.earnedAt,
                 badge: userBadge.badge
             }));
+            
+            const reviews = (await UserRepository.UserReviewList(userId)) ?? [];
+
 
 
             return {
@@ -137,7 +140,8 @@ export const UserService = {
                     nickname: user.nickname,
                     profileImage:user.profileImage,
                     description: user.description,
-                    badges
+                    badges,
+                    reviews
                 }
             }
         }
@@ -149,11 +153,10 @@ export const UserService = {
 
             console.log("userBadges 확인:", result.userBadges);
 
-
-            const badges = result.userBadges.map(userBadge => ({
-                id: userBadge.id,
-                earnedAt: userBadge.earnedAt,
-                badge: userBadge.badge
+            const badges = result.userBadges.map((userBadge) => ({
+            id: userBadge.id,
+            earnedAt: userBadge.earnedAt,
+            badge: userBadge.badge? [userBadge.badge] : []
             }));
 
             return {
