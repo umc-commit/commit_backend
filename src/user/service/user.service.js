@@ -399,10 +399,10 @@ export const UserService = {
 
         const result = await UserRepository.getMyProfile(accountId);
 
-        const badges = result.userBadges.map(userBadge => ({
+        const badges = result.userBadges.map((userBadge) => ({
             id: userBadge.id,
             earnedAt: userBadge.earnedAt,
-            badge: userBadge.badge
+            badge: userBadge.badge? [userBadge.badge] : []
         }));
 
 
