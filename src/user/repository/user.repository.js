@@ -313,18 +313,18 @@ export const UserRepository = {
   // 사용자가 작성한 리뷰 조회 
   async UserReviewList(userId) {
     return await prisma.review.findMany({
-      wehre : {useraId: userId},
+      where : {userId: userId},
       select:{
         id:true,
         requestId:true,
         rate: true,
         content:true,
-        createddAt: true,
+        createdAt: true,
         updatedAt: true,
       },
       orderBy: {createdAt:"desc"}, 
     });
-  }
+  },
 
 };
 

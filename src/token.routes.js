@@ -15,12 +15,13 @@ router.get('/token', async (req, res, next) => {
         account: true
       }
     });
-
+    
     const payload = {
       userId: user.id.toString(),
       nickname: user.nickname,
       accountId: user.accountId.toString(),
-      provider: user.account.provider
+      provider: user.account.provider,
+      role:"client"
     };
 
     const token = signJwt(payload);

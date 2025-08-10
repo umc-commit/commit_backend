@@ -195,20 +195,20 @@
                                     "badgeImage":{"type":"string", "example":"null"}
                                   }
                                 }
-                              },
-                              "reviews":{
-                                "type":"array",
-                                "items":{
-                                  "properties":{
-                                    "id":{"type":"integer", "example":101},
-                                    "requestId":{"type":"integer", "example":77},
-                                    "rate":{"type":"integer", "example":5},
-                                    "content":{"type":"string", "example":"좋았습니다"},
-                                    "createdAt":{"type":"string", "example":"2025-08-09T12:30:00.000Z"},
-                                    "updatedAt":{"type":"string", "example":"2025-08-09T12:30:00.000Z"}
-                                  }
-                                }
                               }
+                            }
+                          }
+                        },
+                        "reviews":{
+                          "type":"array",
+                          "items":{
+                            "properties":{
+                              "id":{"type":"integer", "example":101},
+                              "requestId":{"type":"integer", "example":77},
+                              "rate":{"type":"integer", "example":5},
+                              "content":{"type":"string", "example":"좋았습니다"},
+                              "createdAt":{"type":"string", "example":"2025-08-09T12:30:00.000Z"},
+                              "updatedAt":{"type":"string", "example":"2025-08-09T12:30:00.000Z"}
                             }
                           }
                         }

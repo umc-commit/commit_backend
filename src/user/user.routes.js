@@ -86,14 +86,26 @@ router.get(
         provider: req.user.provider,
         oauth_id : req.user.oauth_id,
       });
-      return res.redirect(`/signup?token=${token}`);
+      return res.redirect(`commit://oauth2/callback/kakao?token=${token}&signupRequired=true`);
     }
-    token = signJwt({
-      accountId: req.user.accountId,
-      role:req.user.role,
-    });
+    
+    if(req.user.role === 'artist') {
+      token = signJwt({
+        accountId: req.user.accountId,
+        artistId:req.user.artistId,
+        userId: req.user.artistId,
+        role:req.user.role,
+      });
+    }
+    if(req.user.role === 'client'){
+      token = signJwt({
+        accountId: req.user.accountId,
+        userId:req.user.userId,
+        role:req.user.role,
+      });
+    }
 
-    res.redirect(`/?token=${token}`)
+    res.redirect(`commit://oauth2/callback/kakao?token=${token}&signupRequired=false`);
   }
 );
 
