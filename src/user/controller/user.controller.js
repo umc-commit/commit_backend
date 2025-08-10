@@ -181,6 +181,7 @@ export const LookUserBadge = async(req, res, next) => {
 // 작가 프로필 조회하기 
 export const AccessArtistProfile = async(req, res, next) => {
     try{
+
         const artistId = req.params.artistId;
         const accountId = req.user.accountId;
         const userId = req.user.userId;
