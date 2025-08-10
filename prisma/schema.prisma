@@ -35,7 +35,7 @@ model User {
   id           BigInt   @id @default(autoincrement())
   nickname     String   @db.VarChar(50)
   accountId    BigInt   @map("account_id") @unique
-  description  String?  @db.VarChar(1000)
+  description  String?  @db.VarChar(1000) @default("입력된 소개가 없습니다.")
   profileImage String?  @map("profile_image") @db.VarChar(255)
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
