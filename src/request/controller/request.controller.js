@@ -9,7 +9,6 @@ import {
   GetRequestResultDto
 } from "../dto/request.dto.js";
 import { parseWithBigInt, stringifyWithBigInt } from "../../bigintJson.js";
-import { BadgeRepository } from "../../user/repository/badge.repository.js";
 
 // 신청 목록 조회
 export const getRequestList = async (req, res, next) => {
