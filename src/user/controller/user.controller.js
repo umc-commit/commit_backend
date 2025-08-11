@@ -4,6 +4,7 @@ import { UserSignupRequestDto } from "../dto/user.dto.js";
 import { UserLoginRequestDto } from "../dto/user.dto.js";
 import { UpdateMyprofileDto } from "../dto/user.dto.js";
 import { verifyJwt } from "../../jwt.config.js";
+import { BadgeRepository } from "../repository/badge.repository.js";
 
 // 로그인 요청 
 
@@ -121,6 +122,8 @@ export const FollowArtist = async(req, res, next) => {
         const artistId = req.params.artistId;
 
         const result = await UserService.FollowArtist(accountId, artistId);
+
+        await BadgeRepository.GiveFollowerBadges(artistId, accountId);
 
         res.status(StatusCodes.CREATED).success(result);
     } catch(err) {
