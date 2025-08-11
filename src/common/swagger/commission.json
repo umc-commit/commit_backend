@@ -410,7 +410,7 @@
                   "image": {
                     "type": "string",
                     "format": "binary",
-                    "description": "업로드할 이미지 파일 (JPG, PNG, 최대 5MB)"
+                    "description": "업로드할 이미지 파일 (JPG, PNG, 최대 10MB)"
                   }
                 },
                 "required": ["image"]
@@ -460,8 +460,8 @@
                         "data": {
                           "type": "object",
                           "properties": {
-                            "maxSize": { "type": "string", "example": "5MB" },
-                            "receivedSize": { "type": "string", "example": "7.2MB" }
+                            "maxSize": { "type": "string", "example": "10MB" },
+                            "receivedSize": { "type": "string", "example": "15MB" }
                           }
                         }
                       }
