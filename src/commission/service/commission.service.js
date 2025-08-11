@@ -1,6 +1,6 @@
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
+import { uploadToS3, deleteFromS3 } from '../../s3.upload.js';
 import { CommissionRepository } from "../repository/commission.repository.js";
 import { RequestRepository } from "../../request/repository/request.repository.js";
 import {
@@ -17,38 +17,14 @@ import {
 } from "../../common/errors/commission.errors.js";
 
 export const CommissionService = {
-  // 업로드 디렉토리 설정
-  uploadDir: path.join(process.cwd(), 'uploads', 'request-images'),
 
   /**
-   * 업로드 디렉토리 생성
+   * S3 업로드를 위한 multer 설정
    */
-  ensureUploadDir() {
-    if (!fs.existsSync(this.uploadDir)) {
-      fs.mkdirSync(this.uploadDir, { recursive: true });
-      console.log(`업로드 디렉토리 생성: ${this.uploadDir}`);
-    }
-  },
+  storage: multer.memoryStorage(),
 
   /**
-   * multer 저장소 설정
-   */
-  storage: multer.diskStorage({
-    destination: function(req, file, cb) {
-      const uploadDir = path.join(process.cwd(), 'uploads', 'request-images');
-      cb(null, uploadDir);
-    },
-    filename: function(req, file, cb) {
-      // 파일명: request_현재시간_랜덤값.확장자
-      const timestamp = Date.now();
-      const random = Math.round(Math.random() * 1E9);
-      const ext = path.extname(file.originalname);
-      cb(null, `request_${timestamp}_${random}${ext}`);
-    }
-  }),
-
-  /**
-   * 파일 필터 (이미지만 허용)
+   * 파일 필터
    */
   fileFilter(req, file, cb) {
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
@@ -67,42 +43,39 @@ export const CommissionService = {
    * multer 인스턴스 생성
    */
   getUploadMiddleware() {
-    // 업로드 디렉토리 확인
-    this.ensureUploadDir();
-    
     return multer({
       storage: this.storage,
       fileFilter: this.fileFilter,
       limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB 제한
+        fileSize: 10 * 1024 * 1024
       }
     }).single('image');
   },
 
   /**
-   * 이미지 업로드 처리
+   * S3 이미지 업로드 처리
    */
   async uploadRequestImage(file) {
     try {
       // 1. 파일 존재 여부 확인
       if (!file) {
-        throw new ImageUploadFailedError('파일이 업로드되지 않았습니다');
+        throw new ImageUploadFailedError({ reason: '파일이 업로드되지 않았습니다' });
       }
 
-      // 2. 파일 크기 추가 검증
-      if (file.size > 5 * 1024 * 1024) {
-        this.deleteFile(file.path);
-        throw new FileSizeExceededError({
-          maxSize: '5MB',
-          receivedSize: `${Math.round(file.size / 1024 / 1024 * 100) / 100}MB`
-        });
+      // 2. 파일 크기 검증
+      if (file.size > 10 * 1024 * 1024) {
+        throw new FileSizeExceededError({ fileSize: file.size });
       }
 
-      // 3. 파일 URL 생성
-      const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-      const imageUrl = `${baseUrl}/uploads/request-images/${file.filename}`;
+      // 3. 파일 확장자 검증
+      const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
+      if (!['jpeg', 'jpg', 'png'].includes(ext)) {
+        throw new UnsupportedImageFormatError({ fileType: file.mimetype });
+      }
 
-      // 4. 성공 응답 반환
+      // 4. S3 업로드 (requests 폴더에 저장)
+      const imageUrl = await uploadToS3(file.buffer, 'requests', ext);
+
       return {
         image_url: imageUrl,
         file_size: file.size,
@@ -110,28 +83,23 @@ export const CommissionService = {
       };
 
     } catch (error) {
-      // 오류 발생 시 업로드된 파일 삭제
-      if (file && file.path) {
-        this.deleteFile(file.path);
-      }
       throw error;
     }
   },
 
   /**
-   * 파일 삭제 헬퍼 메서드
+   * S3 이미지 삭제
    */
-  deleteFile(filePath) {
+  async deleteS3Image(imageUrl) {
     try {
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-        console.log(`파일 삭제: ${filePath}`);
+      if (imageUrl && imageUrl.includes('amazonaws.com')) {
+        await deleteFromS3(imageUrl);
+        console.log(`S3 이미지 삭제 완료: ${imageUrl}`);
       }
     } catch (error) {
-      console.error('파일 삭제 실패:', error);
+      console.error('S3 이미지 삭제 실패:', error);
     }
   },
-
 
  /**
   * 커미션 게시글 상세글 조회
@@ -627,7 +595,7 @@ export const CommissionService = {
   // 캐릭터 데이터
 	CHARACTER_DATA: [
 		{
-			image: "https://example.com/character1.png",
+			image: `https://${process.env.AWS_S3_BUCKET_NAME}.s3.dualstack.${process.env.AWS_REGION}.amazonaws.com/reports/reportType1.png`,
 			quote: {
 				title: "커미션계의 VIP",
 				description: "\"커미션계의 큰 손 등장!\" 덕분에 작가님들의 창작 활동이 풍요로워졌어요."
@@ -635,7 +603,7 @@ export const CommissionService = {
 			condition: "월 사용 포인트 15만포인트 이상"
 		},
 		{
-			image: "https://example.com/character2.png",
+			image: `https://${process.env.AWS_S3_BUCKET_NAME}.s3.dualstack.${process.env.AWS_REGION}.amazonaws.com/reports/reportType2.png`,
 			quote: {
 				title: "작가 덕후 신청자",
 				description: "\"이 작가님만큼은 믿고 맡긴다!\" 단골의 미덕을 지닌 당신, 작가님도 감동했을 거예요."
@@ -643,7 +611,7 @@ export const CommissionService = {
 			condition: "같은 작가에게 3회 이상 신청"
 		},
 		{
-			image: "https://example.com/character3.png",
+			image: `https://${process.env.AWS_S3_BUCKET_NAME}.s3.dualstack.${process.env.AWS_REGION}.amazonaws.com/reports/reportType3.png`,
 			quote: {
 				title: "호기심 대장 신청자",
 				description: "호기심이 가득해서, 언제나 새로운 작가를 탐색해요."
@@ -651,7 +619,7 @@ export const CommissionService = {
 			condition: "서로 다른 작가 5명 이상에게 커미션을 신청"
 		},
 		{
-			image: "https://example.com/character4.png",
+			image: `https://${process.env.AWS_S3_BUCKET_NAME}.s3.dualstack.${process.env.AWS_REGION}.amazonaws.com/reports/reportType4.png`,
 			quote: {
 				title: "숨겨진 보석 발굴가",
 				description: "\"빛나는 원석을 내가 발견했다!\" 성장하는 작가님들의 첫걸음을 함께한 당신, 멋져요."
@@ -659,7 +627,7 @@ export const CommissionService = {
 			condition: "팔로워 수가 0명인 작가에게 신청 2회 이상"
 		},
 		{
-			image: "https://example.com/character5.png",
+			image: `https://${process.env.AWS_S3_BUCKET_NAME}.s3.dualstack.${process.env.AWS_REGION}.amazonaws.com/reports/reportType5.png`,
 			quote: {
 				title: "빠른 피드백러",
 				description: "\"작가님, 이번 커미션 최고였어요!\" 정성 가득한 피드백으로 건강한 커미션 문화를 만들어가요."
