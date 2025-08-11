@@ -595,7 +595,7 @@ export const CommissionService = {
   // 캐릭터 데이터
 	CHARACTER_DATA: [
 		{
-			image: "https://example.com/character1.png",
+			image: `https://${process.env.AWS_S3_BUCKET_NAME}.s3.dualstack.${process.env.AWS_REGION}.amazonaws.com/reports/reportType1.png`,
 			quote: {
 				title: "커미션계의 VIP",
 				description: "\"커미션계의 큰 손 등장!\" 덕분에 작가님들의 창작 활동이 풍요로워졌어요."
@@ -603,7 +603,7 @@ export const CommissionService = {
 			condition: "월 사용 포인트 15만포인트 이상"
 		},
 		{
-			image: "https://example.com/character2.png",
+			image: `https://${process.env.AWS_S3_BUCKET_NAME}.s3.dualstack.${process.env.AWS_REGION}.amazonaws.com/reports/reportType2.png`,
 			quote: {
 				title: "작가 덕후 신청자",
 				description: "\"이 작가님만큼은 믿고 맡긴다!\" 단골의 미덕을 지닌 당신, 작가님도 감동했을 거예요."
@@ -611,7 +611,7 @@ export const CommissionService = {
 			condition: "같은 작가에게 3회 이상 신청"
 		},
 		{
-			image: "https://example.com/character3.png",
+			image: `https://${process.env.AWS_S3_BUCKET_NAME}.s3.dualstack.${process.env.AWS_REGION}.amazonaws.com/reports/reportType3.png`,
 			quote: {
 				title: "호기심 대장 신청자",
 				description: "호기심이 가득해서, 언제나 새로운 작가를 탐색해요."
@@ -619,7 +619,7 @@ export const CommissionService = {
 			condition: "서로 다른 작가 5명 이상에게 커미션을 신청"
 		},
 		{
-			image: "https://example.com/character4.png",
+			image: `https://${process.env.AWS_S3_BUCKET_NAME}.s3.dualstack.${process.env.AWS_REGION}.amazonaws.com/reports/reportType4.png`,
 			quote: {
 				title: "숨겨진 보석 발굴가",
 				description: "\"빛나는 원석을 내가 발견했다!\" 성장하는 작가님들의 첫걸음을 함께한 당신, 멋져요."
@@ -627,7 +627,7 @@ export const CommissionService = {
 			condition: "팔로워 수가 0명인 작가에게 신청 2회 이상"
 		},
 		{
-			image: "https://example.com/character5.png",
+			image: `https://${process.env.AWS_S3_BUCKET_NAME}.s3.dualstack.${process.env.AWS_REGION}.amazonaws.com/reports/reportType5.png`,
 			quote: {
 				title: "빠른 피드백러",
 				description: "\"작가님, 이번 커미션 최고였어요!\" 정성 가득한 피드백으로 건강한 커미션 문화를 만들어가요."
