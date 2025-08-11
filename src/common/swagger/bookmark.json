@@ -290,6 +290,7 @@
                         "type": "object",
                         "properties": {
                           "id": { "type": "integer", "example": 1 },
+                          "bookmarkId": { "type": "integer", "example": 5 },
                           "title": { "type": "string", "example": "커미션 제목" },
                           "minPrice": { "type": "integer", "example": 10000 },
                           "category": {

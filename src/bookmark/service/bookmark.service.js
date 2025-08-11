@@ -115,6 +115,7 @@ export const BookmarkService = {
 
       return {
         id: Number(bookmark.commission.id),
+        bookmarkId: Number(bookmark.id),
         title: bookmark.commission.title,
         minPrice: bookmark.commission.minPrice,
         category: bookmark.commission.category,
