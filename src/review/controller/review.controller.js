@@ -14,6 +14,7 @@ import {
     ReviewUpdateDto
 } from '../dto/review.dto.js'; // DTO 클래스 import
 import reviewService from '../service/review.service.js';
+import { BadgeRepository } from "../../user/repository/badge.repository.js";
 
 class ReviewController {
 
@@ -60,6 +61,9 @@ class ReviewController {
             // 현재 로그인한 사용자 ID (BigInt 변환)
             const userId = BigInt(req.user.userId);
 
+            // accountId 조회 
+            const accountId = BigInt(req.user.accountId);
+
             // 요청 본문 데이터를 DTO 클래스로 구조화
             const reviewDto = new ReviewCreateDto(req.body);
 
@@ -70,6 +74,9 @@ class ReviewController {
             const responseData = new ReviewResponseDto(result);
             // BigInt를 JSON 문자열로 변환 후 다시 파싱하여 일반 객체로 변환
             const finalData = JSON.parse(stringifyWithBigInt(responseData));
+
+            // 리뷰 뱃지 발급
+            await BadgeRepository.GiveReviewBadges(userId, accountId);
 
             // 클라이언트에 응답 전송 (201 Created)
             res.status(StatusCodes.CREATED).json({
