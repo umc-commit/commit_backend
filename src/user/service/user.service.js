@@ -384,12 +384,12 @@ export const UserService = {
             createdAt: r.createdAt,
             commissionTitle: r.request.commission.title,
             workingTime: workingTime,
+            review_thumbnail: images.length > 0 ? images[0] : null,
             writer: {
                 nickname: r.user.nickname
             }, 
-            reviewImage: images
-            };
-        })
+          };
+       })
     );
 
         // 작가가 등록한 커미션 목록
