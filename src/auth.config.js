@@ -54,7 +54,7 @@ export const kakaoStrategy = new KakaoStrategy(
   {
     clientID: process.env.PASSPORT_KAKAO_CLIENT_ID,
     clientSecret: process.env.PASSPORT_KAKAO_CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/api/users/oauth2/callback/kakao",
+    callbackURL: `${process.env.BASE_URL}/api/users/oauth2/callback/google`,
     scope: undefined,
     state: true,
   },

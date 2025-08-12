@@ -762,6 +762,7 @@
                               "createdAt" :{"type":"string", "example": "2025-08-04T02:31:36.000Z"},
                               "commissionTitle":{"type":"string", "example":"테스트 커미션 글"},
                               "workingTime":{"type":"string", "example":"33일"},
+                              "review_thumbnail":{"type":"string", "example":"https://example.com/reviewThumbnail1.png"},
                               "writer":{
                                 "type":"object",
                                 "properties":{
@@ -785,6 +786,7 @@
                                 "items":{"type":"string"},
                                 "example":["감성", "낙서"]
                               },
+                              "bookmark":{"type":"boolean", "example":false,
                               "commission_img":{"type":"string", "example":"http://example.com/image.jpg"}
                             }
                           }
@@ -846,5 +848,5 @@
     }
   }
 }
-
+}
 
