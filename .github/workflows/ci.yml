@@ -29,6 +29,9 @@ jobs:
           push: false
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest
 
+      - name: Create .env file from secret
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
       - name: Run container and check if it stays up for 5 seconds
         run: |
           docker run -d --name test-container \
