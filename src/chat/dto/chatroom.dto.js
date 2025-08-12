@@ -21,7 +21,9 @@ export class ChatroomListResponseDto {
     this.artist_profile_image = room.artist.profileImage;
     this.request_id = room.request.id;
     this.request_title = room.request.commission.title;
-    this.last_message = room.chatMessages[0]?.content || null;
+    // 이미지가 있으면 이미지 URL, 없으면 텍스트 content
+    const lastMsg = room.chatMessages[0];
+    this.last_message = lastMsg?.imageUrl || lastMsg?.content || null;
     this.last_message_time = room.chatMessages[0]?.createdAt || null;
     this.has_unread = unreadCount;
   }

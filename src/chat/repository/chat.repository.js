@@ -48,20 +48,27 @@ export const ChatRepository = {
   },
 
   async markAsRead(accountId, messageId) {
-    return await prisma.chatMessageRead.upsert({
+    const existing = await prisma.chatMessageRead.findFirst({
       where: {
-        messageId_accountId: {
-          messageId: BigInt(messageId),
-          accountId: BigInt(accountId),
-        },
-      },
-      update: { read: true },
-      create: {
         messageId: BigInt(messageId),
         accountId: BigInt(accountId),
-        read: true,
       },
     });
+
+    if (existing) {
+      return await prisma.chatMessageRead.update({
+        where: { id: existing.id },
+        data: { read: true },
+      });
+    } else {
+      return await prisma.chatMessageRead.create({
+        data: {
+          messageId: BigInt(messageId),
+          accountId: BigInt(accountId),
+          read: true,
+        },
+      });
+    }
   },
 
   async isMessageRead(accountId, messageId) {

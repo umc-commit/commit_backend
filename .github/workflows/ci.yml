@@ -21,7 +21,28 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest
+
+      - name: Run container and check if it stays up for 5 seconds
+        run: |
+          docker run -d --name test-container ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest
+          sleep 5
+          CONTAINER_STATUS=$(docker inspect -f '{{.State.Running}}' test-container)
+          docker logs test-container
+          docker stop test-container
+          docker rm test-container
+          if [ "$CONTAINER_STATUS" != "true" ]; then
+            echo "Container exited too early! Failing the build."
+            exit 1
+          fi
+
+      - name: Push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .

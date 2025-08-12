@@ -31,7 +31,8 @@ export default function setupSocket(server) {
 
     // 채팅방 join
     socket.on("join", async (chatroomId) => {
-      socket.join(chatroomId);
+      const room = String(chatroomId);
+      socket.join(room);
       console.log(`User ${socket.user.userId} joined chatroom ${chatroomId}`);
 
       try {
@@ -70,7 +71,8 @@ export default function setupSocket(server) {
     });
 
     // 메시지 수신
-    socket.on("chat message", async ({ chatroomId, senderId, content, imageBase64 }) => {
+    socket.on("chat message", async ({ chatroomId, content, imageBase64 }) => {
+      const room = String(chatroomId);
       try {
         if (content && content.length > 255) {
           socket.emit("error", { message: "메시지 길이는 255자를 초과할 수 없습니다." });
@@ -81,19 +83,18 @@ export default function setupSocket(server) {
 
         // 이미지 처리
         if (imageBase64) {
-          const buffer = Buffer.from(imageBase64, 'base64');
-          imageUrl = await uploadToS3({
-            buffer,
-            folderName: "messages",
-            extension: "png"
-          });
+          const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+          const buffer = Buffer.from(base64Data, 'base64');
+          console.log("Buffer length:", buffer.length);
+          console.log("Is Buffer:", Buffer.isBuffer(buffer));
+          imageUrl = await uploadToS3(buffer, "messages", "png");
         }
 
         // 메시지 저장
         const savedMessage = await prisma.chatMessage.create({
           data: {
             chatroomId: BigInt(chatroomId),
-            senderId: BigInt(senderId),
+            senderId: BigInt(socket.user.accountId),
             content,
           },
         });
@@ -119,7 +120,7 @@ export default function setupSocket(server) {
           createdAt: savedMessage.createdAt,
         }));
 
-        io.to(chatroomId).emit("chat message", safeMessage);
+        io.to(room).emit("chat message", safeMessage);
 
       } catch (err) {
         console.error("Socket message error:", err);
