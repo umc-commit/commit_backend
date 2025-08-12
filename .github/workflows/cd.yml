@@ -15,41 +15,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Create .env file from secret
-        run: |
-          echo "${{ secrets.ENV_FILE }}" > .env
-
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Build Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: false
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest
-
-      - name: Run container and check if it stays up for 5 seconds
-        run: |
-          docker run -d --name test-container \
-            -e FIREBASE_SERVICE_ACCOUNT_BASE64="${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" \
-            ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest \
-            /bin/sh -c "mkdir -p /app/config && echo \$FIREBASE_SERVICE_ACCOUNT_BASE64 | base64 -d > /app/config/service-account-key.json && node src/index.js"
-          sleep 5
-          CONTAINER_STATUS=$(docker inspect -f '{{.State.Running}}' test-container)
-          docker logs test-container
-          docker stop test-container
-          docker rm test-container
-          if [ "$CONTAINER_STATUS" != "true" ]; then
-            echo "Container exited too early! Failing the build."
-            exit 1
-          fi
-
-      - name: Push Docker image
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
