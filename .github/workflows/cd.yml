@@ -35,20 +35,14 @@ jobs:
 
       - name: Deploy with Blue-Green
         run: |
-          ssh ec2 "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }} bash -s" <<'EOF'
-
+          ssh ec2 <<'EOF'
           echo "📦 Pulling latest image..."
-          docker pull $DOCKER_HUB_USERNAME/commit-api:latest
+          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest
 
           echo "🔍 Checking current active environment..."
-          if docker exec nginx-proxy test -f /etc/nginx/conf.d/default.conf; then
-            CURRENT=$(docker exec nginx-proxy readlink -f /etc/nginx/conf.d/default.conf | xargs basename)
-          else
-            echo "❌ Cannot determine current config. Exiting."
-            exit 1
-          fi
+          ACTIVE_COLOR=$(docker exec nginx-proxy grep -Po '(?<=proxy_pass http://)node-app-(blue|green)' /etc/nginx/conf.d/default.conf | cut -d'-' -f3)
 
-          if echo "$CURRENT" | grep -q "blue"; then
+          if [ "$ACTIVE_COLOR" = "blue" ]; then
             TARGET_COLOR=green
             TARGET_PORT=3001
             TARGET_CONF=/etc/nginx/conf.d/default-green.conf.disabled
@@ -67,7 +61,7 @@ jobs:
             -p $TARGET_PORT:3000 \
             --network=commit-networks \
             -v /opt/app/config/service-account-key.json:/app/config/service-account-key.json:ro \
-            $DOCKER_HUB_USERNAME/commit-api:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest
 
           echo "⏳ Health check for $TARGET_COLOR..."
           for i in {1..10}; do
@@ -75,14 +69,12 @@ jobs:
             if curl -s http://localhost:$TARGET_PORT/health | grep "ok" > /dev/null; then
               echo "✅ Health check passed. Switching traffic..."
 
-              # Switch nginx config inside container
               docker exec nginx-proxy cp $TARGET_CONF /etc/nginx/conf.d/default.conf
               echo "📋 Switched nginx config to: $TARGET_CONF"
 
               docker exec nginx-proxy nginx -s reload
               echo "🔄 Nginx reloaded"
 
-              # Remove previous container
               if [ "$TARGET_COLOR" = "blue" ]; then
                 docker rm -f node-app-green || true
               else
@@ -98,5 +90,4 @@ jobs:
           echo "❌ Health check failed. Rolling back..."
           docker rm -f node-app-$TARGET_COLOR || true
           exit 1
-
           EOF
