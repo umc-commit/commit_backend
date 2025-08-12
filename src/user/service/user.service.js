@@ -358,7 +358,11 @@ export const UserService = {
         const rawReviews = await UserRepository.ArtistReviews(artistId);
         
 
-        const reviews = rawReviews.map(async (r) => {
+        const reviews = await Promise.all(
+            rawReviews.map(async (r) => {
+        
+        
+        
             
         const start = r.request.inProgressAt ? new Date(r.request.inProgressAt) : null;
         const end = r.request.completedAt ? new Date(r.request.completedAt) : null;
@@ -384,7 +388,9 @@ export const UserService = {
                 nickname: r.user.nickname
             }, 
             reviewImage: images
-        }});
+            };
+        })
+    );
 
         // 작가가 등록한 커미션 목록
         const commissions = await UserRepository.FetchArtistCommissions(artistId, userId);
