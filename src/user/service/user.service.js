@@ -4,7 +4,7 @@ import axios from "axios";
 import { signJwt } from "../../jwt.config.js";
 import { BadgeRepository } from "../repository/badge.repository.js";
 import { CommissionRepository } from "../../commission/repository/commission.repository.js";
-import { ReviewRepository } from "../../../src/request/repository/request.repository.js"
+import reviewRepository from "../../review/repository/review.repository.js";
 
 
 export const UserService = {
@@ -371,7 +371,7 @@ export const UserService = {
             workingTime = hours < 24 ? `${hours}시간` : `${Math.floor(hours / 24)}일`;
         }
 
-        const images = await ReviewRepository.getImagesByTarget('review', r.id);
+        const images = await reviewRepository.getImagesByTarget('review', r.id);
 
         return {
             id: r.id,
