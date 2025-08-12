@@ -4,7 +4,7 @@ import axios from "axios";
 import { signJwt } from "../../jwt.config.js";
 import { BadgeRepository } from "../repository/badge.repository.js";
 import { CommissionRepository } from "../../commission/repository/commission.repository.js";
-
+import { ReviewRepository } from "../../../src/request/repository/request.repository.js"
 
 
 export const UserService = {
@@ -128,7 +128,7 @@ export const UserService = {
                 earnedAt: userBadge.earnedAt,
                 badge: userBadge.badge
             }));
-            
+
             const reviews = (await UserRepository.UserReviewList(userId)) ?? [];
 
 
@@ -276,6 +276,8 @@ export const UserService = {
             throw new UserAlreadyFollowArtist();
         
         const result = await UserRepository.FollowArtist(accountId, artistId);
+        
+        await BadgeRepository.GiveFollowerBadges(artistId, accountId);
 
         return {
             message:"해당 작가 팔로우를 성공했습니다.",
@@ -354,10 +356,13 @@ export const UserService = {
             throw new ArtistNotFound();
         
         const rawReviews = await UserRepository.ArtistReviews(artistId);
+        
 
-        const reviews = rawReviews.map((r) => {
+        const reviews = rawReviews.map(async (r) => {
+            
         const start = r.request.inProgressAt ? new Date(r.request.inProgressAt) : null;
         const end = r.request.completedAt ? new Date(r.request.completedAt) : null;
+
 
         let workingTime = null;
         if (start && end) {
@@ -365,7 +370,9 @@ export const UserService = {
             const hours = Math.floor(diffMs / (1000 * 60 * 60));
             workingTime = hours < 24 ? `${hours}시간` : `${Math.floor(hours / 24)}일`;
         }
-        
+
+        const images = await ReviewRepository.getImagesByTarget('review', r.id);
+
         return {
             id: r.id,
             rate: r.rate,
@@ -375,7 +382,8 @@ export const UserService = {
             workingTime: workingTime,
             writer: {
                 nickname: r.user.nickname
-            }
+            }, 
+            reviewImage: images
         }});
 
         // 작가가 등록한 커미션 목록
