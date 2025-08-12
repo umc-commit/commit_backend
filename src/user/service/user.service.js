@@ -396,7 +396,7 @@ export const UserService = {
         const commissions = await UserRepository.FetchArtistCommissions(artistId, userId);
         const commissionList = await Promise.all(
         commissions.map(async (c) => {
-            const images = await CommissionRepository.findImagesByCommissionId(c.id); // c.id == targetId
+            const images = await CommissionRepository.findThumbnailImageByCommissionId(c.id); // c.id == targetId
 
             return {
             id: c.id,
@@ -407,7 +407,7 @@ export const UserService = {
             tags: c.commissionTags.map(t => t.tag.name),
             thumbnail: c.thumbnailImage,
             bookmark: c.bookmarks.length > 0,
-            commission_img: images.length > 0 ? images[0].url : null // 첫 번째 이미지를 대표로
+            commission_img: images?.imageUrl ?? null
             };
         })
 );
