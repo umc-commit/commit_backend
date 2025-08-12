@@ -31,7 +31,9 @@ jobs:
 
       - name: Run container and check if it stays up for 5 seconds
         run: |
-          docker run -d --name test-container ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest
+          docker run -d --name test-container \
+            -e FIREBASE_SERVICE_ACCOUNT_BASE64="${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" \
+            ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest
           sleep 5
           CONTAINER_STATUS=$(docker inspect -f '{{.State.Running}}' test-container)
           docker logs test-container
