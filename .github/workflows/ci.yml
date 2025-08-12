@@ -33,6 +33,7 @@ jobs:
         run: |
           docker run -d --name test-container \
             -e FIREBASE_SERVICE_ACCOUNT_BASE64="${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" \
+            -e FIREBASE_SERVICE_ACCOUNT_PATH="/app/config/service-account-key.json" \
             ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest \
             /bin/sh -c "mkdir -p /app/config && echo \$FIREBASE_SERVICE_ACCOUNT_BASE64 | base64 -d > /app/config/service-account-key.json && node src/index.js"
           sleep 5
