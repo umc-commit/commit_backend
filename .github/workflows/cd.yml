@@ -40,7 +40,7 @@ jobs:
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest
 
           echo "🔍 Checking current active environment..."
-          ACTIVE_COLOR=$(docker exec nginx-proxy grep -Po '(?<=proxy_pass http://)node-app-(blue|green)' /etc/nginx/conf.d/default.conf | cut -d'-' -f3)
+          ACTIVE_COLOR=$(docker exec nginx-proxy sh -c "grep -oP 'node-app-(blue|green)' /etc/nginx/conf.d/default.conf | head -1 | cut -d'-' -f3")
 
           if [ "$ACTIVE_COLOR" = "blue" ]; then
             TARGET_COLOR=green
