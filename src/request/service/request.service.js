@@ -222,16 +222,16 @@ export const RequestService = {
 
     // 타임라인 구성
     const timeline = [];
-    if (request.approvedAt) {
+    if (request.completedAt) {
       timeline.push({
-        status: 'APPROVED',
-        timestamp: request.approvedAt.toISOString()
-     });
+       status: 'COMPLETED',
+       timestamp: request.completedAt.toISOString()
+      });
     }
-    if (paidAt) {
-      timeline.push({
-       status: 'PAID', 
-       timestamp: paidAt
+    if (request.submittedAt) {
+     timeline.push({
+       status: 'SUBMITTED',
+       timestamp: request.submittedAt.toISOString()
      });
     }
     if (request.inProgressAt) {
@@ -240,17 +240,17 @@ export const RequestService = {
        timestamp: request.inProgressAt.toISOString()
      });
     }
-    if (request.submittedAt) {
-     timeline.push({
-       status: 'SUBMITTED',
-       timestamp: request.submittedAt.toISOString()
+    if (paidAt) {
+      timeline.push({
+       status: 'PAID', 
+       timestamp: paidAt
      });
     }
-    if (request.completedAt) {
+    if (request.approvedAt) {
       timeline.push({
-       status: 'COMPLETED',
-       timestamp: request.completedAt.toISOString()
-      });
+        status: 'APPROVED',
+        timestamp: request.approvedAt.toISOString()
+     });
     }
 
     // 폼데이터 구성
