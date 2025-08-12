@@ -1,93 +1,58 @@
-name: CD
+name: CI
 
 on:
-  push:
-    branches:
-      - develop
-  workflow_dispatch:
+  pull_request:
+    branches: [develop]
 
 jobs:
-  deploy:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Configure SSH
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create .env file from secret
         run: |
-          mkdir -p ~/.ssh
-          echo "$EC2_SSH_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
-          cat >> ~/.ssh/config <<EOF
-          Host ec2
-            HostName $EC2_HOST
-            User ubuntu
-            IdentityFile ~/.ssh/id_rsa
-            StrictHostKeyChecking no
-          EOF
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          echo "${{ secrets.ENV_FILE }}" > .env
 
-      - name: Create .env on EC2
-        run: ssh ec2 "echo '$ENV_FILE' > /opt/app/.env"
-        env:
-          ENV_FILE: ${{ secrets.ENV_FILE }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Deploy with Blue-Green
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest
+
+      - name: Run container and check if it stays up for 5 seconds
         run: |
-          ssh ec2 <<'EOF'
-          echo "📦 Pulling latest image..."
-          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest
-
-          echo "🔍 Checking current active environment..."
-          ACTIVE_COLOR=$(docker exec nginx-proxy grep -Po '(?<=proxy_pass http://)node-app-(blue|green)' /etc/nginx/conf.d/default.conf | cut -d'-' -f3)
-
-          if [ "$ACTIVE_COLOR" = "blue" ]; then
-            TARGET_COLOR=green
-            TARGET_PORT=3001
-            TARGET_CONF=/etc/nginx/conf.d/default-green.conf.disabled
-          else
-            TARGET_COLOR=blue
-            TARGET_PORT=3000
-            TARGET_CONF=/etc/nginx/conf.d/default-blue.conf.disabled
+          docker run -d --name test-container \
+            -e FIREBASE_SERVICE_ACCOUNT_BASE64="${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" \
+            ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest \
+            /bin/sh -c "mkdir -p /app/config && echo \$FIREBASE_SERVICE_ACCOUNT_BASE64 | base64 -d > /app/config/service-account-key.json && node src/index.js"
+          sleep 5
+          CONTAINER_STATUS=$(docker inspect -f '{{.State.Running}}' test-container)
+          docker logs test-container
+          docker stop test-container
+          docker rm test-container
+          if [ "$CONTAINER_STATUS" != "true" ]; then
+            echo "Container exited too early! Failing the build."
+            exit 1
           fi
 
-          echo "🚀 Deploying to $TARGET_COLOR container on port $TARGET_PORT..."
-          docker rm -f node-app-$TARGET_COLOR 2>/dev/null || true
-
-          docker run -d \
-            --name node-app-$TARGET_COLOR \
-            --env-file /opt/app/.env \
-            -p $TARGET_PORT:3000 \
-            --network=commit-networks \
-            -v /opt/app/config/service-account-key.json:/app/config/service-account-key.json:ro \
-            ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest
-
-          echo "⏳ Health check for $TARGET_COLOR..."
-          for i in {1..10}; do
-            sleep 2
-            if curl -s http://localhost:$TARGET_PORT/health | grep "ok" > /dev/null; then
-              echo "✅ Health check passed. Switching traffic..."
-
-              docker exec nginx-proxy cp $TARGET_CONF /etc/nginx/conf.d/default.conf
-              echo "📋 Switched nginx config to: $TARGET_CONF"
-
-              docker exec nginx-proxy nginx -s reload
-              echo "🔄 Nginx reloaded"
-
-              if [ "$TARGET_COLOR" = "blue" ]; then
-                docker rm -f node-app-green || true
-              else
-                docker rm -f node-app-blue || true
-              fi
-
-              exit 0
-            else
-              echo "⚠️ Health check attempt $i failed."
-            fi
-          done
-
-          echo "❌ Health check failed. Rolling back..."
-          docker rm -f node-app-$TARGET_COLOR || true
-          exit 1
-          EOF
+      - name: Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/commit-api:latest
