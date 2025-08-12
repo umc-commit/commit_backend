@@ -34,14 +34,17 @@
                   "type": "object",
                   "properties": {
                     "resultType": { "type": "string", "example": "SUCCESS" },
-                    "error": { "type": "object", "nullable": true },
+                    "error": { "type": "object", "nullable": true, "example": null },
                     "success": {
                       "type": "object",
                       "properties": {
-                        "id": { "type": "integer", "example": 10 },
-                        "consumerId": { "type": "integer", "example": 1 },
-                        "artistId": { "type": "integer", "example": 2 },
-                        "requestId": { "type": "integer", "example": 3 }
+                        "id": { "type": "string", "example": "1" },
+                        "consumerId": { "type": "string", "example": "1" },
+                        "artistId": { "type": "string", "example": "1" },
+                        "requestId": { "type": "string", "example": "1" },
+                        "hiddenArtist": { "type": "boolean", "example": false },
+                        "hiddenConsumer": { "type": "boolean", "example": false },
+                        "createdAt": { "type": "string", "format": "date-time", "example": "2025-08-07T15:35:42.375Z" }
                       }
                     }
                   }

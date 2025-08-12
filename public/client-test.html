@@ -2,84 +2,97 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Socket.IO 채팅</title>
+  <title>Socket.IO 채팅 (JWT 토큰 입력)</title>
   <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 </head>
 <body>
-  <h2>실시간 채팅</h2>
+  <h2>실시간 채팅 (JWT 인증)</h2>
 
   <div>
-    <label for="senderIdInput">사용자 ID 입력:</label>
-    <input type="text" id="senderIdInput" placeholder="사용자 ID를 입력하세요" />
-    <button id="joinBtn">채팅방 입장</button>
+    <label for="tokenInput">JWT 토큰 입력:</label>
+    <input type="text" id="tokenInput" placeholder="JWT 토큰을 입력하세요" style="width: 400px;" />
+    <button id="connectBtn">서버 연결 및 채팅방 입장</button>
   </div>
-  
-  <div id="chatroom" style="display:none;">
+
+  <div id="chatroom" style="display:none; margin-top: 20px;">
     <div id="messages" style="border:1px solid #ccc; height:300px; overflow-y:scroll; margin-bottom:10px; padding:5px;"></div>
 
     <input type="text" id="messageInput" placeholder="메시지 입력 (최대 255자)" maxlength="255" style="width:60%;" />
     <input type="file" id="imageInput" accept="image/*" />
     <button id="sendBtn">전송</button>
   </div>
-  
+
   <script>
-    // 서버 소켓 연결 (URL 바꾸기)
-    const socket = io('http://localhost:3000');
+    let socket = null;
     const chatroomId = '1'; // 실제 채팅방 아이디 동적으로 받아야 함
 
-    let senderId = null;
+    const tokenInput = document.getElementById('tokenInput');
+    const connectBtn = document.getElementById('connectBtn');
 
-    const joinBtn = document.getElementById('joinBtn');
-    const senderIdInput = document.getElementById('senderIdInput');
     const chatroomDiv = document.getElementById('chatroom');
-
     const messagesDiv = document.getElementById('messages');
     const messageInput = document.getElementById('messageInput');
     const imageInput = document.getElementById('imageInput');
     const sendBtn = document.getElementById('sendBtn');
 
-    joinBtn.addEventListener('click', () => {
-      const inputVal = senderIdInput.value.trim();
-      if (!inputVal) {
-        alert('사용자 ID를 입력해주세요.');
+    connectBtn.addEventListener('click', () => {
+      const token = tokenInput.value.trim();
+      if (!token) {
+        alert('JWT 토큰을 입력해주세요.');
         return;
       }
-      senderId = inputVal;
 
-      // 채팅방 입장
-      socket.emit('join', chatroomId);
-
-      // UI 변경
-      senderIdInput.disabled = true;
-      joinBtn.disabled = true;
-      chatroomDiv.style.display = 'block';
-    });
-
-    // 메시지 받기
-    socket.on('chat message', (msg) => {
-      const div = document.createElement('div');
-      div.style.borderBottom = '1px solid #eee';
-      div.style.padding = '5px';
-
-      let content = `<b>사용자 ${msg.senderId}:</b> ${msg.content || ''}`;
-      if (msg.imageUrl) {
-        content += `<br><img src="${msg.imageUrl}" alt="이미지" style="max-width:200px; max-height:200px;" />`;
+      // 기존 연결 있으면 끊기
+      if (socket) {
+        socket.disconnect();
       }
-      div.innerHTML = content;
 
-      messagesDiv.appendChild(div);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      // 소켓 연결 (토큰을 auth에 담아 보냄)
+      socket = io('http://localhost:3000', {
+        auth: {
+          token: token,
+        }
+      });
+
+      socket.on('connect', () => {
+        console.log('서버 연결됨, 채팅방 입장');
+        socket.emit('join', chatroomId);
+
+        chatroomDiv.style.display = 'block';
+        tokenInput.disabled = true;
+        connectBtn.disabled = true;
+      });
+
+      socket.on('chat message', (msg) => {
+        const div = document.createElement('div');
+        div.style.borderBottom = '1px solid #eee';
+        div.style.padding = '5px';
+
+        let content = `<b>사용자 ${msg.senderId}:</b> ${msg.content || ''}`;
+        if (msg.imageUrl) {
+          content += `<br><img src="${msg.imageUrl}" alt="이미지" style="max-width:200px; max-height:200px;" />`;
+        }
+        div.innerHTML = content;
+
+        messagesDiv.appendChild(div);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      });
+
+      socket.on('error', (err) => {
+        alert('에러: ' + err.message);
+      });
+
+      socket.on('disconnect', () => {
+        alert('서버 연결이 끊겼습니다.');
+        chatroomDiv.style.display = 'none';
+        tokenInput.disabled = false;
+        connectBtn.disabled = false;
+      });
     });
 
-    // 에러 받기
-    socket.on('error', (err) => {
-      alert('에러: ' + err.message);
-    });
-
-    // 전송 버튼 클릭
     sendBtn.addEventListener('click', () => {
-      if (!senderId) {
-        alert('먼저 사용자 ID를 입력하고 채팅방에 입장하세요.');
+      if (!socket || !socket.connected) {
+        alert('서버에 연결되어 있지 않습니다.');
         return;
       }
 
@@ -102,7 +115,6 @@
 
           socket.emit('chat message', {
             chatroomId,
-            senderId,
             content,
             imageBase64: base64Image,
           });
@@ -111,7 +123,6 @@
       } else {
         socket.emit('chat message', {
           chatroomId,
-          senderId,
           content,
         });
       }

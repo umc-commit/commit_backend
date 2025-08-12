@@ -23,7 +23,8 @@ export const ChatroomRepository = {
   },
 
   async findChatroomsByUser(consumerId) {
-    return prisma.chatroom.findMany({
+    // 1. 채팅방 기본 정보 + 마지막 메시지(내용, 생성시간, id) 조회
+    const chatrooms = await prisma.chatroom.findMany({
       where: { consumerId },
       include: {
         artist: {
@@ -38,7 +39,7 @@ export const ChatroomRepository = {
             id: true,
             commission: {
               select: {
-                title: true
+                title: true,
               }
             }
           }
@@ -47,12 +48,46 @@ export const ChatroomRepository = {
           orderBy: { createdAt: "desc" },
           take: 1,
           select: {
+            id: true,
             content: true,
-            createdAt: true
+            createdAt: true,
           }
         }
       }
     });
+
+    // 2. 마지막 메시지 ID 목록 수집
+    const messageIds = chatrooms
+      .map(room => room.chatMessages[0]?.id)
+      .filter(Boolean); // null 제외
+
+    if (messageIds.length === 0) {
+      return chatrooms;
+    }
+
+    // 3. 메시지 ID로 이미지 URL 조회
+    const images = await prisma.image.findMany({
+      where: {
+        target: "chat_messages",
+        targetId: { in: messageIds },
+      },
+    });
+
+    // 4. 이미지 URL 매핑 (messageId -> imageUrl)
+    const imageMap = {};
+    images.forEach(img => {
+      imageMap[img.targetId.toString()] = img.imageUrl;
+    });
+
+    // 5. 채팅방 객체에 이미지 URL 병합
+    chatrooms.forEach(room => {
+      const msg = room.chatMessages[0];
+      if (msg) {
+        msg.imageUrl = imageMap[msg.id.toString()] || null;
+      }
+    });
+
+    return chatrooms;
   },
 
   async softDeleteChatrooms(chatroomIds, userType, userId) {
