@@ -342,5 +342,17 @@ export const CommissionRepository = {
     });
     
     return user?.nickname || null;
+  },
+
+  // commission title 불러오기 
+  async findCommissionTitle(requestId){
+    const row = await prisma.request.findUnique({
+      where:{id:requestId},
+      select:{
+        commission:{select : {title:true}}
+      }
+    })
+
+    return row?.commission?.title ?? null;
   }
 }

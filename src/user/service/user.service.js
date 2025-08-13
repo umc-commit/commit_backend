@@ -134,9 +134,10 @@ export const UserService = {
             const reviewsThumbnailImage = await Promise.all(
                 reviews.map(async (r) => {
                     const images = await reviewRepository.getImagesByTarget("review", r.id);
+                    const title = await CommissionRepository.findCommissionTitle(r.request_id);
                     const reviewThumbnail = images?.[0]?.imageUrl ?? null;
 
-                    return {...r, reviewThumbnail}
+                    return {...r, reviewThumbnail, title}
                 })
             )
 
