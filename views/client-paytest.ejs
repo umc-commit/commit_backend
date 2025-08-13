@@ -7,27 +7,28 @@
   </head>
   <body>
     <h1>아임포트 결제 테스트 페이지</h1>
-    <button id="payment-button">결제하기</button>
+    <button id="kakao-button">카카오페이 결제</button>
+    <button id="tosspay-button">네이버페이 결제</button>
 
     <script>
       const IMP = window.IMP;
-      IMP.init("<%= impKey %>");
+      IMP.init("<%= impKey %>"); // 서버에서 impKey 주입
 
-      document.getElementById("payment-button").addEventListener("click", () => {
+      // 공통 결제 요청 함수
+      function requestPayment(pgName) {
         IMP.request_pay(
           {
-            pg: "kakaopay", // 테스트용 PG사 선택
+            pg: pgName, // kakaopay 또는 naverpay
             pay_method: "card",
             merchant_uid: "order_no_" + new Date().getTime(), // 주문번호
             name: "테스트 상품",
-            amount: 1200, // 테스트 결제 금액
+            amount: 1200, // 금액
             buyer_email: "test@example.com",
             buyer_name: "테스트 사용자",
             buyer_tel: "010-1234-5678",
           },
           function (rsp) {
             if (rsp.success) {
-              // 결제 성공 시 백엔드 검증 요청
               console.log("결제 성공", rsp);
 
               fetch("http://localhost:3000/api/payments/complete", {
@@ -38,16 +39,15 @@
                 body: JSON.stringify({
                   impUid: rsp.imp_uid,
                   merchantUid: rsp.merchant_uid,
-                  productId: 1, // productId
-                  userId: 3, // userId
-                  requestId: 1, // requestId
+                  productId: 1,
+                  userId: 3,
+                  requestId: 1,
                 }),
               })
                 .then((res) => res.json())
                 .then((data) => {
                   console.log("백엔드 검증 결과:", data);
-                  console.log(rsp.merchant_uid);
-                  alert("결제 및 검증 성공", rsp.merchant_uid);
+                  alert("결제 및 검증 성공: " + rsp.merchant_uid);
                 })
                 .catch((err) => {
                   console.error(err);
@@ -59,6 +59,15 @@
             }
           }
         );
+      }
+
+      // 버튼 이벤트 등록
+      document.getElementById("kakao-button").addEventListener("click", () => {
+        requestPayment("kakaopay");
+      });
+
+      document.getElementById("tosspay-button").addEventListener("click", () => {
+        requestPayment("tosspay");
       });
     </script>
   </body>
