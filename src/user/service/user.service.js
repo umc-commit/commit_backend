@@ -131,6 +131,15 @@ export const UserService = {
 
             const reviews = (await UserRepository.UserReviewList(userId)) ?? [];
 
+            const reviewsThumbnailImage = await Promise.all(
+                reviews.map(async (r) => {
+                    const images = await reviewRepository.getImagesByTarget("review", r.id);
+                    const reviewThumbnail = images?.[0]?.imageUrl ?? null;
+
+                    return {...r, reviewThumbnail}
+                })
+            )
+
 
 
             return {
@@ -141,7 +150,7 @@ export const UserService = {
                     profileImage:user.profileImage,
                     description: user.description,
                     badges,
-                    reviews
+                    reviews : reviewsThumbnailImage
                 }
             }
         }
@@ -361,36 +370,33 @@ export const UserService = {
         const reviews = await Promise.all(
             rawReviews.map(async (r) => {
         
-        
-        
-            
-        const start = r.request.inProgressAt ? new Date(r.request.inProgressAt) : null;
-        const end = r.request.completedAt ? new Date(r.request.completedAt) : null;
+            const start = r.request.inProgressAt ? new Date(r.request.inProgressAt) : null;
+            const end = r.request.completedAt ? new Date(r.request.completedAt) : null;
 
 
-        let workingTime = null;
-        if (start && end) {
-            const diffMs = end - start;
-            const hours = Math.floor(diffMs / (1000 * 60 * 60));
-            workingTime = hours < 24 ? `${hours}시간` : `${Math.floor(hours / 24)}일`;
-        }
+            let workingTime = null;
+            if (start && end) {
+                const diffMs = end - start;
+                const hours = Math.floor(diffMs / (1000 * 60 * 60));
+                workingTime = hours < 24 ? `${hours}시간` : `${Math.floor(hours / 24)}일`;
+            }
 
-        const images = await reviewRepository.getImagesByTarget('review', r.id);
+            const images = await reviewRepository.getImagesByTarget('review', r.id);
 
-        return {
-            id: r.id,
-            rate: r.rate,
-            content: r.content,
-            createdAt: r.createdAt,
-            commissionTitle: r.request.commission.title,
-            workingTime: workingTime,
-            review_thumbnail: images.length > 0 ? images[0] : null,
-            writer: {
-                nickname: r.user.nickname
-            }, 
-          };
-       })
-    );
+            return {
+                id: r.id,
+                rate: r.rate,
+                content: r.content,
+                createdAt: r.createdAt,
+                commissionTitle: r.request.commission.title,
+                workingTime: workingTime,
+                review_thumbnail: images.length > 0 ? images[0] : null,
+                writer: {
+                    nickname: r.user.nickname
+                }, 
+            };
+          })
+        );
 
         // 작가가 등록한 커미션 목록
         const commissions = await UserRepository.FetchArtistCommissions(artistId, userId);
