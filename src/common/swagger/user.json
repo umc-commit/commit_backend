@@ -208,7 +208,8 @@
                               "rate":{"type":"integer", "example":5},
                               "content":{"type":"string", "example":"좋았습니다"},
                               "createdAt":{"type":"string", "example":"2025-08-09T12:30:00.000Z"},
-                              "updatedAt":{"type":"string", "example":"2025-08-09T12:30:00.000Z"}
+                              "updatedAt":{"type":"string", "example":"2025-08-09T12:30:00.000Z"},
+                              "title":{"type":"string", "example":"낙서 타입 커미션"}
                             }
                           }
                         }
