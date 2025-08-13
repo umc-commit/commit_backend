@@ -5,7 +5,7 @@ import { PaymentService } from "../service/payment.service.js";
 
 export const paymentConfirm = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     const dto = new CreatePaymentDto({
       impUid: req.body.impUid,
@@ -24,7 +24,7 @@ export const paymentConfirm = async (req, res, next) => {
 
 export const getPayments = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     const payments = await PaymentService.getPayments(userId);
     const responseData = parseWithBigInt(stringifyWithBigInt(payments));

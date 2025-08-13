@@ -20,13 +20,14 @@
               "example": {
                 "userId": 1,
                 "productId": 1,
-                "impUid": "imp_1234567890"
+                "impUid": "imp_1234567890",
+                "merchantUid": "order_no_1753062110278"
               }
             }
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "결제 완료 성공",
             "content": {
               "application/json": {
