@@ -123,10 +123,10 @@ export const UserService = {
             console.log("userBadges 확인:", result.userBadges);
 
 
-            const badges = result.userBadges.map(userBadge => ({
+            const badges = result.userBadges.map((userBadge) => ({
                 id: userBadge.id,
                 earnedAt: userBadge.earnedAt,
-                badge: userBadge.badge
+                badge: userBadge.badge? [userBadge.badge] : []
             }));
 
             const reviews = (await UserRepository.UserReviewList(userId)) ?? [];
