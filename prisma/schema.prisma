@@ -112,6 +112,7 @@ model Commission {
   category       Category        @relation(fields: [categoryId], references: [id])
   requests       Request[]
   bookmarks      Bookmark[]
+  chatrooms        Chatroom[]
   commissionTags CommissionTag[]
 
   @@map("commissions")
@@ -145,7 +146,6 @@ model Request {
 
   user             User               @relation(fields: [userId], references: [id])
   commission       Commission         @relation(fields: [commissionId], references: [id])
-  chatrooms        Chatroom[]
   reviews          Review[]
   PointTransaction PointTransaction[]
 
@@ -212,16 +212,16 @@ model PointTransaction {
 
 model Chatroom {
   id             BigInt   @id @default(autoincrement())
-  requestId      BigInt   @map("request_id")
-  consumerId     BigInt   @map("consumer_id")
+  commissionId   BigInt   @map("commission_Id")
+  userId         BigInt   @map("user_id")
   artistId       BigInt   @map("artist_id")
   hiddenArtist   Boolean  @default(false) @map("hidden_artist")
-  hiddenConsumer Boolean  @default(false) @map("hidden_consumer")
+  hiddenUser     Boolean  @default(false) @map("hidden_user")
   createdAt      DateTime @default(now()) @map("created_at")
 
-  request      Request       @relation(fields: [requestId], references: [id])
-  consumer     User          @relation("ConsumerChatrooms", fields: [consumerId], references: [id])
-  artist       Artist        @relation("ArtistChatrooms", fields: [artistId], references: [id])
+  commission     Commission    @relation(fields: [commissionId], references: [id])
+  user           User          @relation("ConsumerChatrooms", fields: [userId], references: [id])
+  artist         Artist        @relation("ArtistChatrooms", fields: [artistId], references: [id])
   chatMessages ChatMessage[]
 
   @@map("chatrooms")

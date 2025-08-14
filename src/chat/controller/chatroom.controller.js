@@ -7,12 +7,12 @@ import { parseWithBigInt, stringifyWithBigInt } from "../../bigintJson.js";
 
 export const createChatroom = async (req, res, next) => {
   try {
-    const consumerId = BigInt(req.user.userId);
+    const userId = BigInt(req.user.userId);
 
     const dto = new CreateChatroomDto({
-      consumerId: consumerId,
+      userId,
       artistId: BigInt(req.body.artistId),
-      requestId: BigInt(req.body.requestId),
+      commissionId: BigInt(req.body.commissionId),
     });
 
     const chatroom = await ChatroomService.createChatroom(dto);
@@ -26,8 +26,10 @@ export const createChatroom = async (req, res, next) => {
 
 export const getChatroom = async (req, res, next) => {
   try {
+    const userId = BigInt(req.user.userId);
+
     const dto = new GetChatroomDto({
-      consumerId: BigInt(req.user.userId),
+      userId,
       accountId: BigInt(req.user.accountId),
     });
 
@@ -47,7 +49,7 @@ export const deleteChatrooms = async (req, res, next) => {
     const dto = new DeleteChatroomDto({
       chatroomIds: req.body.chatroomIds,
       userType: req.body.userType,
-      userId: userId,
+      userId,
     });
 
     const chatrooms = await ChatroomService.softDeleteChatroomsByUser(dto);

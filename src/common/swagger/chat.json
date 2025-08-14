@@ -3,7 +3,7 @@
     "/api/chatrooms": {
       "post": {
         "summary": "채팅방 생성",
-        "description": "consumerId, artistId, requestId로 채팅방을 생성합니다.",
+        "description": "consumerId, artistId, commissionId로 채팅방을 생성합니다.",
         "security": [
           {
             "bearerAuth": []
@@ -19,8 +19,9 @@
                 "properties": {
                   "consumerId": { "type": "integer", "example": 1 },
                   "artistId": { "type": "integer", "example": 2 },
-                  "requestId": { "type": "integer", "example": 3 }
-                }
+                  "commissionId": { "type": "integer", "example": 3 }
+                },
+                "required": ["consumerId", "artistId", "commissionId"]
               }
             }
           }
@@ -40,8 +41,8 @@
                       "properties": {
                         "id": { "type": "string", "example": "1" },
                         "consumerId": { "type": "string", "example": "1" },
-                        "artistId": { "type": "string", "example": "1" },
-                        "requestId": { "type": "string", "example": "1" },
+                        "artistId": { "type": "string", "example": "2" },
+                        "commissionId": { "type": "string", "example": "3" },
                         "hiddenArtist": { "type": "boolean", "example": false },
                         "hiddenConsumer": { "type": "boolean", "example": false },
                         "createdAt": { "type": "string", "format": "date-time", "example": "2025-08-07T15:35:42.375Z" }
@@ -114,8 +115,8 @@
                           "artist_id": { "type": "string", "example": "1" },
                           "artist_nickname": { "type": "string", "example": "artist_one" },
                           "artist_profile_image": { "type": "string", "example": "https://example.com/artist1.png" },
-                          "request_id": { "type": "string", "example": "1" },
-                          "request_title": { "type": "string", "example": "테스트 커미션 글" },
+                          "commission_id": { "type": "string", "example": "1" },
+                          "commission_title": { "type": "string", "example": "테스트 커미션 글" },
                           "last_message": { "type": ["string", "null"], "example": null },
                           "last_message_time": { "type": ["string", "null"], "format": "date-time", "example": null },
                           "has_unread": { "type": "integer", "example": 0 }
