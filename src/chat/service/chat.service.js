@@ -10,8 +10,8 @@ export const ChatService = {
       throw new ChatroomNotFoundError({ chatroomId: dto.chatroomId });
     }
 
-    if (dto.userId !== chatroom.consumerId && dto.userId !== chatroom.artistId) {
-      throw new ForbiddenError({ consumerId: dto.userId });
+    if (dto.userId !== chatroom.userId && dto.userId !== chatroom.artistId) {
+      throw new ForbiddenError({ userId: dto.userId });
     }
   
     const messages = await ChatRepository.findMessagesWithImages(dto);

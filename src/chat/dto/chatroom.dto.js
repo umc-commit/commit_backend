@@ -1,14 +1,14 @@
 export class CreateChatroomDto {
-  constructor({ consumerId, artistId, requestId }) {
-    this.consumerId = consumerId;
+  constructor({ userId, artistId, commissionId }) {
+    this.userId = userId;
     this.artistId = artistId;
-    this.requestId = requestId;
+    this.commissionId = commissionId;
   }
 }
 
 export class GetChatroomDto {
-    constructor({ consumerId, accountId }) {
-        this.consumerId = BigInt(consumerId);
+    constructor({ userId, accountId }) {
+        this.userId = BigInt(userId);
         this.accountId = BigInt(accountId);
     }
 }
@@ -19,8 +19,8 @@ export class ChatroomListResponseDto {
     this.artist_id = room.artist.id;
     this.artist_nickname = room.artist.nickname;
     this.artist_profile_image = room.artist.profileImage;
-    this.request_id = room.request.id;
-    this.request_title = room.request.commission.title;
+    this.commission_id = room.commission.id;
+    this.commission_title = room.commission.title;
     // 이미지가 있으면 이미지 URL, 없으면 텍스트 content
     const lastMsg = room.chatMessages[0];
     this.last_message = lastMsg?.imageUrl || lastMsg?.content || null;

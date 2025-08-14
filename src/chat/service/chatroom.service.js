@@ -1,18 +1,18 @@
 import { ChatroomRepository } from "../repository/chatroom.repository.js";
 import { ChatRepository } from "../repository/chat.repository.js";
 import { UserRepository } from "../../user/repository/user.repository.js";
-import { RequestRepository } from "../../request/repository/request.repository.js";
+import { CommissionRepository } from "../../commission/repository/commission.repository.js";
 import { UserNotFoundError } from "../../common/errors/user.errors.js";
 import { ArtistNotFoundError } from "../../common/errors/artist.errors.js";
-import { RequestNotFoundError } from "../../common/errors/request.errors.js";
+import { CommissionNotFoundError } from "../../common/errors/commission.errors.js";
 import { ChatroomNotFoundError } from "../../common/errors/chat.errors.js";
 import { ChatroomListResponseDto } from "../dto/chatroom.dto.js";
 
 export const ChatroomService = {
   async createChatroom(dto) {
-    const user = await UserRepository.findUserById(dto.consumerId);
+    const user = await UserRepository.findUserById(dto.userId);
     if (!user) {
-      throw new UserNotFoundError({ consumerId: dto.consumerId });
+      throw new UserNotFoundError({ userId: dto.userId });
     }
 
     const artist = await UserRepository.findArtistById(dto.artistId);
@@ -20,16 +20,16 @@ export const ChatroomService = {
       throw new ArtistNotFoundError({ artistId: dto.artistId });
     }
 
-    const request = await RequestRepository.findRequestById(dto.requestId);
-    if (!request) {
-      throw new RequestNotFoundError({ requestId: dto.requestId });
+    const commission = await CommissionRepository.findCommissionById(dto.commissionId);
+    if (!commission) {
+      throw new CommissionNotFoundError({ commissionId: dto.commissionId });
     }
 
     // 채팅방 중복 확인
     const existing = await ChatroomRepository.findChatroomByUsersAndCommission(
-      dto.consumerId,
+      dto.userId,
       dto.artistId,
-      dto.requestId
+      dto.commissionId
     );
 
     // 기존 채팅방 반환
@@ -39,21 +39,21 @@ export const ChatroomService = {
 
     // 채팅방이 없을 시 생성
     const chatroom = await ChatroomRepository.createChatroom({
-      consumerId: dto.consumerId,
+      userId: dto.userId,
       artistId: dto.artistId,
-      requestId: dto.requestId,
+      commissionId: dto.commissionId,
     });
 
     return chatroom;
   },
 
   async getChatroomsByUserId(dto) {
-    const user = await UserRepository.findUserById(dto.consumerId);
+    const user = await UserRepository.findUserById(dto.userId);
     if (!user) {
-      throw new UserNotFoundError({ consumerId: dto.consumerId });
+      throw new UserNotFoundError({ userId: dto.userId });
     }
 
-    const chatrooms = await ChatroomRepository.findChatroomsByUser(dto.consumerId);
+    const chatrooms = await ChatroomRepository.findChatroomsByUser(dto.userId);
     console.log(dto.accountId)
 
     const result = [];
@@ -76,7 +76,7 @@ export const ChatroomService = {
     const chatrooms = await ChatroomRepository.findChatroomsByIds(dto.chatroomIds);
 
     const chatroomIdsToDelete = chatrooms
-        .filter(cr => cr.hiddenConsumer && cr.hiddenArtist)
+        .filter(cr => cr.hiddenUser && cr.hiddenArtist)
         .map(cr => cr.id);
 
     if (chatroomIdsToDelete.length > 0) {

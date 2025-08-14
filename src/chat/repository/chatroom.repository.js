@@ -5,27 +5,27 @@ export const ChatroomRepository = {
     console.log(data)
     return await prisma.chatroom.create({
       data: {
-        consumerId: data.consumerId,
+        userId: data.userId,
         artistId: data.artistId,
-        requestId: data.requestId,
+        commissionId: data.commissionId,
       },
     });
   },
 
-  async findChatroomByUsersAndCommission(consumerId, artistId, requestId) {
+  async findChatroomByUsersAndCommission(userId, artistId, commissionId) {
     return await prisma.chatroom.findFirst({
       where: {
-        consumerId,
+        userId,
         artistId,
-        requestId,
+        commissionId,
       },
     });
   },
 
-  async findChatroomsByUser(consumerId) {
+  async findChatroomsByUser(userId) {
     // 1. 채팅방 기본 정보 + 마지막 메시지(내용, 생성시간, id) 조회
     const chatrooms = await prisma.chatroom.findMany({
-      where: { consumerId },
+      where: { userId },
       include: {
         artist: {
           select: {
@@ -34,14 +34,10 @@ export const ChatroomRepository = {
             profileImage: true,
           }
         },
-        request: {
+        commission: {
           select: {
             id: true,
-            commission: {
-              select: {
-                title: true,
-              }
-            }
+            title: true,
           }
         },
         chatMessages: {
@@ -91,8 +87,8 @@ export const ChatroomRepository = {
   },
 
   async softDeleteChatrooms(chatroomIds, userType, userId) {
-    const hiddenField = userType === "consumer" ? "hiddenConsumer" : "hiddenArtist";
-    const userField = userType === "consumer" ? "consumerId" : "artistId";
+    const hiddenField = userType === "user" ? "hiddenUser" : "hiddenArtist";
+    const userField = userType === "user" ? "userId" : "artistId";
 
     await prisma.chatroom.updateMany({
       where: {

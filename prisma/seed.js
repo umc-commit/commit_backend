@@ -54,6 +54,38 @@ async function main() {
     },
   });
 
+  // Artist 2 생성
+  const artistAccount2 = await prisma.account.create({
+    data: {
+      provider: "kakao",
+      oauthId: "artist2_oauth_id",
+    },
+  });
+  const artist2 = await prisma.artist.create({
+    data: {
+      accountId: artistAccount2.id,
+      nickname: "artist_two",
+      description: "두 번째 테스트용 작가입니다.",
+      profileImage: "https://example.com/artist2.png",
+    },
+  });
+
+  // Artist 3 생성
+  const artistAccount3 = await prisma.account.create({
+    data: {
+      provider: "kakao",
+      oauthId: "artist3_oauth_id",
+    },
+  });
+  const artist3 = await prisma.artist.create({
+    data: {
+      accountId: artistAccount3.id,
+      nickname: "artist_three",
+      description: "세 번째 테스트용 작가입니다.",
+      profileImage: "https://example.com/artist3.png",
+    },
+  });
+
   // Category 생성
   const category1 = await prisma.category.create({
     data: {
