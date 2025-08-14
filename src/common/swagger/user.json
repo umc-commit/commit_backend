@@ -676,7 +676,8 @@
                                 "properties":{
                                   "id":{"type":"string", "example":"1"},
                                   "nickname":{"type":"string", "example":"작가지롱~"},
-                                  "profileImage":{"type":["string", "null"], "example":null}
+                                  "profileImage":{"type":["string", "null"], "example":null},
+                                  "followerCount":{"type":"integer", "example": 11}
                                 }
                               }
                             }
