@@ -134,9 +134,10 @@ export const UserService = {
             const reviewsThumbnailImage = await Promise.all(
                 reviews.map(async (r) => {
                     const images = await reviewRepository.getImagesByTarget("review", r.id);
+                    const title = await CommissionRepository.findCommissionTitle(r.requestId);
                     const reviewThumbnail = images?.[0]?.imageUrl ?? null;
 
-                    return {...r, reviewThumbnail}
+                    return {...r, reviewThumbnail, title}
                 })
             )
 
@@ -296,7 +297,7 @@ export const UserService = {
 
     // 작가 팔로우 취소하기 
     async CancelArtistFollow(accountId, artistId) {
-        const artist = await UserRepository.findArtistById(artistId);
+        const artist = await UserRepository.findArtistById(accountId);
 
         if(!artist)
             throw new ArtistNotFound();
