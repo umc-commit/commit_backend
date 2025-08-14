@@ -164,9 +164,9 @@ export const UserService = {
             console.log("userBadges 확인:", result.userBadges);
 
             const badges = result.userBadges.map((userBadge) => ({
-            id: userBadge.id,
-            earnedAt: userBadge.earnedAt,
-            badge: userBadge.badge? [userBadge.badge] : []
+                id: userBadge.id,
+                earnedAt: userBadge.earnedAt,
+                badge: userBadge.badge? [userBadge.badge] : []
             }));
 
             return {
@@ -317,12 +317,21 @@ export const UserService = {
     
     // 사용자가 팔로우한 작가 조회하기 
     async LookUserFollow(accountId) {
-        const artistList = await UserRepository.LookUserFollow(accountId);
+        const rows = await UserRepository.LookUserFollow(accountId);
 
-        if(artistList.length === 0) return {
+        if(!rows?.length) return {
             message:"팔로우하는 작가가 없습니다.",
             artistList:[]
-        };
+        }
+
+        const artistList = rows.map(r => ({
+            artist:{
+                id: r.artist.id,
+                nickname:r.artist.nickname,
+                profileImage:r.artist.profileImage,
+                followerCount : r.artist._count.follows
+            }
+        }));
 
         return{
             message:"사용자가 팔로우하는 작가 목록입니다.",

@@ -215,7 +215,8 @@ export const UserRepository = {
           select:{
             id:true,
             nickname:true, 
-            profileImage:true
+            profileImage:true,
+            _count: { select: { follows: true } }
           }
         }
       }
