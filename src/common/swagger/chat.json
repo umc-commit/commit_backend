@@ -3,7 +3,7 @@
     "/api/chatrooms": {
       "post": {
         "summary": "채팅방 생성",
-        "description": "consumerId, artistId, commissionId로 채팅방을 생성합니다.",
+        "description": "userId, artistId, commissionId로 채팅방을 생성합니다.",
         "security": [
           {
             "bearerAuth": []
@@ -17,11 +17,10 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "consumerId": { "type": "integer", "example": 1 },
                   "artistId": { "type": "integer", "example": 2 },
                   "commissionId": { "type": "integer", "example": 3 }
                 },
-                "required": ["consumerId", "artistId", "commissionId"]
+                "required": ["userId", "artistId", "commissionId"]
               }
             }
           }
@@ -40,11 +39,10 @@
                       "type": "object",
                       "properties": {
                         "id": { "type": "string", "example": "1" },
-                        "consumerId": { "type": "string", "example": "1" },
                         "artistId": { "type": "string", "example": "2" },
                         "commissionId": { "type": "string", "example": "3" },
                         "hiddenArtist": { "type": "boolean", "example": false },
-                        "hiddenConsumer": { "type": "boolean", "example": false },
+                        "hiddenUser": { "type": "boolean", "example": false },
                         "createdAt": { "type": "string", "format": "date-time", "example": "2025-08-07T15:35:42.375Z" }
                       }
                     }
@@ -179,8 +177,8 @@
                   },
                   "userType": {
                     "type": "string",
-                    "enum": ["consumer", "artist"],
-                    "example": "consumer"
+                    "enum": ["user", "artist"],
+                    "example": "user"
                   }
                 },
                 "required": ["chatroomIds", "userType"]
@@ -204,7 +202,7 @@
                       "type": "object",
                       "properties": {
                         "errorCode": { "type": "string", "example": "C001" },
-                        "reason": { "type": "string", "example": "userType은 'consumer' 또는 'artist'여야 합니다." },
+                        "reason": { "type": "string", "example": "userType은 'user' 또는 'artist'여야 합니다." },
                         "data": { "type": "object", "example": {} }
                       }
                     },
