@@ -137,6 +137,7 @@ export const CommissionService = {
      thumbnailImageUrl,
      remainingSlots,
      isBookmarked: commission.bookmarks?.length > 0 || false,
+     artistId: commission.artist.id,
      createdAt: commission.createdAt.toISOString()
    };
  },

@@ -60,6 +60,7 @@
                         "thumbnailImageUrl": { "type": "string", "example": "https://example.com/image1.jpg" },
                         "remainingSlots": { "type": "integer", "example": 3 },
                         "isBookmarked": { "type": "boolean", "example": false },
+                        "artistId": { "type": "integer", "example": 1 },
                         "createdAt": { "type": "string", "format": "date-time", "example": "2025-07-01T10:00:00.000Z" }
                       }
                     }
