@@ -1,4 +1,4 @@
-<img width="1424" height="797" alt="image" src="https://github.com/user-attachments/assets/94621319-511d-4c20-b8cf-886faddcad59" />
+<img width="1424" height="797" alt="Image" src="https://github.com/user-attachments/assets/d09cdfd9-6c53-4474-a2ca-8dfa1d81a160" />
 
 <br/>
 <br/>
@@ -31,7 +31,7 @@
 <br/>
 
 # Server architecture 
-<img width="873" height="731" alt="KakaoTalk_20250814_015717857" src="https://github.com/user-attachments/assets/78bb13ba-124c-42cb-942e-2f8a61225676" />
+<img width="873" height="731" alt="Image" src="https://github.com/user-attachments/assets/b261f280-2c4b-4a4f-8348-62954bda313f" />
 
 <br/>
 <br/>
