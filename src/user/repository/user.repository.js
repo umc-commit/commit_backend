@@ -326,6 +326,11 @@ export const UserRepository = {
       orderBy: {createdAt:"desc"}, 
     });
   },
-
+  // artistId로 팔로워 조회하기 
+  async CountArtistFollower(artistId){
+    return await prisma.follow.count({
+      where:{artistId:artistId},
+    })
+  }
 };
 

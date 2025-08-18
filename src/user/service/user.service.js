@@ -371,6 +371,8 @@ export const UserService = {
     async AccessArtistProfile(artistId, accountId, userId) {
         const profile = await UserRepository.AccessArtistProfile(artistId);
 
+        const followercount = await UserRepository.CountArtistFollower(artistId);
+
         if(!profile)
             throw new ArtistNotFound();
         
@@ -441,6 +443,7 @@ export const UserService = {
 
         return {
             ...profile,
+            followerCount: followercount,
             reviews,
             commissions:commissionList,
             badges

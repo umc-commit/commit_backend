@@ -755,6 +755,7 @@
                         "description":{"type":"string", "example":"테스트용 작가입니다."},
                         "profileImage":{"type": "string", "example":"https://example.com/artist1.png"},
                         "slot":{"type": "integer", "example":3},
+                        "followerCount":{"type":"integer", "example":3},
                         "reviews":{
                           "type":"array",
                           "items":{
