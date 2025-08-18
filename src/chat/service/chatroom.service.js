@@ -49,16 +49,23 @@ export const ChatroomService = {
 
   async getChatroomsByUserId(dto) {
     const user = await UserRepository.findUserById(dto.userId);
-    if (!user) {
-      throw new UserNotFoundError({ userId: dto.userId });
-    }
+    if (!user) throw new UserNotFoundError({ userId: dto.userId });
 
     const chatrooms = await ChatroomRepository.findChatroomsByUser(dto.userId);
-    console.log(dto.accountId)
 
+    // thumbnail 한 번에 조회
+    const commissionIds = chatrooms.map(r => r.commission.id);
+    const images = await CommissionRepository.findImagesByCommissionId(commissionIds);
+    const thumbnailMap = Object.fromEntries(images.map(img => [img.targetId.toString(), img.imageUrl]));
+
+    // DTO 생성
     const result = [];
     for (const room of chatrooms) {
+      room.commission.thumbnail = thumbnailMap[room.commission.id.toString()] || null;
+
+      // 방마다 unreadCount 조회
       const unreadCount = await ChatRepository.countUnreadMessages(room.id, dto.accountId);
+
       result.push(new ChatroomListResponseDto(room, unreadCount));
     }
 

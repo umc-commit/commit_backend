@@ -56,35 +56,30 @@ export const CommissionService = {
    * S3 이미지 업로드 처리
    */
   async uploadRequestImage(file) {
-    try {
-      // 1. 파일 존재 여부 확인
-      if (!file) {
-        throw new ImageUploadFailedError({ reason: '파일이 업로드되지 않았습니다' });
-      }
-
-      // 2. 파일 크기 검증
-      if (file.size > 10 * 1024 * 1024) {
-        throw new FileSizeExceededError({ fileSize: file.size });
-      }
-
-      // 3. 파일 확장자 검증
-      const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
-      if (!['jpeg', 'jpg', 'png'].includes(ext)) {
-        throw new UnsupportedImageFormatError({ fileType: file.mimetype });
-      }
-
-      // 4. S3 업로드 (requests 폴더에 저장)
-      const imageUrl = await uploadToS3(file.buffer, 'requests', ext);
-
-      return {
-        image_url: imageUrl,
-        file_size: file.size,
-        file_type: file.mimetype
-      };
-
-    } catch (error) {
-      throw error;
+    // 1. 파일 존재 여부 확인
+    if (!file) {
+      throw new ImageUploadFailedError({ reason: '파일이 업로드되지 않았습니다' });
     }
+
+    // 2. 파일 크기 검증
+    if (file.size > 10 * 1024 * 1024) {
+      throw new FileSizeExceededError({ fileSize: file.size });
+    }
+
+    // 3. 파일 확장자 검증
+    const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
+    if (!['jpeg', 'jpg', 'png'].includes(ext)) {
+      throw new UnsupportedImageFormatError({ fileType: file.mimetype });
+    }
+
+    // 4. S3 업로드
+    const imageUrl = await uploadToS3(file.buffer, 'requests', ext);
+
+    return {
+      image_url: imageUrl,
+      file_size: file.size,
+      file_type: file.mimetype
+    };
   },
 
   /**
