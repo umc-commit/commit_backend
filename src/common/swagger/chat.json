@@ -115,6 +115,7 @@
                           "artist_profile_image": { "type": "string", "example": "https://example.com/artist1.png" },
                           "commission_id": { "type": "string", "example": "1" },
                           "commission_title": { "type": "string", "example": "테스트 커미션 글" },
+                          "commission_thumbnail": { "type": ["string", "null"], "example": "https://example.com/sample-thumbnail.png" },
                           "last_message": { "type": ["string", "null"], "example": null },
                           "last_message_time": { "type": ["string", "null"], "format": "date-time", "example": null },
                           "has_unread": { "type": "integer", "example": 0 }
