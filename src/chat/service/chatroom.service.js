@@ -53,18 +53,23 @@ export const ChatroomService = {
 
     const chatrooms = await ChatroomRepository.findChatroomsByUser(dto.userId);
 
-    // thumbnail 한 번에 조회
-    const commissionIds = chatrooms.map(r => r.commission.id);
-    const images = await CommissionRepository.findImagesByCommissionId(commissionIds);
-    const thumbnailMap = Object.fromEntries(images.map(img => [img.targetId.toString(), img.imageUrl]));
+    // 1. thumbnail 한 번에 조회 (BigInt 변환)
+    const commissionIds = chatrooms.map(r => BigInt(r.commission.id));
+    const images = await CommissionRepository.findImagesByCommissionIds(commissionIds);
+    const thumbnailMap = Object.fromEntries(
+      images.map(img => [img.targetId.toString(), img.imageUrl])
+    );
 
-    // DTO 생성
+    // 2. DTO 생성
     const result = [];
     for (const room of chatrooms) {
-      room.commission.thumbnail = thumbnailMap[room.commission.id.toString()] || null;
+      room.commission.thumbnail = thumbnailMap[BigInt(room.commission.id).toString()] || null;
 
-      // 방마다 unreadCount 조회
-      const unreadCount = await ChatRepository.countUnreadMessages(room.id, dto.accountId);
+      // 방마다 unreadCount 조회 (BigInt 변환)
+      const unreadCount = await ChatRepository.countUnreadMessages(
+        BigInt(room.id),
+        BigInt(dto.accountId)
+      );
 
       result.push(new ChatroomListResponseDto(room, unreadCount));
     }

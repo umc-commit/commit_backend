@@ -68,6 +68,16 @@ export const CommissionRepository = {
     });
   },
 
+  async findImagesByCommissionIds(commissionIds) {
+    return await prisma.image.findMany({
+      where: {
+        target: 'commissions',
+        targetId: { in: commissionIds }, // 배열 처리
+      },
+      orderBy: { orderIndex: 'asc' },
+    });
+  },
+
   /**
    * 커미션 ID로 신청폼 조회 (작가 정보 포함)
    */
