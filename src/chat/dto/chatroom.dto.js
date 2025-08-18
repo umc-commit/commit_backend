@@ -21,6 +21,7 @@ export class ChatroomListResponseDto {
     this.artist_profile_image = room.artist.profileImage;
     this.commission_id = room.commission.id;
     this.commission_title = room.commission.title;
+    this.commission_thumbnail = room.commission.thumbnail || null;
     // 이미지가 있으면 이미지 URL, 없으면 텍스트 content
     const lastMsg = room.chatMessages[0];
     this.last_message = lastMsg?.imageUrl || lastMsg?.content || null;
