@@ -203,6 +203,7 @@ export const CommissionService = {
       throw new CommissionNotFoundError({ commissionId });
     }
 
+    /**
     // 중복 신청 확인
     const existingRequest = await CommissionRepository.findExistingRequest(userId, commissionId);
     if (existingRequest) {
@@ -212,6 +213,7 @@ export const CommissionService = {
         existingRequestId: existingRequest.id
       });
     }
+    */
 
     // formSchema 가져오기
     const customFields = commission.formSchema?.fields || [];
