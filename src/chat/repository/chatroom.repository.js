@@ -22,6 +22,13 @@ export const ChatroomRepository = {
     });
   },
 
+  async reactivateChatroom(chatroomId, updateData) {
+    return await prisma.chatroom.update({
+      where: { id: chatroomId },
+      data: updateData,
+    });
+  },
+
   async findChatroomsByUser(account) {
     // 1. 채팅방 기본 정보 + 마지막 메시지(내용, 생성시간, id) 조회
     let chatrooms;
