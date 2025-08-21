@@ -26,7 +26,7 @@ export const ChatroomService = {
     }
 
     // 채팅방 중복 확인
-    const existing = await ChatroomRepository.findChatroomByUsersAndCommission(
+    let existing = await ChatroomRepository.findChatroomByUsersAndCommission(
       dto.userId,
       dto.artistId,
       dto.commissionId
@@ -34,6 +34,12 @@ export const ChatroomService = {
 
     // 기존 채팅방 반환
     if (existing) {
+      if (existing.hiddenUser || existing.hiddenArtist) {
+        existing = await ChatroomRepository.reactivateChatroom(existing.id, {
+          hiddenUser: false,
+          hiddenArtist: false,
+        });
+      }
       return existing;
     }
 
