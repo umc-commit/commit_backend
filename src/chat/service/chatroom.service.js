@@ -51,7 +51,7 @@ export const ChatroomService = {
     const user = await UserRepository.findUserById(dto.userId);
     if (!user) throw new UserNotFoundError({ userId: dto.userId });
 
-    const chatrooms = await ChatroomRepository.findChatroomsByUser(dto.userId);
+    const chatrooms = await ChatroomRepository.findChatroomsByUser(dto);
 
     // 1. thumbnail 한 번에 조회 (BigInt 변환)
     const commissionIds = chatrooms.map(r => BigInt(r.commission.id));

@@ -31,6 +31,7 @@ export const getChatroom = async (req, res, next) => {
     const dto = new GetChatroomDto({
       userId,
       accountId: BigInt(req.user.accountId),
+      role: req.user.role,
     });
 
     const chatrooms = await ChatroomService.getChatroomsByUserId(dto);

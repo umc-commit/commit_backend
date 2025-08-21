@@ -7,9 +7,10 @@ export class CreateChatroomDto {
 }
 
 export class GetChatroomDto {
-    constructor({ userId, accountId }) {
+    constructor({ userId, accountId, role}) {
         this.userId = BigInt(userId);
         this.accountId = BigInt(accountId);
+        this.role = role;
     }
 }
 
