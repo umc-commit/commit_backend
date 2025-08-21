@@ -22,35 +22,77 @@ export const ChatroomRepository = {
     });
   },
 
-  async findChatroomsByUser(userId) {
+  async findChatroomsByUser(account) {
     // 1. 채팅방 기본 정보 + 마지막 메시지(내용, 생성시간, id) 조회
-    const chatrooms = await prisma.chatroom.findMany({
-      where: { userId },
-      include: {
-        artist: {
-          select: {
-            id: true,
-            nickname: true,
-            profileImage: true,
-          }
+    let chatrooms;
+
+    if (account.role === "client") {
+      // ✅ 클라이언트가 보는 채팅방
+      chatrooms = await prisma.chatroom.findMany({
+        where: {
+          userId: BigInt(account.userId),
+          hiddenUser: false,
         },
-        commission: {
-          select: {
-            id: true,
-            title: true,
-          }
+        include: {
+          artist: {
+            select: {
+              id: true,
+              nickname: true,
+              profileImage: true,
+            },
+          },
+          commission: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+          chatMessages: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+            select: {
+              id: true,
+              content: true,
+              createdAt: true,
+            },
+          },
         },
-        chatMessages: {
-          orderBy: { createdAt: "desc" },
-          take: 1,
-          select: {
-            id: true,
-            content: true,
-            createdAt: true,
-          }
-        }
-      }
-    });
+      });
+    } else if (account.role === "artist") {
+      // ✅ 아티스트가 보는 채팅방
+      chatrooms = await prisma.chatroom.findMany({
+        where: {
+          artistId: BigInt(account.artistId),
+          hiddenArtist: false,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              nickname: true,
+              profileImage: true,
+            },
+          },
+          commission: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+          chatMessages: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+            select: {
+              id: true,
+              content: true,
+              createdAt: true,
+            },
+          },
+        },
+      });
+    } else {
+      return [];
+    }
 
     // 2. 마지막 메시지 ID 목록 수집
     const messageIds = chatrooms
